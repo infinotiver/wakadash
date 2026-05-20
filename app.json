@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "wakatime-dashboard",
+    "slug": "wakatime-dashboard",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-router"
+    ],
+    "scheme": "wakatime-dashboard",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7edf8f0b-70e2-4344-bc42-38378e220123"
+      }
+    },
+    "android": {
+      "package": "com.infinotiver.wakadash"
+    }
+  }
+}
