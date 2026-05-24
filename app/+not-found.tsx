@@ -2,8 +2,7 @@ import { Link, Stack } from "expo-router";
 import { Text, View } from "react-native";
 
 import { useColors } from "@/src/hooks/useColors";
-import { styles as sharedStyles } from "@/src/constants/style";
-import { styles } from "@/src/constants/not-found.style";
+import { commonStyles, typographies } from "@/src/constants/styles.common";
 
 export default function NotFoundScreen() {
   const colors = useColors();
@@ -12,7 +11,7 @@ export default function NotFoundScreen() {
     <>
       <Stack.Screen options={{ title: "Oops!" }} />
       <View
-        style={[sharedStyles.container, { backgroundColor: colors.background }]}
+        style={[commonStyles.container, { backgroundColor: colors.background }]}
       >
         <Text style={[styles.title, { color: colors.foreground }]}>
           This screen doesn&apos;t exist.

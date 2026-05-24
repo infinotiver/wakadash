@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -8,34 +8,31 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useQuery } from "@tanstack/react-query";
 import { Feather } from "@expo/vector-icons";
 import { useColors } from "@/src/hooks/useColors";
-import {
-  useWakaTime,
-  type WakaSummaryDay,
-} from "@/src/context/WakaTimeContext";
+import { useWakaTime } from "@/src/context/WakaTimeContext";
+import { useWeekSummaries } from "@/src/hooks/useWakaTimeQueries";
 import { SetupScreen } from "@/src/components/SetupScreen";
-import { styles as sharedStyles } from "@/src/constants/style";
-import { styles } from "@/src/constants/history.style";
+import { commonStyles } from "@/src/constants/styles.common";
+import { historyScreenStyles as styles } from "@/src/constants/styles.screens";
+import type { WakaSummaryDay, WakaEntry } from "@/src/types/wakatime";
 
-const SCALE_SECONDS = 12 * 3600; // 12 hours = full bar
+const SCALE_SECONDS = 12 * 3600;
+
+function formatSeconds(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (seconds === 0) return "—";
+  if (h > 0 && m > 0) return `${h}h ${m}m`;
+  if (h > 0) return `${h}h`;
+  return `${m}m`;
+}
 
 export default function HistoryScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { isConfigured, fetchWeekSummaries } = useWakaTime();
-
-  const weekQ = useQuery({
-    queryKey: ["week"],
-    queryFn: fetchWeekSummaries,
-    enabled: isConfigured,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const refetch = useCallback(() => {
-    weekQ.refetch();
-  }, [weekQ]);
+  const { isConfigured } = useWakaTime();
+  const weekQ = useWeekSummaries();
 
   if (!isConfigured) return <SetupScreen />;
 
@@ -43,7 +40,7 @@ export default function HistoryScreen() {
 
   return (
     <ScrollView
-      style={[sharedStyles.scroll, { backgroundColor: colors.background }]}
+      style={[commonStyles.scroll, { backgroundColor: colors.background }]}
       contentContainerStyle={[
         styles.content,
         {
@@ -54,7 +51,7 @@ export default function HistoryScreen() {
       refreshControl={
         <RefreshControl
           refreshing={weekQ.isFetching}
-          onRefresh={refetch}
+          onRefresh={() => weekQ.refetch()}
           tintColor={colors.primary}
         />
       }
@@ -73,10 +70,10 @@ export default function HistoryScreen() {
             : "Failed to load"}
         </Text>
       ) : days.length === 0 ? (
-        <View style={sharedStyles.emptyWrap}>
+        <View style={commonStyles.emptyWrap}>
           <Feather name="calendar" size={40} color={colors.mutedForeground} />
           <Text
-            style={[sharedStyles.emptyText, { color: colors.mutedForeground }]}
+            style={[commonStyles.emptyText, { color: colors.mutedForeground }]}
           >
             No history yet
           </Text>
@@ -94,6 +91,7 @@ export default function HistoryScreen() {
 
 function DayCard({ day }: { day: WakaSummaryDay }) {
   const colors = useColors();
+
   const seconds = day.grand_total?.total_seconds ?? 0;
   const ratio = Math.min(1, seconds / SCALE_SECONDS);
   const isToday = day.range?.date === new Date().toISOString().split("T")[0];
@@ -106,8 +104,10 @@ function DayCard({ day }: { day: WakaSummaryDay }) {
     day: "numeric",
   });
 
-  const topLang = day.languages?.[0];
+  const languages = day.languages?.slice(0, 3) ?? [];
+  const editors = day.editors?.slice(0, 2) ?? [];
   const topProject = day.projects?.[0];
+  const topOS = day.operating_systems?.[0];
 
   return (
     <View
@@ -120,6 +120,7 @@ function DayCard({ day }: { day: WakaSummaryDay }) {
         },
       ]}
     >
+      {/* Header */}
       <View style={styles.cardHeader}>
         <View>
           <Text
@@ -135,10 +136,11 @@ function DayCard({ day }: { day: WakaSummaryDay }) {
           </Text>
         </View>
         <Text style={[styles.totalTime, { color: colors.foreground }]}>
-          {seconds === 0 ? "—" : day.grand_total?.text}
+          {formatSeconds(seconds)}
         </Text>
       </View>
 
+      {/* Progress bar */}
       <View style={[styles.barTrack, { backgroundColor: colors.secondary }]}>
         <View
           style={[
@@ -151,29 +153,85 @@ function DayCard({ day }: { day: WakaSummaryDay }) {
         />
       </View>
 
-      {seconds > 0 && (topLang ?? topProject) ? (
-        <View style={styles.tags}>
-          {topLang ? (
-            <View style={[styles.tag, { backgroundColor: colors.secondary }]}>
-              <Text
-                style={[styles.tagText, { color: colors.secondaryForeground }]}
-              >
-                {topLang.name}
-              </Text>
-            </View>
-          ) : null}
-          {topProject ? (
-            <View style={[styles.tag, { backgroundColor: colors.secondary }]}>
-              <Feather name="folder" size={11} color={colors.mutedForeground} />
-              <Text
-                style={[styles.tagText, { color: colors.secondaryForeground }]}
-              >
-                {topProject.name}
-              </Text>
-            </View>
-          ) : null}
+      {seconds > 0 && (
+        <View style={{ marginTop: 12 }}>
+          {/* Top language + project (concise) */}
+          {languages.length > 0 && (
+            <Text style={[styles.sub, { color: colors.mutedForeground }]}>
+              {languages[0].name} · {languages[0].text}
+            </Text>
+          )}
+
+          {topProject && (
+            <Text
+              style={[
+                styles.sub,
+                { color: colors.mutedForeground, marginTop: 6 },
+              ]}
+            >
+              Project: {topProject.name}
+            </Text>
+          )}
+
+          {/* Compact chips for editors / OS */}
+          <View
+            style={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              gap: 8,
+              marginTop: 8,
+            }}
+          >
+            {editors.map((e: WakaEntry) => (
+              <MetaTag
+                key={e.name}
+                icon="code"
+                label={e.name}
+                colors={colors}
+              />
+            ))}
+            {topOS && (
+              <MetaTag icon="monitor" label={topOS.name} colors={colors} />
+            )}
+          </View>
         </View>
-      ) : null}
+      )}
+    </View>
+  );
+}
+
+function MetaTag({
+  icon,
+  label,
+  colors,
+}: {
+  icon: React.ComponentProps<typeof Feather>["name"];
+  label: string;
+  colors: ReturnType<typeof useColors>;
+}) {
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 4,
+        backgroundColor: colors.secondary,
+        borderRadius: 6,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+      }}
+    >
+      <Feather name={icon} size={11} color={colors.mutedForeground} />
+      <Text
+        style={{
+          fontSize: 12,
+          color: colors.secondaryForeground,
+          fontFamily: "Inter_400Regular",
+        }}
+        numberOfLines={1}
+      >
+        {label}
+      </Text>
     </View>
   );
 }

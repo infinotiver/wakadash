@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 import { useColors } from "@/src/hooks/useColors";
 import type { WakaSummaryDay } from "@/src/context/WakaTimeContext";
-import { styles } from "@/src/constants/weekly-chart.style";
+import { weeklyChartStyles as styles } from "@/src/constants/styles.components";
 interface Props {
   days: WakaSummaryDay[];
 }

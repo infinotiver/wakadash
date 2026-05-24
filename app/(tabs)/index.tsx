@@ -15,28 +15,21 @@ import { StatCard } from "@/src/components/StatCard";
 import { WeeklyChart } from "@/src/components/WeeklyChart";
 import { BreakdownItem } from "@/src/components/BreakdownItem";
 import { SetupScreen } from "@/src/components/SetupScreen";
-import { styles as sharedStyles } from "@/src/constants/style";
-import { styles } from "@/src/constants/index.style";
+import { commonStyles } from "@/src/constants/styles.common";
+import { overviewScreenStyles as styles } from "@/src/constants/styles.screens";
+import {
+  useAllTimeSinceToday,
+  useTodaySummary,
+  useWeekSummaries,
+} from "@/src/hooks/useWakaTimeQueries";
 
 export default function OverviewScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { isConfigured, fetchTodaySummary, fetchWeekSummaries } = useWakaTime();
-
-  const todayQ = useQuery({
-    queryKey: ["today"],
-    queryFn: fetchTodaySummary,
-    enabled: isConfigured,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const weekQ = useQuery({
-    queryKey: ["week"],
-    queryFn: fetchWeekSummaries,
-    enabled: isConfigured,
-    staleTime: 5 * 60 * 1000,
-  });
-
+  const { isConfigured } = useWakaTime();
+  const todayQ = useTodaySummary();
+  const weekQ = useWeekSummaries();
+  const allTimeSinceTodayQ = useAllTimeSinceToday();
   const refetch = useCallback(async () => {
     await Promise.all([todayQ.refetch(), weekQ.refetch()]);
   }, [todayQ, weekQ]);
@@ -44,6 +37,7 @@ export default function OverviewScreen() {
   if (!isConfigured) return <SetupScreen />;
 
   const today = todayQ.data;
+  const allTimeSinceToday = allTimeSinceTodayQ.data;
   const week = weekQ.data ?? [];
 
   const topLang = today?.languages?.[0];
@@ -68,7 +62,7 @@ export default function OverviewScreen() {
 
   return (
     <ScrollView
-      style={[sharedStyles.scroll, { backgroundColor: colors.background }]}
+      style={[commonStyles.scroll, { backgroundColor: colors.background }]}
       contentContainerStyle={[
         styles.content,
         {
@@ -135,7 +129,6 @@ export default function OverviewScreen() {
               </Text>
             ) : null}
           </View>
-
           <View style={styles.row}>
             <StatCard
               label="Weekly avg"
@@ -148,7 +141,6 @@ export default function OverviewScreen() {
               subtitle={topProject?.text}
             />
           </View>
-
           {/* Languages */}
           {(today?.languages?.length ?? 0) > 0 && (
             <View
@@ -172,7 +164,6 @@ export default function OverviewScreen() {
               ))}
             </View>
           )}
-
           {/* Editors */}
           {(today?.editors?.length ?? 0) > 0 && (
             <View
@@ -196,7 +187,6 @@ export default function OverviewScreen() {
               ))}
             </View>
           )}
-
           {/* Operating Systems */}
           {(today?.operating_systems?.length ?? 0) > 0 && (
             <View
@@ -220,7 +210,6 @@ export default function OverviewScreen() {
               ))}
             </View>
           )}
-
           <View
             style={[
               styles.section,
@@ -238,10 +227,53 @@ export default function OverviewScreen() {
               </Text>
             )}
           </View>
+
+          {allTimeSinceToday && (
+            <View
+              style={[
+                styles.section,
+                { backgroundColor: colors.card, borderColor: colors.border },
+              ]}
+            >
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+                All Time Stats
+              </Text>
+              <View style={{ gap: 8 }}>
+                <View style={styles.row}>
+                  <Text
+                    style={[styles.heroSub, { color: colors.mutedForeground }]}
+                  >
+                    Total Time
+                  </Text>
+                  <Text style={[styles.heroSub, { color: colors.foreground }]}>
+                    {allTimeSinceToday.text ?? "—"}
+                  </Text>
+                </View>
+                <View style={styles.row}>
+                  <Text
+                    style={[styles.heroSub, { color: colors.mutedForeground }]}
+                  >
+                    Daily Avg
+                  </Text>
+                  <Text style={[styles.heroSub, { color: colors.foreground }]}>
+                    {fmtSeconds(allTimeSinceToday.daily_average)}
+                  </Text>
+                </View>
+                <View style={styles.row}>
+                  <Text
+                    style={[styles.heroSub, { color: colors.mutedForeground }]}
+                  >
+                    Data Since
+                  </Text>
+                  <Text style={[styles.heroSub, { color: colors.foreground }]}>
+                    {allTimeSinceToday.range?.start_text}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
         </>
       )}
     </ScrollView>
   );
 }
-
-

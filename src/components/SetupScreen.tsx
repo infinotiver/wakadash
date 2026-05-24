@@ -11,8 +11,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
 import { useColors } from "@/src/hooks/useColors";
-import { styles as sharedStyles } from "@/src/constants/style";
-import { styles } from "@/src/constants/setup-screen.style";
+import { commonStyles } from "@/src/constants/styles.common";
+import { setupScreenStyles as styles } from "@/src/constants/styles.screens";
 
 export function SetupScreen() {
   const colors = useColors();
@@ -65,7 +65,7 @@ export function SetupScreen() {
   return (
     <View
       style={[
-        sharedStyles.container,
+        commonStyles.container,
         styles.container,
         {
           backgroundColor: colors.background,
@@ -132,7 +132,7 @@ export function SetupScreen() {
 
       <TouchableOpacity
         style={[
-          sharedStyles.button,
+          commonStyles.button,
           {
             backgroundColor: colors.primary,
             opacity: loading || !key.trim() ? 0.5 : 1,
@@ -147,7 +147,7 @@ export function SetupScreen() {
         ) : (
           <Text
             style={[
-              sharedStyles.buttonText,
+              commonStyles.buttonText,
               { color: colors.primaryForeground },
             ]}
           >

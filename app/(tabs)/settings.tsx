@@ -15,8 +15,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Feather } from "@expo/vector-icons";
 import { useColors } from "@/src/hooks/useColors";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
-import { styles as sharedStyles } from "@/src/constants/style";
-import { styles } from "@/src/constants/settings.style";
+import { commonStyles as sharedStyles } from "@/src/constants/styles.common";
+import { settingsScreenStyles as styles } from "@/src/constants/styles.screens";
 
 export default function SettingsScreen() {
   const colors = useColors();
@@ -324,7 +324,6 @@ export default function SettingsScreen() {
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
             Custom API URL
           </Text>
-          
         </View>
 
         {!editingUrl ? (

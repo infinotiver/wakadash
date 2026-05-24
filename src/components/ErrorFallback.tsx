@@ -12,8 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/src/hooks/useColors";
-import { styles as sharedStyles } from "@/src/constants/style";
-import { styles } from "@/src/constants/error-fallback.style";
+import { commonStyles, typographies } from "@/src/constants/styles.common";
 export type ErrorFallbackProps = {
   error: Error;
   resetError: () => void;
@@ -50,7 +49,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
 
   return (
     <View
-      style={[sharedStyles.container, { backgroundColor: colors.background }]}
+      style={[commonStyles.container, { backgroundColor: colors.background }]}
     >
       {__DEV__ ? (
         <Pressable
@@ -58,7 +57,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
           accessibilityLabel="View error details"
           accessibilityRole="button"
           style={({ pressed }) => [
-            sharedStyles.topButton,
+            commonStyles.topButton,
             {
               top: insets.top + 16,
               backgroundColor: colors.card,
@@ -82,7 +81,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
         <Pressable
           onPress={handleRestart}
           style={({ pressed }) => [
-            sharedStyles.button,
+            commonStyles.button,
             {
               backgroundColor: colors.primary,
               opacity: pressed ? 0.9 : 1,
@@ -92,7 +91,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
         >
           <Text
             style={[
-              sharedStyles.buttonText,
+              commonStyles.buttonText,
               { color: colors.primaryForeground },
             ]}
           >
@@ -108,22 +107,22 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
           transparent={true}
           onRequestClose={() => setIsModalVisible(false)}
         >
-          <View style={sharedStyles.modalOverlay}>
+          <View style={commonStyles.modalOverlay}>
             <View
               style={[
-                sharedStyles.modalContainer,
+                commonStyles.modalContainer,
                 { backgroundColor: colors.background },
               ]}
             >
               <View
                 style={[
-                  sharedStyles.modalHeader,
+                  commonStyles.modalHeader,
                   { borderBottomColor: colors.border },
                 ]}
               >
                 <Text
                   style={[
-                    sharedStyles.modalTitle,
+                    commonStyles.modalTitle,
                     { color: colors.foreground },
                   ]}
                 >
@@ -134,7 +133,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
                   accessibilityLabel="Close error details"
                   accessibilityRole="button"
                   style={({ pressed }) => [
-                    sharedStyles.closeButton,
+                    commonStyles.closeButton,
                     { opacity: pressed ? 0.6 : 1 },
                   ]}
                 >
@@ -143,22 +142,22 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
               </View>
 
               <ScrollView
-                style={sharedStyles.modalScrollView}
+                style={commonStyles.modalScrollView}
                 contentContainerStyle={[
-                  sharedStyles.modalScrollContent,
+                  commonStyles.modalScrollContent,
                   { paddingBottom: insets.bottom + 16 },
                 ]}
                 showsVerticalScrollIndicator
               >
                 <View
                   style={[
-                    sharedStyles.errorContainer,
+                    commonStyles.errorContainer,
                     { backgroundColor: colors.card },
                   ]}
                 >
                   <Text
                     style={[
-                      sharedStyles.errorText,
+                      commonStyles.errorText,
                       {
                         color: colors.foreground,
                         fontFamily: monoFont,

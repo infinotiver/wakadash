@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { useColors } from "@/src/hooks/useColors";
-import { styles } from "@/src/constants/stat-card.style";
+import { statCardStyles as styles } from "@/src/constants/styles.components";
 
 interface StatCardProps {
   label: string;

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, Text, View } from "react-native";
 import { useColors } from "@/src/hooks/useColors";
-import { styles } from "@/src/constants/breakdown-item.style";
+import { breakdownItemStyles as styles } from "@/src/constants/styles.components";
 
 interface BreakdownItemProps {
   name: string;

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   Linking,
@@ -10,15 +10,16 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useQuery } from "@tanstack/react-query";
 import { Feather } from "@expo/vector-icons";
 import { useColors } from "@/src/hooks/useColors";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
+import { useWakaStats } from "@/src/hooks/useWakaTimeQueries";
 import { BreakdownItem } from "@/src/components/BreakdownItem";
 import { SetupScreen } from "@/src/components/SetupScreen";
 import colors from "@/src/constants/colors";
-import { styles as sharedStyles } from "@/src/constants/style";
-import { styles } from "@/src/constants/breakdown.style";
+import { commonStyles as sharedStyles } from "@/src/constants/styles.common";
+import { breakdownScreenStyles as styles } from "@/src/constants/styles.screens";
+import type { WakaEntry } from "@/src/types/wakatime";
 
 type Range = "last_7_days" | "last_30_days";
 type Category = "languages" | "editors" | "operating_systems" | "projects";
@@ -35,41 +36,25 @@ const CATEGORIES: { label: string; value: Category }[] = [
   { label: "OS", value: "operating_systems" },
 ];
 
-function isProError(err: unknown): boolean {
-  if (!(err instanceof Error)) return false;
-  return /402|403|upgrade|pro|premium/i.test(err.message);
-}
-
 export default function BreakdownScreen() {
   const c = useColors();
   const insets = useSafeAreaInsets();
-  const { isConfigured, fetchStats } = useWakaTime();
+  const { isConfigured } = useWakaTime();
   const [range, setRange] = useState<Range>("last_7_days");
   const [category, setCategory] = useState<Category>("languages");
 
-  const statsQ = useQuery({
-    queryKey: ["stats", range],
-    queryFn: () => fetchStats(range),
-    enabled: isConfigured,
-    staleTime: 10 * 60 * 1000,
-    retry: false,
-  });
-
-  const refetch = useCallback(() => {
-    statsQ.refetch();
-  }, [statsQ]);
+  const statsQ = useWakaStats(range);
 
   if (!isConfigured) return <SetupScreen />;
 
   const stats = statsQ.data;
-  const items = stats?.[category] ?? [];
+  const items: WakaEntry[] = stats?.[category] ?? [];
+  const showProError = statsQ.isError && range === "last_30_days";
 
   const chartColors =
     Platform.OS === "web"
       ? colors.light.chartColors
       : (c.chartColors as string[]);
-
-  const showProError = statsQ.isError && range === "last_30_days";
 
   return (
     <ScrollView
@@ -84,13 +69,14 @@ export default function BreakdownScreen() {
       refreshControl={
         <RefreshControl
           refreshing={statsQ.isFetching}
-          onRefresh={refetch}
+          onRefresh={() => statsQ.refetch()}
           tintColor={c.primary}
         />
       }
     >
       <Text style={[styles.title, { color: c.foreground }]}>Breakdown</Text>
 
+      {/* Range pills */}
       <View style={styles.pills}>
         {RANGES.map((r) => (
           <TouchableOpacity
@@ -120,8 +106,8 @@ export default function BreakdownScreen() {
         ))}
       </View>
 
-      {/* Pro upsell banner when 30-day fails */}
-      {showProError ? (
+      {/* Pro upsell */}
+      {showProError && (
         <View
           style={[
             styles.proCard,
@@ -150,9 +136,10 @@ export default function BreakdownScreen() {
             <Feather name="external-link" size={13} color={c.primary} />
           </TouchableOpacity>
         </View>
-      ) : null}
+      )}
 
-      {!showProError && stats ? (
+      {/* Summary row */}
+      {!showProError && stats && (
         <View style={styles.summaryRow}>
           <View
             style={[
@@ -177,10 +164,10 @@ export default function BreakdownScreen() {
               Daily avg
             </Text>
             <Text style={[styles.summaryValue, { color: c.foreground }]}>
-              {stats.daily_average?.text ?? "—"}
+              {stats.human_readable_daily_average ?? "—"}
             </Text>
           </View>
-          {stats.best_day ? (
+          {stats.best_day && (
             <View
               style={[
                 styles.summaryItem,
@@ -194,11 +181,12 @@ export default function BreakdownScreen() {
                 {stats.best_day.text}
               </Text>
             </View>
-          ) : null}
+          )}
         </View>
-      ) : null}
+      )}
 
-      {!showProError ? (
+      {/* Category filter */}
+      {!showProError && (
         <View style={styles.catRow}>
           {CATEGORIES.map((cat) => (
             <TouchableOpacity
@@ -230,10 +218,11 @@ export default function BreakdownScreen() {
             </TouchableOpacity>
           ))}
         </View>
-      ) : null}
+      )}
 
-      {!showProError ? (
-        statsQ.isLoading ? (
+      {/* List */}
+      {!showProError &&
+        (statsQ.isLoading ? (
           <ActivityIndicator color={c.primary} style={{ marginTop: 40 }} />
         ) : statsQ.isError ? (
           <Text style={[styles.error, { color: c.destructive }]}>
@@ -255,7 +244,7 @@ export default function BreakdownScreen() {
             ) : (
               items
                 .slice(0, 10)
-                .map((item, i) => (
+                .map((item: WakaEntry, i: number) => (
                   <BreakdownItem
                     key={item.name}
                     name={item.name}
@@ -267,8 +256,7 @@ export default function BreakdownScreen() {
                 ))
             )}
           </View>
-        )
-      ) : null}
+        ))}
     </ScrollView>
   );
 }
