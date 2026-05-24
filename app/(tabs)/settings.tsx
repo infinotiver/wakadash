@@ -5,7 +5,6 @@ import {
   Image,
   Platform,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -16,6 +15,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Feather } from "@expo/vector-icons";
 import { useColors } from "@/src/hooks/useColors";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
+import { styles as sharedStyles } from "@/src/constants/style";
+import { styles } from "@/src/constants/settings.style";
 
 export default function SettingsScreen() {
   const colors = useColors();
@@ -132,7 +133,7 @@ export default function SettingsScreen() {
 
   return (
     <ScrollView
-      style={[styles.scroll, { backgroundColor: colors.background }]}
+      style={[sharedStyles.scroll, { backgroundColor: colors.background }]}
       contentContainerStyle={[
         styles.content,
         {
@@ -323,14 +324,9 @@ export default function SettingsScreen() {
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
             Custom API URL
           </Text>
-          <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>
-            Native only
-          </Text>
+          
         </View>
-        <Text style={[styles.sectionDesc, { color: colors.mutedForeground }]}>
-          Override the WakaTime API base URL — useful for self-hosted or
-          compatible instances.
-        </Text>
+
         {!editingUrl ? (
           <View style={styles.keyRow}>
             <Text
@@ -467,105 +463,3 @@ export default function SettingsScreen() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  scroll: { flex: 1 },
-  content: { paddingHorizontal: 16, gap: 16 },
-  title: {
-    fontSize: 28,
-    fontFamily: "Inter_700Bold",
-    letterSpacing: -0.8,
-    marginBottom: 4,
-  },
-  profileCard: {
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-  },
-  avatar: { width: 60, height: 60, borderRadius: 30 },
-  avatarFallback: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  profileInfo: { flex: 1, gap: 2 },
-  displayName: { fontSize: 18, fontFamily: "Inter_600SemiBold" },
-  username: { fontSize: 13, fontFamily: "Inter_400Regular" },
-  locationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginTop: 4,
-  },
-  location: { fontSize: 12, fontFamily: "Inter_400Regular" },
-  section: {
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    gap: 12,
-  },
-  sectionHeader: { flexDirection: "row", alignItems: "center", gap: 8 },
-  sectionTitle: {
-    fontSize: 14,
-    fontFamily: "Inter_600SemiBold",
-    textTransform: "uppercase",
-    letterSpacing: 0.4,
-  },
-  sectionHint: {
-    fontSize: 11,
-    fontFamily: "Inter_400Regular",
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
-  },
-  sectionDesc: {
-    fontSize: 13,
-    fontFamily: "Inter_400Regular",
-    lineHeight: 18,
-    marginTop: -4,
-  },
-  keyRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  keyText: { flex: 1, fontSize: 13 },
-  editBtn: { padding: 8, borderRadius: 8 },
-  editSection: { gap: 10 },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    height: 48,
-  },
-  input: { flex: 1, fontSize: 14 },
-  btnRow: { flexDirection: "row", gap: 10 },
-  cancelBtn: {
-    flex: 1,
-    height: 44,
-    borderRadius: 12,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  cancelText: { fontSize: 14, fontFamily: "Inter_500Medium" },
-  saveBtn: {
-    flex: 2,
-    height: 44,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  saveText: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
-  creditRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingTop: 10,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  creditLabel: { fontSize: 13, fontFamily: "Inter_400Regular" },
-  creditValue: { fontSize: 13, fontFamily: "Inter_500Medium" },
-});

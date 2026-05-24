@@ -6,14 +6,14 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/src/hooks/useColors";
-
+import { styles as sharedStyles } from "@/src/constants/style";
+import { styles } from "@/src/constants/error-fallback.style";
 export type ErrorFallbackProps = {
   error: Error;
   resetError: () => void;
@@ -49,14 +49,16 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
   });
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View
+      style={[sharedStyles.container, { backgroundColor: colors.background }]}
+    >
       {__DEV__ ? (
         <Pressable
           onPress={() => setIsModalVisible(true)}
           accessibilityLabel="View error details"
           accessibilityRole="button"
           style={({ pressed }) => [
-            styles.topButton,
+            sharedStyles.topButton,
             {
               top: insets.top + 16,
               backgroundColor: colors.card,
@@ -80,7 +82,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
         <Pressable
           onPress={handleRestart}
           style={({ pressed }) => [
-            styles.button,
+            sharedStyles.button,
             {
               backgroundColor: colors.primary,
               opacity: pressed ? 0.9 : 1,
@@ -89,7 +91,10 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
           ]}
         >
           <Text
-            style={[styles.buttonText, { color: colors.primaryForeground }]}
+            style={[
+              sharedStyles.buttonText,
+              { color: colors.primaryForeground },
+            ]}
           >
             Try Again
           </Text>
@@ -103,20 +108,25 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
           transparent={true}
           onRequestClose={() => setIsModalVisible(false)}
         >
-          <View style={styles.modalOverlay}>
+          <View style={sharedStyles.modalOverlay}>
             <View
               style={[
-                styles.modalContainer,
+                sharedStyles.modalContainer,
                 { backgroundColor: colors.background },
               ]}
             >
               <View
                 style={[
-                  styles.modalHeader,
+                  sharedStyles.modalHeader,
                   { borderBottomColor: colors.border },
                 ]}
               >
-                <Text style={[styles.modalTitle, { color: colors.foreground }]}>
+                <Text
+                  style={[
+                    sharedStyles.modalTitle,
+                    { color: colors.foreground },
+                  ]}
+                >
                   Error Details
                 </Text>
                 <Pressable
@@ -124,7 +134,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
                   accessibilityLabel="Close error details"
                   accessibilityRole="button"
                   style={({ pressed }) => [
-                    styles.closeButton,
+                    sharedStyles.closeButton,
                     { opacity: pressed ? 0.6 : 1 },
                   ]}
                 >
@@ -133,22 +143,22 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
               </View>
 
               <ScrollView
-                style={styles.modalScrollView}
+                style={sharedStyles.modalScrollView}
                 contentContainerStyle={[
-                  styles.modalScrollContent,
+                  sharedStyles.modalScrollContent,
                   { paddingBottom: insets.bottom + 16 },
                 ]}
                 showsVerticalScrollIndicator
               >
                 <View
                   style={[
-                    styles.errorContainer,
+                    sharedStyles.errorContainer,
                     { backgroundColor: colors.card },
                   ]}
                 >
                   <Text
                     style={[
-                      styles.errorText,
+                      sharedStyles.errorText,
                       {
                         color: colors.foreground,
                         fontFamily: monoFont,
@@ -167,109 +177,3 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-  },
-  content: {
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 16,
-    width: "100%",
-    maxWidth: 600,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
-    textAlign: "center",
-    lineHeight: 40,
-  },
-  message: {
-    fontSize: 16,
-    textAlign: "center",
-    lineHeight: 24,
-  },
-  topButton: {
-    position: "absolute",
-    right: 16,
-    width: 44,
-    height: 44,
-    borderRadius: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 10,
-  },
-  button: {
-    paddingVertical: 16,
-    borderRadius: 8,
-    paddingHorizontal: 24,
-    minWidth: 200,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  buttonText: {
-    fontWeight: "600",
-    textAlign: "center",
-    fontSize: 16,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
-  },
-  modalContainer: {
-    width: "100%",
-    height: "90%",
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-  },
-  closeButton: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  modalScrollView: {
-    flex: 1,
-  },
-  modalScrollContent: {
-    padding: 16,
-  },
-  errorContainer: {
-    width: "100%",
-    borderRadius: 8,
-    overflow: "hidden",
-    padding: 16,
-  },
-  errorText: {
-    fontSize: 12,
-    lineHeight: 18,
-    width: "100%",
-  },
-});

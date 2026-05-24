@@ -1,5 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { Platform } from "react-native";
 
 const STORAGE_KEY = "wakatime_api_key";
@@ -96,7 +102,7 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
       }
     }
     loadKey();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const setApiKey = useCallback(async (key: string) => {
@@ -121,16 +127,13 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
     setCustomApiUrlState(null);
   }, []);
 
-  const getAuthHeader = useCallback(
-    (key: string) => {
-      const encoded =
-        typeof btoa !== "undefined"
-          ? btoa(key + ":")
-          : Buffer.from(key).toString("base64");
-      return `Basic ${encoded}`;
-    },
-    []
-  );
+  const getAuthHeader = useCallback((key: string) => {
+    const encoded =
+      typeof btoa !== "undefined"
+        ? btoa(key + ":")
+        : Buffer.from(key).toString("base64");
+    return `Basic ${encoded}`;
+  }, []);
 
   const wakaFetch = useCallback(
     async (path: string) => {
@@ -145,7 +148,7 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
         const host =
           typeof window !== "undefined"
             ? window.location.host.replace(/^expo\./, "")
-            : process.env.EXPO_PUBLIC_DOMAIN ?? "";
+            : (process.env.EXPO_PUBLIC_DOMAIN ?? "");
         const proto =
           typeof window !== "undefined" ? window.location.protocol : "https:";
         baseUrl = `${proto}//${host}/api/wakatime`;
@@ -163,7 +166,7 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
       }
       return res.json();
     },
-    [apiKey, customApiUrl, getAuthHeader]
+    [apiKey, customApiUrl, getAuthHeader],
   );
 
   const fetchUser = useCallback(async (): Promise<WakaUser> => {
@@ -171,19 +174,24 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
     return data.data;
   }, [wakaFetch]);
 
-  const fetchTodaySummary = useCallback(async (): Promise<WakaSummaryDay | null> => {
-    const today = new Date().toISOString().split("T")[0];
-    const data = await wakaFetch(`/users/current/summaries?start=${today}&end=${today}`);
-    return data.data?.[0] ?? null;
-  }, [wakaFetch]);
+  const fetchTodaySummary =
+    useCallback(async (): Promise<WakaSummaryDay | null> => {
+      const today = new Date().toISOString().split("T")[0];
+      const data = await wakaFetch(
+        `/users/current/summaries?start=${today}&end=${today}`,
+      );
+      return data.data?.[0] ?? null;
+    }, [wakaFetch]);
 
-  const fetchWeekSummaries = useCallback(async (): Promise<WakaSummaryDay[]> => {
+  const fetchWeekSummaries = useCallback(async (): Promise<
+    WakaSummaryDay[]
+  > => {
     const end = new Date();
     const start = new Date();
     start.setDate(start.getDate() - 6);
     const fmt = (d: Date) => d.toISOString().split("T")[0];
     const data = await wakaFetch(
-      `/users/current/summaries?start=${fmt(start)}&end=${fmt(end)}`
+      `/users/current/summaries?start=${fmt(start)}&end=${fmt(end)}`,
     );
     return data.data ?? [];
   }, [wakaFetch]);
@@ -193,7 +201,7 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
       const data = await wakaFetch(`/users/current/stats/${range}`);
       return data.data;
     },
-    [wakaFetch]
+    [wakaFetch],
   );
 
   return (
@@ -205,7 +213,7 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
         customApiUrl,
         setCustomApiUrl,
         clearCustomApiUrl,
-        isConfigured: Platform.OS === "web" ? true : (loaded && !!apiKey),
+        isConfigured: Platform.OS === "web" ? true : loaded && !!apiKey,
         fetchUser,
         fetchTodaySummary,
         fetchWeekSummaries,

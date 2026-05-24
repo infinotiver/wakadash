@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import { Animated, Pressable, Text, View } from "react-native";
 import { useColors } from "@/src/hooks/useColors";
 import type { WakaSummaryDay } from "@/src/context/WakaTimeContext";
-
+import { styles } from "@/src/constants/weekly-chart.style";
 interface Props {
   days: WakaSummaryDay[];
 }
@@ -133,40 +133,3 @@ function BarItem({
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  bars: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    height: 120,
-    gap: 4,
-  },
-  barCol: {
-    flex: 1,
-    alignItems: "center",
-    height: "100%",
-    justifyContent: "flex-end",
-    gap: 4,
-  },
-  tooltip: {
-    fontSize: 10,
-    fontFamily: "Inter_500Medium",
-    textAlign: "center",
-  },
-  barTrack: {
-    flex: 1,
-    width: "75%",
-    justifyContent: "flex-end",
-    borderRadius: 4,
-    overflow: "hidden",
-  },
-  barFill: {
-    width: "100%",
-    borderRadius: 4,
-  },
-  dayLabel: {
-    fontSize: 11,
-    textAlign: "center",
-  },
-});

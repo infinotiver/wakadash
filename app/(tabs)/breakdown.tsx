@@ -5,7 +5,6 @@ import {
   Platform,
   RefreshControl,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -18,6 +17,8 @@ import { useWakaTime } from "@/src/context/WakaTimeContext";
 import { BreakdownItem } from "@/src/components/BreakdownItem";
 import { SetupScreen } from "@/src/components/SetupScreen";
 import colors from "@/src/constants/colors";
+import { styles as sharedStyles } from "@/src/constants/style";
+import { styles } from "@/src/constants/breakdown.style";
 
 type Range = "last_7_days" | "last_30_days";
 type Category = "languages" | "editors" | "operating_systems" | "projects";
@@ -72,7 +73,7 @@ export default function BreakdownScreen() {
 
   return (
     <ScrollView
-      style={[styles.scroll, { backgroundColor: c.background }]}
+      style={[sharedStyles.scroll, { backgroundColor: c.background }]}
       contentContainerStyle={[
         styles.content,
         {
@@ -271,90 +272,3 @@ export default function BreakdownScreen() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  scroll: { flex: 1 },
-  content: { paddingHorizontal: 16, gap: 12 },
-  title: {
-    fontSize: 28,
-    fontFamily: "Inter_700Bold",
-    letterSpacing: -0.8,
-    marginBottom: 4,
-  },
-  pills: { flexDirection: "row", gap: 8 },
-  pill: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  pillText: { fontSize: 13, fontFamily: "Inter_500Medium" },
-  proCard: {
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 16,
-    gap: 10,
-  },
-  proBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    alignSelf: "flex-start",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-  proLabel: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
-  proMessage: { fontSize: 14, fontFamily: "Inter_400Regular", lineHeight: 20 },
-  proLink: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    alignSelf: "flex-start",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  proLinkText: { fontSize: 13, fontFamily: "Inter_500Medium" },
-  summaryRow: { flexDirection: "row", gap: 10 },
-  summaryItem: {
-    flex: 1,
-    borderRadius: 14,
-    padding: 14,
-    borderWidth: 1,
-    gap: 4,
-  },
-  summaryLabel: {
-    fontSize: 11,
-    fontFamily: "Inter_500Medium",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  summaryValue: { fontSize: 15, fontFamily: "Inter_700Bold" },
-  catRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  catBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  catText: { fontSize: 13, fontFamily: "Inter_500Medium" },
-  card: {
-    borderRadius: 16,
-    padding: 18,
-    borderWidth: 1,
-  },
-  empty: {
-    fontSize: 14,
-    fontFamily: "Inter_400Regular",
-    textAlign: "center",
-    paddingVertical: 20,
-  },
-  error: {
-    fontSize: 14,
-    fontFamily: "Inter_400Regular",
-    textAlign: "center",
-    marginTop: 20,
-  },
-});

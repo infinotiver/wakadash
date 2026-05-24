@@ -4,7 +4,6 @@ import {
   Platform,
   RefreshControl,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -12,9 +11,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
 import { Feather } from "@expo/vector-icons";
 import { useColors } from "@/src/hooks/useColors";
-import { useWakaTime, type WakaSummaryDay } from "@/src/context/WakaTimeContext";
+import {
+  useWakaTime,
+  type WakaSummaryDay,
+} from "@/src/context/WakaTimeContext";
 import { SetupScreen } from "@/src/components/SetupScreen";
-import { styles } from "@/src/constants/style"
+import { styles as sharedStyles } from "@/src/constants/style";
+import { styles } from "@/src/constants/history.style";
 
 const SCALE_SECONDS = 12 * 3600; // 12 hours = full bar
 
@@ -40,7 +43,7 @@ export default function HistoryScreen() {
 
   return (
     <ScrollView
-      style={[styles.scroll, { backgroundColor: colors.background }]}
+      style={[sharedStyles.scroll, { backgroundColor: colors.background }]}
       contentContainerStyle={[
         styles.content,
         {
@@ -70,9 +73,11 @@ export default function HistoryScreen() {
             : "Failed to load"}
         </Text>
       ) : days.length === 0 ? (
-        <View style={styles.emptyWrap}>
+        <View style={sharedStyles.emptyWrap}>
           <Feather name="calendar" size={40} color={colors.mutedForeground} />
-          <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+          <Text
+            style={[sharedStyles.emptyText, { color: colors.mutedForeground }]}
+          >
             No history yet
           </Text>
         </View>

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -12,6 +11,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
 import { useColors } from "@/src/hooks/useColors";
+import { styles as sharedStyles } from "@/src/constants/style";
+import { styles } from "@/src/constants/setup-screen.style";
 
 export function SetupScreen() {
   const colors = useColors();
@@ -64,6 +65,7 @@ export function SetupScreen() {
   return (
     <View
       style={[
+        sharedStyles.container,
         styles.container,
         {
           backgroundColor: colors.background,
@@ -130,7 +132,7 @@ export function SetupScreen() {
 
       <TouchableOpacity
         style={[
-          styles.button,
+          sharedStyles.button,
           {
             backgroundColor: colors.primary,
             opacity: loading || !key.trim() ? 0.5 : 1,
@@ -144,7 +146,10 @@ export function SetupScreen() {
           <ActivityIndicator color={colors.primaryForeground} />
         ) : (
           <Text
-            style={[styles.buttonText, { color: colors.primaryForeground }]}
+            style={[
+              sharedStyles.buttonText,
+              { color: colors.primaryForeground },
+            ]}
           >
             Connect
           </Text>
@@ -153,61 +158,3 @@ export function SetupScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 28,
-    justifyContent: "center",
-    gap: 16,
-  },
-  iconWrap: {
-    alignSelf: "center",
-    marginBottom: 8,
-  },
-  title: {
-    fontSize: 32,
-    fontFamily: "Inter_700Bold",
-    textAlign: "center",
-    letterSpacing: -1,
-  },
-  sub: {
-    fontSize: 14,
-    fontFamily: "Inter_400Regular",
-    textAlign: "center",
-    lineHeight: 22,
-    marginBottom: 8,
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    height: 54,
-  },
-  input: {
-    flex: 1,
-    fontSize: 15,
-    height: "100%",
-  },
-  eyeBtn: {
-    padding: 6,
-  },
-  error: {
-    fontSize: 13,
-    fontFamily: "Inter_400Regular",
-    textAlign: "center",
-  },
-  button: {
-    height: 54,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 4,
-  },
-  buttonText: {
-    fontSize: 16,
-    fontFamily: "Inter_600SemiBold",
-  },
-});

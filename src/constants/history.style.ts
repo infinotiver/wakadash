@@ -1,0 +1,33 @@
+import { StyleSheet } from "react-native";
+
+export const styles = StyleSheet.create({
+  content: { paddingHorizontal: 16, gap: 12 },
+  title: { fontSize: 28, fontFamily: "Inter_700Bold", letterSpacing: -0.8 },
+  sub: { fontSize: 14, fontFamily: "Inter_400Regular", marginBottom: 4 },
+  list: { gap: 10 },
+  card: {
+    borderRadius: 16,
+    padding: 16,
+    gap: 12,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  dayName: { fontSize: 16, fontFamily: "Inter_600SemiBold" },
+  dateStr: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 2 },
+  totalTime: { fontSize: 18, fontFamily: "Inter_700Bold" },
+  barTrack: { height: 6, borderRadius: 3, overflow: "hidden" },
+  barFill: { height: "100%", borderRadius: 3 },
+  tags: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+  tag: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  tagText: { fontSize: 12, fontFamily: "Inter_500Medium" },
+});
