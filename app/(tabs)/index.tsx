@@ -13,7 +13,6 @@ import { useColors } from "@/src/hooks/useColors";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
 import { StatCard } from "@/src/components/StatCard";
 import { WeeklyChart } from "@/src/components/WeeklyChart";
-import { BreakdownItem } from "@/src/components/BreakdownItem";
 import { SetupScreen } from "@/src/components/SetupScreen";
 import { commonStyles } from "@/src/constants/styles.common";
 import { overviewScreenStyles as styles } from "@/src/constants/styles.screens";
@@ -60,6 +59,72 @@ export default function OverviewScreen() {
 
   const chartColors = colors.chartColors as string[];
 
+  const renderSection = (
+    title: string,
+    items: Array<{ name: string; percent: number }>,
+  ) => {
+    if (items.length === 0) return null;
+
+    return (
+      <View
+        style={[
+          styles.section,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
+        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+          {title}
+        </Text>
+
+        <View
+          style={{
+            height: 12,
+            borderRadius: 999,
+            overflow: "hidden",
+            backgroundColor: colors.secondary,
+            flexDirection: "row",
+            marginTop: 8,
+          }}
+        >
+          {items.map((item, i) => (
+            <View
+              key={`${title}-${item.name}`}
+              style={{
+                flex: Math.max(item.percent, 0.01),
+                backgroundColor:
+                  chartColors[i % chartColors.length] ?? "#8a79ab",
+                borderRightWidth: i < items.length - 1 ? 2 : 0,
+                borderRightColor: colors.card,
+              }}
+            />
+          ))}
+        </View>
+
+        <View style={{ marginTop: 10, gap: 8 }}>
+          {items.map((item, i) => (
+            <View key={`${title}-row-${item.name}`} style={styles.keyRow}>
+              <View
+                style={[
+                  styles.keyDot,
+                  {
+                    backgroundColor:
+                      chartColors[i % chartColors.length] ?? "#8a79ab",
+                  },
+                ]}
+              />
+              <Text
+                style={[styles.keyText, { color: colors.foreground }]}
+                numberOfLines={1}
+              >
+                {item.name} · {item.percent.toFixed(1)}%
+              </Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    );
+  };
+
   return (
     <ScrollView
       style={[commonStyles.scroll, { backgroundColor: colors.background }]}
@@ -79,9 +144,9 @@ export default function OverviewScreen() {
       }
     >
       <View style={styles.header}>
-        <Text style={[styles.greeting, { color: colors.mutedForeground }]}>
+        {/* <Text style={[styles.greeting, { color: colors.mutedForeground }]}>
           WakaDash
-        </Text>
+        </Text> */}
         <Text style={[styles.title, { color: colors.foreground }]}>
           Overview
         </Text>
@@ -125,7 +190,7 @@ export default function OverviewScreen() {
                   { color: colors.primaryForeground + "CC" },
                 ]}
               >
-                {topLang.name} · {topLang.text}
+                Top: {topLang.name} ({topLang.text})
               </Text>
             ) : null}
           </View>
@@ -141,74 +206,28 @@ export default function OverviewScreen() {
               subtitle={topProject?.text}
             />
           </View>
-          {/* Languages */}
-          {(today?.languages?.length ?? 0) > 0 && (
-            <View
-              style={[
-                styles.section,
-                { backgroundColor: colors.card, borderColor: colors.border },
-              ]}
-            >
-              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-                Languages
-              </Text>
-              {today!.languages.slice(0, 4).map((item, i) => (
-                <BreakdownItem
-                  key={item.name}
-                  name={item.name}
-                  text={item.text}
-                  percent={item.percent}
-                  color={chartColors[i % chartColors.length] ?? "#8a79ab"}
-                  index={i}
-                />
-              ))}
-            </View>
+
+       
+          {renderSection(
+            "Languages",
+            (today?.languages ?? []).slice(0, 4).map((item) => ({
+              name: item.name,
+              percent: item.percent,
+            })),
           )}
-          {/* Editors */}
-          {(today?.editors?.length ?? 0) > 0 && (
-            <View
-              style={[
-                styles.section,
-                { backgroundColor: colors.card, borderColor: colors.border },
-              ]}
-            >
-              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-                Editors
-              </Text>
-              {today!.editors.slice(0, 4).map((item, i) => (
-                <BreakdownItem
-                  key={item.name}
-                  name={item.name}
-                  text={item.text}
-                  percent={item.percent}
-                  color={chartColors[i % chartColors.length] ?? "#8a79ab"}
-                  index={i}
-                />
-              ))}
-            </View>
+          {renderSection(
+            "Editors",
+            (today?.editors ?? []).slice(0, 4).map((item) => ({
+              name: item.name,
+              percent: item.percent,
+            })),
           )}
-          {/* Operating Systems */}
-          {(today?.operating_systems?.length ?? 0) > 0 && (
-            <View
-              style={[
-                styles.section,
-                { backgroundColor: colors.card, borderColor: colors.border },
-              ]}
-            >
-              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-                Operating Systems
-              </Text>
-              {today!.operating_systems.slice(0, 4).map((item, i) => (
-                <BreakdownItem
-                  key={item.name}
-                  name={item.name}
-                  text={item.text}
-                  percent={item.percent}
-                  color={chartColors[i % chartColors.length] ?? "#8a79ab"}
-                  index={i}
-                />
-              ))}
-            </View>
+          {renderSection(
+            "Operating Systems",
+            (today?.operating_systems ?? []).slice(0, 4).map((item) => ({
+              name: item.name,
+              percent: item.percent,
+            })),
           )}
           <View
             style={[

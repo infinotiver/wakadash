@@ -1,5 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { wakatimeApi } from "@/src/api/wakatime";
+import type { WakaUser } from "@/src/types/wakatime";
 
 const STORAGE_KEY = "wakatime_api_key";
 const CUSTOM_URL_KEY = "wakatime_custom_url";
@@ -13,6 +15,7 @@ interface WakaTimeContextValue {
   clearApiKey: () => Promise<void>;
   setCustomApiUrl: (url: string) => Promise<void>;
   clearCustomApiUrl: () => Promise<void>;
+  fetchUser: () => Promise<WakaUser>;
 }
 
 const WakaTimeContext = createContext<WakaTimeContextValue | null>(null);
@@ -57,6 +60,11 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
     setCustomApiUrlState(null);
   };
 
+  const fetchUser = async () => {
+    if (!apiKey) throw new Error("API key not configured");
+    return wakatimeApi.getUser(apiKey, customApiUrl ?? undefined);
+  };
+
   return (
     <WakaTimeContext.Provider
       value={{
@@ -68,6 +76,7 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
         clearApiKey,
         setCustomApiUrl,
         clearCustomApiUrl,
+        fetchUser,
       }}
     >
       {children}

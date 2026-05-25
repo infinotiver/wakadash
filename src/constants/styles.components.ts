@@ -46,20 +46,17 @@ export const breakdownItemStyles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
   },
-  name: {
+  meta: {
     flex: 1,
+    gap: 2,
+  },
+  name: {
     fontSize: FONT_SIZES.lg,
     fontFamily: "Inter_500Medium",
   },
   time: {
     fontSize: FONT_SIZES.sm,
     fontFamily: "Inter_400Regular",
-  },
-  percent: {
-    fontSize: FONT_SIZES.sm,
-    fontFamily: "Inter_500Medium",
-    width: 44,
-    textAlign: "right",
   },
   track: {
     height: 4,

@@ -22,6 +22,21 @@ export const overviewScreenStyles = StyleSheet.create({
   row: { flexDirection: "row", gap: SPACING.md },
   section: commonStyles.section,
   sectionTitle: typographies.sectionTitle,
+  keyRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: SPACING.sm,
+  },
+  keyDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  keyText: {
+    flex: 1,
+    fontSize: FONT_SIZES.md,
+    fontFamily: "Inter_500Medium",
+  },
   empty: typographies.body,
   errorCard: {
     borderRadius: RADIUS.lg,
@@ -106,6 +121,8 @@ export const historyScreenStyles = StyleSheet.create({
 export const breakdownScreenStyles = StyleSheet.create({
   content: commonStyles.screenContent,
   title: typographies.pageTitle,
+  section: commonStyles.section,
+  sectionTitle: typographies.sectionTitle,
   pills: { flexDirection: "row", gap: SPACING.md },
   pill: {
     paddingHorizontal: SPACING.lg,
@@ -185,6 +202,21 @@ export const breakdownScreenStyles = StyleSheet.create({
     borderWidth: 1,
   },
   catText: {
+    fontSize: FONT_SIZES.md,
+    fontFamily: "Inter_500Medium",
+  },
+  keyRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: SPACING.sm,
+  },
+  keyDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  keyText: {
+    flex: 1,
     fontSize: FONT_SIZES.md,
     fontFamily: "Inter_500Medium",
   },
@@ -277,11 +309,17 @@ export const settingsScreenStyles = StyleSheet.create({
   keyRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: SPACING.lg - 6,
+    gap: SPACING.sm,
+  },
+  keyDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   keyText: {
     flex: 1,
     fontSize: FONT_SIZES.md,
+    fontFamily: "Inter_500Medium",
   },
   editBtn: {
     padding: SPACING.md,
@@ -339,6 +377,10 @@ export const settingsScreenStyles = StyleSheet.create({
   creditLabel: {
     fontSize: FONT_SIZES.md,
     fontFamily: "Inter_400Regular",
+  },
+  creditValue: {
+    fontSize: FONT_SIZES.md,
+    fontFamily: "Inter_600SemiBold",
   },
 });
 

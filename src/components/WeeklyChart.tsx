@@ -1,135 +1,157 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Animated, Pressable, Text, View } from "react-native";
+import React, { useMemo, useState } from "react";
+import { Pressable, Text, View } from "react-native";
 import { useColors } from "@/src/hooks/useColors";
-import type { WakaSummaryDay } from "@/src/context/WakaTimeContext";
+import type { WakaSummaryDay } from "@/src/types/wakatime";
 import { weeklyChartStyles as styles } from "@/src/constants/styles.components";
+
 interface Props {
   days: WakaSummaryDay[];
 }
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+type ChartItem = {
+  seconds: number;
+  percent: number;
+  label: string;
+  dateLabel: string;
+  frontColor: string;
+};
+
 export function WeeklyChart({ days }: Props) {
   const colors = useColors();
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
-  const secondsList = days.map((d) => d.grand_total?.total_seconds ?? 0);
-  const maxSeconds = Math.max(1, ...secondsList);
-  const todayStr = new Date().toISOString().split("T")[0];
+  const formatExactTime = (totalSeconds: number) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = Math.floor(totalSeconds % 60);
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m${seconds > 0 ? ` ${seconds}s` : ""}`;
+    }
+
+    if (minutes > 0) {
+      return `${minutes}m${seconds > 0 ? ` ${seconds}s` : ""}`;
+    }
+
+    return `${seconds}s`;
+  };
+
+  const formatDayLabel = (date: string) =>
+    new Date(date).toLocaleDateString(undefined, {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+
+  const maxSeconds = useMemo(
+    () => Math.max(1, ...days.map((d) => d.grand_total?.total_seconds ?? 0)),
+    [days],
+  );
+
+  const data: ChartItem[] = useMemo(
+    () =>
+      days.map((day, index) => {
+        const seconds = day.grand_total?.total_seconds ?? 0;
+        const percent = seconds / maxSeconds;
+        const dayDate = new Date(day.range?.date ?? "");
+        const label = DAY_LABELS[dayDate.getDay()] ?? "—";
+        const isActive = activeIndex === index;
+        const dateLabel = day.range?.date
+          ? formatDayLabel(day.range.date)
+          : "Unknown date";
+
+        return {
+          seconds,
+          percent,
+          label,
+          dateLabel,
+          frontColor: isActive ? colors.primary : colors.primary + "55",
+        };
+      }),
+    [activeIndex, colors.primary, days, maxSeconds],
+  );
+
+  const activeDay = activeIndex !== null ? days[activeIndex] : undefined;
+  const activeSeconds = activeDay?.grand_total?.total_seconds ?? 0;
+  const activeDateLabel = activeDay?.range?.date
+    ? formatDayLabel(activeDay.range.date)
+    : "Hover a bar";
+  const activeDayLabel = activeIndex !== null ? data[activeIndex]?.label : "";
 
   return (
     <View style={styles.container}>
       <View style={styles.bars}>
-        {days.map((day, i) => {
-          const seconds = secondsList[i];
-          const ratio = seconds / maxSeconds;
-          const dayDate = new Date(day.range?.date ?? "");
-          const label = DAY_LABELS[dayDate.getDay()] ?? "—";
-          const isToday = day.range?.date === todayStr;
+        {data.map((item, index) => {
+          const isActive = activeIndex === index;
+          const heightPercent = Math.max(8, Math.round(item.percent * 100));
 
           return (
-            <BarItem
-              key={day.range?.date ?? i}
-              ratio={ratio}
-              label={label}
-              hours={seconds / 3600}
-              isToday={isToday}
-              color={colors.primary}
-              textColor={colors.mutedForeground}
-              activeTextColor={colors.primary}
-              index={i}
-            />
+            <Pressable
+              key={days[index]?.range?.date ?? index}
+              style={styles.barCol}
+              onHoverIn={() => setActiveIndex(index)}
+              onHoverOut={() => setActiveIndex(null)}
+              onPressIn={() => setActiveIndex(index)}
+              onPressOut={() => setActiveIndex(null)}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.label}, ${item.dateLabel}, ${formatExactTime(item.seconds)}`}
+            >
+              <View style={styles.barTrack}>
+                <View
+                  style={[
+                    styles.barFill,
+                    {
+                      height: `${heightPercent}%`,
+                      backgroundColor: isActive
+                        ? colors.primary
+                        : item.frontColor,
+                      opacity: isActive ? 1 : 0.85,
+                    },
+                  ]}
+                />
+              </View>
+              <Text
+                style={[
+                  styles.dayLabel,
+                  {
+                    color: isActive ? colors.primary : colors.mutedForeground,
+                    fontFamily: isActive
+                      ? "Inter_600SemiBold"
+                      : "Inter_400Regular",
+                  },
+                ]}
+              >
+                {item.label}
+              </Text>
+            </Pressable>
           );
         })}
       </View>
-    </View>
-  );
-}
-
-function BarItem({
-  ratio,
-  label,
-  hours,
-  isToday,
-  color,
-  textColor,
-  activeTextColor,
-  index,
-}: {
-  ratio: number;
-  label: string;
-  hours: number;
-  isToday: boolean;
-  color: string;
-  textColor: string;
-  activeTextColor: string;
-  index: number;
-}) {
-  const anim = useRef(new Animated.Value(0)).current;
-  const [active, setActive] = useState(false);
-
-  useEffect(() => {
-    Animated.timing(anim, {
-      toValue: ratio,
-      duration: 700,
-      delay: index * 50,
-      useNativeDriver: false,
-    }).start();
-  }, [ratio, index]);
-
-  const height = anim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["2%", "100%"],
-  });
-
-  const h = Math.floor(hours);
-  const m = Math.floor((hours - h) * 60);
-  const tooltip =
-    hours > 0 ? (h > 0 ? `${h}h${m > 0 ? `${m}m` : ""}` : `${m}m`) : "";
-
-  const showLabel = active && hours > 0;
-
-  return (
-    <Pressable
-      style={styles.barCol}
-      onHoverIn={() => setActive(true)}
-      onHoverOut={() => setActive(false)}
-      onPressIn={() => setActive(true)}
-      onPressOut={() => setActive(false)}
-    >
-      <Text
-        style={[
-          styles.tooltip,
-          {
-            color: isToday ? activeTextColor : textColor,
-            opacity: showLabel ? 1 : 0,
-          },
-        ]}
-        numberOfLines={1}
+      <View
+        style={{
+          marginTop: 12,
+          paddingHorizontal: 12,
+          paddingVertical: 10,
+          
+        }}
       >
-        {tooltip}
-      </Text>
-      <View style={styles.barTrack}>
-        <Animated.View
-          style={[
-            styles.barFill,
-            {
-              height,
-              backgroundColor: active ? color : isToday ? color : color + "55",
-            },
-          ]}
-        />
+        
+        <Text
+          style={{
+            marginTop: 4,
+            color: colors.mutedForeground,
+            fontSize: 12,
+            textAlign: "center",
+            fontFamily: "Inter_400Regular",
+          }}
+        >
+          {activeIndex !== null
+            ? `${activeDateLabel} • ${formatExactTime(activeSeconds)}`
+            : "hover a bar to see date and exact time"}
+        </Text>
       </View>
-      <Text
-        style={[
-          styles.dayLabel,
-          {
-            color: isToday ? activeTextColor : textColor,
-            fontFamily: isToday ? "Inter_600SemiBold" : "Inter_400Regular",
-          },
-        ]}
-      >
-        {label}
-      </Text>
-    </Pressable>
+    </View>
   );
 }

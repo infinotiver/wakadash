@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Feather } from "@expo/vector-icons";
 import { useColors } from "@/src/hooks/useColors";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
+import type { WakaUser } from "@/src/types/wakatime";
 import { commonStyles as sharedStyles } from "@/src/constants/styles.common";
 import { settingsScreenStyles as styles } from "@/src/constants/styles.screens";
 
@@ -128,8 +129,8 @@ export default function SettingsScreen() {
     );
   }
 
-  const user = userQ.data;
-  const maskedKey = apiKey ? `${apiKey.slice(0, 8)}...${apiKey.slice(-4)}` : "";
+  const user = userQ.data as WakaUser | undefined;
+  const maskedKey = apiKey ? `${apiKey.slice(0, 4)}...${apiKey.slice(-4)}` : "";
 
   return (
     <ScrollView
@@ -171,7 +172,7 @@ export default function SettingsScreen() {
             </Text>
             <Text style={[styles.username, { color: colors.mutedForeground }]}>
               @{user.username}
-            </Text>
+              </Text>
             {user.location ? (
               <View style={styles.locationRow}>
                 <Feather
