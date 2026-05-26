@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { useColors } from "@/src/hooks/useColors";
-import { statCardStyles as styles } from "@/src/constants/styles.components";
+import { commonStyles, t } from "@/src/constants/styles.common";
 
 interface StatCardProps {
   label: string;
@@ -22,7 +22,7 @@ export function StatCard({
   return (
     <View
       style={[
-        styles.card,
+        commonStyles.card,
         {
           backgroundColor: accent ? colors.primary : colors.card,
           borderColor: colors.border,
@@ -32,7 +32,7 @@ export function StatCard({
     >
       <Text
         style={[
-          styles.label,
+          t.label,
           { color: accent ? colors.primaryForeground : colors.mutedForeground },
         ]}
         numberOfLines={1}
@@ -41,7 +41,7 @@ export function StatCard({
       </Text>
       <Text
         style={[
-          styles.value,
+          t.value,
           { color: accent ? colors.primaryForeground : colors.foreground },
         ]}
         numberOfLines={1}
@@ -52,7 +52,7 @@ export function StatCard({
       {subtitle ? (
         <Text
           style={[
-            styles.subtitle,
+            t.caption,
             {
               color: accent
                 ? colors.primaryForeground + "BB"

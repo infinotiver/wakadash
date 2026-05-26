@@ -8,9 +8,9 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useQuery } from "@tanstack/react-query";
 import { useColors } from "@/src/hooks/useColors";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
+import { HorizontalBreakdownChart } from "@/src/components/HorizontalBreakdownChart";
 import { StatCard } from "@/src/components/StatCard";
 import { WeeklyChart } from "@/src/components/WeeklyChart";
 import { SetupScreen } from "@/src/components/SetupScreen";
@@ -29,6 +29,7 @@ export default function OverviewScreen() {
   const todayQ = useTodaySummary();
   const weekQ = useWeekSummaries();
   const allTimeSinceTodayQ = useAllTimeSinceToday();
+
   const refetch = useCallback(async () => {
     await Promise.all([todayQ.refetch(), weekQ.refetch()]);
   }, [todayQ, weekQ]);
@@ -38,26 +39,24 @@ export default function OverviewScreen() {
   const today = todayQ.data;
   const allTimeSinceToday = allTimeSinceTodayQ.data;
   const week = weekQ.data ?? [];
-
   const topLang = today?.languages?.[0];
   const topProject = today?.projects?.[0];
 
   const weekTotal = week.reduce(
-    (s, d) => s + (d.grand_total?.total_seconds ?? 0),
+    (sum, day) => sum + (day.grand_total?.total_seconds ?? 0),
     0,
   );
   const weekAvg = week.length ? weekTotal / week.length : 0;
-
-  function fmtSeconds(s: number) {
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    if (h > 0) return `${h}h ${m}m`;
-    return `${m}m`;
-  }
-
+  const chartColors = colors.chartColors as string[];
   const loading = todayQ.isLoading && weekQ.isLoading;
 
-  const chartColors = colors.chartColors as string[];
+  function fmtSeconds(seconds: number) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    return `${minutes}m`;
+  }
 
   const renderSection = (
     title: string,
@@ -76,50 +75,20 @@ export default function OverviewScreen() {
           {title}
         </Text>
 
-        <View
-          style={{
-            height: 12,
-            borderRadius: 999,
-            overflow: "hidden",
-            backgroundColor: colors.secondary,
-            flexDirection: "row",
-            marginTop: 8,
-          }}
-        >
-          {items.map((item, i) => (
-            <View
-              key={`${title}-${item.name}`}
-              style={{
-                flex: Math.max(item.percent, 0.01),
-                backgroundColor:
-                  chartColors[i % chartColors.length] ?? "#8a79ab",
-                borderRightWidth: i < items.length - 1 ? 2 : 0,
-                borderRightColor: colors.card,
-              }}
-            />
-          ))}
-        </View>
-
-        <View style={{ marginTop: 10, gap: 8 }}>
-          {items.map((item, i) => (
-            <View key={`${title}-row-${item.name}`} style={styles.keyRow}>
-              <View
-                style={[
-                  styles.keyDot,
-                  {
-                    backgroundColor:
-                      chartColors[i % chartColors.length] ?? "#8a79ab",
-                  },
-                ]}
-              />
-              <Text
-                style={[styles.keyText, { color: colors.foreground }]}
-                numberOfLines={1}
-              >
-                {item.name} · {item.percent.toFixed(1)}%
-              </Text>
-            </View>
-          ))}
+        <View style={{ marginTop: 8 }}>
+          <HorizontalBreakdownChart
+            items={items.map((item, index) => ({
+              key: `${title}-${item.name}`,
+              label: item.name,
+              percent: item.percent,
+              secondaryText: `${item.percent.toFixed(1)}%`,
+              color: chartColors[index % chartColors.length] ?? "#8a79ab",
+            }))}
+            textColor={colors.foreground}
+            mutedTextColor={colors.mutedForeground}
+            trackColor={colors.secondary}
+            separatorColor={colors.card}
+          />
         </View>
       </View>
     );
@@ -144,9 +113,6 @@ export default function OverviewScreen() {
       }
     >
       <View style={styles.header}>
-        {/* <Text style={[styles.greeting, { color: colors.mutedForeground }]}>
-          WakaDash
-        </Text> */}
         <Text style={[styles.title, { color: colors.foreground }]}>
           Overview
         </Text>
@@ -173,7 +139,7 @@ export default function OverviewScreen() {
             <Text
               style={[
                 styles.heroLabel,
-                { color: colors.primaryForeground + "AA" },
+                { color: `${colors.primaryForeground}AA` },
               ]}
             >
               Today
@@ -183,31 +149,24 @@ export default function OverviewScreen() {
             >
               {today?.grand_total?.text ?? "0 mins"}
             </Text>
-            {topLang ? (
-              <Text
-                style={[
-                  styles.heroSub,
-                  { color: colors.primaryForeground + "CC" },
-                ]}
-              >
-                Top: {topLang.name} ({topLang.text})
-              </Text>
-            ) : null}
-          </View>
-          <View style={styles.row}>
-            <StatCard
-              label="Weekly avg"
-              value={fmtSeconds(weekAvg)}
-              subtitle="per day"
-            />
-            <StatCard
-              label="Active project"
-              value={topProject?.name ?? "—"}
-              subtitle={topProject?.text}
-            />
+            <Text style={[styles.heroSub, { color: colors.primaryForeground }]}>
+              Weekly avg: {fmtSeconds(weekAvg)}
+            </Text>
           </View>
 
-       
+          {/* <View style={styles.row}>
+            <StatCard
+              label="Top lang"
+              value={topLang?.name ?? "-"}
+              subtitle={topLang?.text}
+            />
+            <StatCard
+              label="Top project"
+              value={topProject?.name ?? "-"}
+              subtitle={topProject?.text}
+            />
+          </View> */}
+
           {renderSection(
             "Languages",
             (today?.languages ?? []).slice(0, 4).map((item) => ({
@@ -223,12 +182,20 @@ export default function OverviewScreen() {
             })),
           )}
           {renderSection(
+            "Projects",
+            (today?.projects ?? []).slice(0, 4).map((item) => ({
+              name: item.name,
+              percent: item.percent,
+            })),
+          )}
+          {renderSection(
             "Operating Systems",
             (today?.operating_systems ?? []).slice(0, 4).map((item) => ({
               name: item.name,
               percent: item.percent,
             })),
           )}
+
           <View
             style={[
               styles.section,
@@ -247,7 +214,7 @@ export default function OverviewScreen() {
             )}
           </View>
 
-          {allTimeSinceToday && (
+          {allTimeSinceToday ? (
             <View
               style={[
                 styles.section,
@@ -265,7 +232,7 @@ export default function OverviewScreen() {
                     Total Time
                   </Text>
                   <Text style={[styles.heroSub, { color: colors.foreground }]}>
-                    {allTimeSinceToday.text ?? "—"}
+                    {allTimeSinceToday.text ?? "-"}
                   </Text>
                 </View>
                 <View style={styles.row}>
@@ -290,7 +257,7 @@ export default function OverviewScreen() {
                 </View>
               </View>
             </View>
-          )}
+          ) : null}
         </>
       )}
     </ScrollView>

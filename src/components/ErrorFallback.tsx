@@ -6,13 +6,14 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/src/hooks/useColors";
-import { commonStyles, typographies } from "@/src/constants/styles.common";
+import { commonStyles, SPACING, t } from "@/src/constants/styles.common";
 export type ErrorFallbackProps = {
   error: Error;
   resetError: () => void;
@@ -157,7 +158,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
                 >
                   <Text
                     style={[
-                      commonStyles.errorText,
+                      styles.errorText,
                       {
                         color: colors.foreground,
                         fontFamily: monoFont,
@@ -176,3 +177,23 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  content: {
+    alignItems: "center",
+    gap: SPACING.lg,
+  },
+  title: {
+    ...t.pageTitle,
+    textAlign: "center",
+  },
+  message: {
+    ...t.body,
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  errorText: {
+    ...t.caption,
+    lineHeight: 18,
+  },
+});

@@ -11,13 +11,14 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import { useColors } from "@/src/hooks/useColors";
-import { useWakaTime } from "@/src/context/WakaTimeContext";
-import { useWakaStats } from "@/src/hooks/useWakaTimeQueries";
+import { HorizontalBreakdownChart } from "@/src/components/HorizontalBreakdownChart";
 import { SetupScreen } from "@/src/components/SetupScreen";
 import colors from "@/src/constants/colors";
 import { commonStyles as sharedStyles } from "@/src/constants/styles.common";
 import { breakdownScreenStyles as styles } from "@/src/constants/styles.screens";
+import { useColors } from "@/src/hooks/useColors";
+import { useWakaTime } from "@/src/context/WakaTimeContext";
+import { useWakaStats } from "@/src/hooks/useWakaTimeQueries";
 import type { WakaEntry, WakaStats } from "@/src/types/wakatime";
 
 type Range = "last_7_days" | "last_30_days";
@@ -34,10 +35,6 @@ const CATEGORIES: { label: string; value: Category }[] = [
   { label: "Projects", value: "projects" },
   { label: "OS", value: "operating_systems" },
 ];
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 
 function StatTile({
   label,
@@ -56,7 +53,7 @@ function StatTile({
         styles.summaryItem,
         {
           backgroundColor: c.card,
-          borderColor: accent ? c.primary + "55" : c.border,
+          borderColor: accent ? `${c.primary}55` : c.border,
         },
       ]}
     >
@@ -98,143 +95,22 @@ function SectionHeader({
   );
 }
 
-function SegmentBar({
-  items,
-  chartColors,
-  cardColor,
-}: {
-  items: WakaEntry[];
-  chartColors: string[];
-  cardColor: string;
-}) {
-  return (
-    <View
-      style={{
-        height: 10,
-        borderRadius: 999,
-        overflow: "hidden",
-        flexDirection: "row",
-        marginBottom: 12,
-      }}
-    >
-      {items.slice(0, 10).map((item, i) => (
-        <View
-          key={item.name}
-          style={{
-            flex: Math.max(item.percent, 0.5),
-            backgroundColor: chartColors[i % chartColors.length] ?? "#8a79ab",
-            borderRightWidth: i < Math.min(items.length, 10) - 1 ? 2 : 0,
-            borderRightColor: cardColor,
-          }}
-        />
-      ))}
-    </View>
-  );
-}
-
-function EntryRow({
-  item,
-  index,
-  chartColors,
-  colors: c,
-}: {
-  item: WakaEntry;
-  index: number;
-  chartColors: string[];
-  colors: ReturnType<typeof useColors>;
-}) {
-  const dotColor = chartColors[index % chartColors.length] ?? "#8a79ab";
-  return (
-    <View style={{ gap: 4 }}>
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 8,
-        }}
-      >
-        <View
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: 4,
-            backgroundColor: dotColor,
-          }}
-        />
-        <Text
-          style={{
-            flex: 1,
-            fontSize: 13,
-            color: c.foreground,
-            fontFamily: "Inter_400Regular",
-          }}
-          numberOfLines={1}
-        >
-          {item.name}
-        </Text>
-        <Text
-          style={{
-            fontSize: 12,
-            color: c.mutedForeground,
-            fontFamily: "Inter_400Regular",
-            marginRight: 6,
-          }}
-        >
-          {item.text}
-        </Text>
-        <Text
-          style={{
-            fontSize: 12,
-            color: c.mutedForeground,
-            width: 40,
-            textAlign: "right",
-          }}
-        >
-          {item.percent.toFixed(1)}%
-        </Text>
-      </View>
-      {/* Per-row mini bar */}
-      <View
-        style={{
-          marginLeft: 16,
-          height: 3,
-          backgroundColor: c.secondary,
-          borderRadius: 2,
-        }}
-      >
-        <View
-          style={{
-            width: `${item.percent}%`,
-            height: 3,
-            backgroundColor: dotColor + "99",
-            borderRadius: 2,
-          }}
-        />
-      </View>
-    </View>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Screen
-// ---------------------------------------------------------------------------
-
 export default function BreakdownScreen() {
   const c = useColors();
   const insets = useSafeAreaInsets();
   const { isConfigured } = useWakaTime();
   const [range, setRange] = useState<Range>("last_7_days");
   const [category, setCategory] = useState<Category>("languages");
-
   const statsQ = useWakaStats(range);
 
   if (!isConfigured) return <SetupScreen />;
 
-  const stats = statsQ.data as (WakaStats & Record<string, any>) | undefined;
-  const items: WakaEntry[] = stats?.[category] ?? [];
-  const visibleItems = items.filter((it) => (it?.percent ?? 0) >= 1);
+  const stats = statsQ.data as
+    | (WakaStats & Record<string, unknown>)
+    | undefined;
+  const items = (stats?.[category] as WakaEntry[] | undefined) ?? [];
+  const visibleItems = items.filter((item) => (item?.percent ?? 0) >= 1);
   const showProError = statsQ.isError && range === "last_30_days";
-
   const chartColors =
     Platform.OS === "web"
       ? colors.light.chartColors
@@ -260,19 +136,18 @@ export default function BreakdownScreen() {
     >
       <Text style={[styles.title, { color: c.foreground }]}>Breakdown</Text>
 
-      {/* Range toggle */}
       <View style={styles.pills}>
-        {RANGES.map((r) => (
+        {RANGES.map((item) => (
           <TouchableOpacity
-            key={r.value}
+            key={item.value}
             style={[
               styles.pill,
               {
-                backgroundColor: range === r.value ? c.primary : c.card,
-                borderColor: range === r.value ? c.primary : c.border,
+                backgroundColor: range === item.value ? c.primary : c.card,
+                borderColor: range === item.value ? c.primary : c.border,
               },
             ]}
-            onPress={() => setRange(r.value)}
+            onPress={() => setRange(item.value)}
             activeOpacity={0.8}
           >
             <Text
@@ -280,26 +155,27 @@ export default function BreakdownScreen() {
                 styles.pillText,
                 {
                   color:
-                    range === r.value ? c.primaryForeground : c.mutedForeground,
+                    range === item.value
+                      ? c.primaryForeground
+                      : c.mutedForeground,
                 },
               ]}
             >
-              {r.label}
+              {item.label}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* Pro upsell */}
-      {showProError && (
+      {showProError ? (
         <View
           style={[
             styles.proCard,
-            { backgroundColor: c.card, borderColor: c.primary + "44" },
+            { backgroundColor: c.card, borderColor: `${c.primary}44` },
           ]}
         >
           <View
-            style={[styles.proBadge, { backgroundColor: c.primary + "18" }]}
+            style={[styles.proBadge, { backgroundColor: `${c.primary}18` }]}
           >
             <Feather name="zap" size={13} color={c.primary} />
             <Text style={[styles.proLabel, { color: c.primary }]}>
@@ -320,28 +196,24 @@ export default function BreakdownScreen() {
             <Feather name="external-link" size={13} color={c.primary} />
           </TouchableOpacity>
         </View>
-      )}
+      ) : null}
 
-      {statsQ.isLoading && (
+      {statsQ.isLoading ? (
         <ActivityIndicator color={c.primary} style={{ marginTop: 40 }} />
-      )}
+      ) : null}
 
-      {statsQ.isError && !showProError && (
+      {statsQ.isError && !showProError ? (
         <Text style={[styles.error, { color: c.destructive }]}>
           {statsQ.error instanceof Error
             ? statsQ.error.message
             : "Failed to load"}
         </Text>
-      )}
+      ) : null}
 
-      {!showProError && stats && (
+      {!showProError && stats ? (
         <>
-          {/* ----------------------------------------------------------------
-              Summary tiles — two rows
-          ---------------------------------------------------------------- */}
           <SectionHeader title="Summary" colors={c} />
 
-          {/* Coding time row */}
           <View style={[styles.summaryRow, { marginBottom: 8 }]}>
             <StatTile
               label="Coding time"
@@ -355,7 +227,6 @@ export default function BreakdownScreen() {
             />
           </View>
 
-          {/* Including other language row */}
           <View style={[styles.summaryRow, { marginBottom: 8 }]}>
             <StatTile
               label="Total incl. other"
@@ -374,15 +245,14 @@ export default function BreakdownScreen() {
             />
           </View>
 
-          {/* Best day + days active */}
           <View style={[styles.summaryRow, { marginBottom: 16 }]}>
-            {stats.best_day && (
+            {stats.best_day ? (
               <StatTile
                 label="Best day"
                 value={stats.best_day.text}
                 colors={c}
               />
-            )}
+            ) : null}
             <StatTile
               label="Days tracked"
               value={
@@ -394,24 +264,21 @@ export default function BreakdownScreen() {
             />
           </View>
 
-          {/* ----------------------------------------------------------------
-              Category filter + list
-          ---------------------------------------------------------------- */}
           <SectionHeader title="Breakdown" colors={c} />
 
           <View style={[styles.catRow, { marginBottom: 12 }]}>
-            {CATEGORIES.map((cat) => (
+            {CATEGORIES.map((item) => (
               <TouchableOpacity
-                key={cat.value}
+                key={item.value}
                 style={[
-                  styles.catBtn,
+                  styles.pill,
                   {
                     backgroundColor:
-                      category === cat.value ? c.primary : c.secondary,
-                    borderColor: category === cat.value ? c.primary : c.border,
+                      category === item.value ? c.primary : c.secondary,
+                    borderColor: category === item.value ? c.primary : c.border,
                   },
                 ]}
-                onPress={() => setCategory(cat.value)}
+                onPress={() => setCategory(item.value)}
                 activeOpacity={0.8}
               >
                 <Text
@@ -419,13 +286,13 @@ export default function BreakdownScreen() {
                     styles.catText,
                     {
                       color:
-                        category === cat.value
+                        category === item.value
                           ? c.primaryForeground
                           : c.secondaryForeground,
                     },
                   ]}
                 >
-                  {cat.label}
+                  {item.label}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -442,28 +309,24 @@ export default function BreakdownScreen() {
                 No data
               </Text>
             ) : (
-              <>
-                <SegmentBar
-                  items={visibleItems}
-                  chartColors={chartColors}
-                  cardColor={c.card}
-                />
-                <View style={{ gap: 10 }}>
-                  {visibleItems.slice(0, 10).map((item, i) => (
-                    <EntryRow
-                      key={item.name}
-                      item={item}
-                      index={i}
-                      chartColors={chartColors}
-                      colors={c}
-                    />
-                  ))}
-                </View>
-              </>
+              <HorizontalBreakdownChart
+                items={visibleItems.slice(0, 10).map((item, index) => ({
+                  key: item.name,
+                  label: item.name,
+                  percent: item.percent,
+                  secondaryText: item.text,
+                  trailingText: `${item.percent.toFixed(1)}%`,
+                  color: chartColors[index % chartColors.length] ?? "#8a79ab",
+                }))}
+                textColor={c.foreground}
+                mutedTextColor={c.mutedForeground}
+                trackColor={c.secondary}
+                separatorColor={c.card}
+              />
             )}
           </View>
         </>
-      )}
+      ) : null}
     </ScrollView>
   );
 }

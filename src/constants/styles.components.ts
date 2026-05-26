@@ -1,77 +1,6 @@
 import { StyleSheet } from "react-native";
 import { SPACING, RADIUS, FONT_SIZES } from "./styles.common";
 
-/**
- * StatCard component styles
- */
-export const statCardStyles = StyleSheet.create({
-  card: {
-    borderRadius: RADIUS.lg,
-    padding: SPACING.lg,
-    borderWidth: 1,
-    gap: SPACING.xs,
-  },
-  label: {
-    fontSize: FONT_SIZES.xs,
-    fontFamily: "Inter_500Medium",
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-  },
-  value: {
-    fontSize: FONT_SIZES["5xl"],
-    fontFamily: "Inter_700Bold",
-    letterSpacing: -0.5,
-  },
-  subtitle: {
-    fontSize: FONT_SIZES.sm,
-    fontFamily: "Inter_400Regular",
-  },
-});
-
-/**
- * BreakdownItem component styles
- */
-export const breakdownItemStyles = StyleSheet.create({
-  container: {
-    gap: SPACING.sm,
-    marginBottom: SPACING.lg,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: SPACING.md,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  meta: {
-    flex: 1,
-    gap: 2,
-  },
-  name: {
-    fontSize: FONT_SIZES.lg,
-    fontFamily: "Inter_500Medium",
-  },
-  time: {
-    fontSize: FONT_SIZES.sm,
-    fontFamily: "Inter_400Regular",
-  },
-  track: {
-    height: 4,
-    borderRadius: 2,
-    overflow: "hidden",
-  },
-  fill: {
-    height: "100%",
-    borderRadius: 2,
-  },
-});
-
-/**
- * WeeklyChart component styles
- */
 export const weeklyChartStyles = StyleSheet.create({
   container: {
     width: "100%",
@@ -112,9 +41,6 @@ export const weeklyChartStyles = StyleSheet.create({
   },
 });
 
-/**
- * TabIcon component styles (for navigation)
- */
 export const tabIconStyles = StyleSheet.create({
   container: {
     width: 64,
@@ -128,12 +54,17 @@ export const tabIconStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  pill: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: SPACING.sm,
+    borderRadius: RADIUS.full,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.xs + 2,
+  },
   label: {
-    marginTop: SPACING.xs,
-    fontSize: FONT_SIZES.xs,
-    lineHeight: 14,
-    maxWidth: 64,
-    textAlign: "center",
+    fontSize: FONT_SIZES.base,
     fontFamily: "Inter_500Medium",
   },
 });
