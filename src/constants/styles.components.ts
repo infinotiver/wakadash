@@ -58,7 +58,7 @@ export const tabIconStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: SPACING.sm,
+    gap: SPACING.xs,
     borderRadius: RADIUS.full,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.xs + 2,

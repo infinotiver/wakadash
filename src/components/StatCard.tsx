@@ -4,7 +4,7 @@ import { useColors } from "@/src/hooks/useColors";
 import { commonStyles, t } from "@/src/constants/styles.common";
 
 interface StatCardProps {
-  label: string;
+  label?: string;
   value: string;
   subtitle?: string;
   accent?: boolean;
@@ -30,15 +30,19 @@ export function StatCard({
         },
       ]}
     >
-      <Text
-        style={[
-          t.label,
-          { color: accent ? colors.primaryForeground : colors.mutedForeground },
-        ]}
-        numberOfLines={1}
-      >
-        {label}
-      </Text>
+      {label ? (
+        <Text
+          style={[
+            t.label,
+            {
+              color: accent ? colors.primaryForeground : colors.mutedForeground,
+            },
+          ]}
+          numberOfLines={1}
+        >
+          {label}
+        </Text>
+      ) : null}
       <Text
         style={[
           t.value,

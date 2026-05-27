@@ -66,37 +66,8 @@ export const breakdownScreenStyles = StyleSheet.create({
     borderWidth: 1,
   },
   pillText: { fontSize: FONT_SIZES.md, fontFamily: "Inter_500Medium" },
-  proCard: {
-    ...commonStyles.card,
-    borderRadius: RADIUS.lg,
-    gap: SPACING.lg + 4,
-  },
-  proBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: SPACING.xs,
-    alignSelf: "flex-start",
-    paddingHorizontal: SPACING.md + 2,
-    paddingVertical: SPACING.xs,
-    borderRadius: RADIUS.full,
-  },
-  proLabel: { fontSize: FONT_SIZES.sm, fontFamily: "Inter_600SemiBold" },
-  proMessage: {
-    fontSize: FONT_SIZES.lg,
-    fontFamily: "Inter_400Regular",
-    lineHeight: 20,
-  },
-  proLink: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: SPACING.sm,
-    alignSelf: "flex-start",
-    paddingHorizontal: SPACING.lg - 2,
-    paddingVertical: SPACING.md,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-  },
-  proLinkText: { fontSize: FONT_SIZES.md, fontFamily: "Inter_500Medium" },
+  
+ 
   summaryRow: { flexDirection: "row", gap: SPACING.lg },
   summaryItem: {
     flex: 1,
@@ -192,15 +163,6 @@ export const settingsScreenStyles = StyleSheet.create({
   saveText: { fontSize: FONT_SIZES.md, fontFamily: "Inter_600SemiBold" },
   editBtn: { padding: SPACING.md, borderRadius: RADIUS.md },
   editSection: { gap: SPACING.lg - 6 },
-  creditRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: SPACING.md,
-    paddingTop: SPACING.lg - 6,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  creditLabel: t.body,
-  creditValue: { fontSize: FONT_SIZES.md, fontFamily: "Inter_600SemiBold" },
 });
 
 export const setupScreenStyles = StyleSheet.create({

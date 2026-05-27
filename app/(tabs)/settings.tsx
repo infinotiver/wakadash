@@ -16,7 +16,7 @@ import { Feather } from "@expo/vector-icons";
 import { useColors } from "@/src/hooks/useColors";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
 import type { WakaUser } from "@/src/types/wakatime";
-import { commonStyles as sharedStyles } from "@/src/constants/styles.common";
+import { commonStyles as sharedStyles, t } from "@/src/constants/styles.common";
 import { settingsScreenStyles as styles } from "@/src/constants/styles.screens";
 
 export default function SettingsScreen() {
@@ -172,7 +172,7 @@ export default function SettingsScreen() {
             </Text>
             <Text style={[styles.username, { color: colors.mutedForeground }]}>
               @{user.username}
-              </Text>
+            </Text>
             {user.location ? (
               <View style={styles.locationRow}>
                 <Feather
@@ -450,13 +450,9 @@ export default function SettingsScreen() {
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
           Credits
         </Text>
-        <View style={[styles.creditRow, { borderTopColor: colors.border }]}>
-          <Feather name="user" size={14} color={colors.mutedForeground} />
-          <Text style={[styles.creditLabel, { color: colors.mutedForeground }]}>
-            Made by
-          </Text>
-          <Text style={[styles.creditValue, { color: colors.foreground }]}>
-            Infinotiver
+        <View style={[sharedStyles.row, { borderTopColor: colors.border }]}>
+          <Text style={[t.body, { color: colors.foreground }]}>
+            made with love by infinotiver
           </Text>
         </View>
       </View>
