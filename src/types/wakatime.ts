@@ -78,6 +78,7 @@ export interface WakaSummaryDay {
   languages: WakaEntry[];
   editors: WakaEntry[];
   projects: WakaEntry[];
+  categories: WakaEntry[];
   operating_systems: WakaEntry[];
 }
 
