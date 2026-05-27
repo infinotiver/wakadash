@@ -21,7 +21,7 @@ import {
   useTodaySummary,
   useWeekSummaries,
 } from "@/src/hooks/useWakaTimeQueries";
-
+import { CategoryPieChart } from "@/src/components/CategoryPieChart";
 export default function OverviewScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -135,38 +135,30 @@ export default function OverviewScreen() {
         </View>
       ) : (
         <>
-          <View style={[styles.heroCard, { backgroundColor: colors.primary }]}>
-            <Text
-              style={[
-                styles.heroLabel,
-                { color: `${colors.primaryForeground}AA` },
-              ]}
-            >
-              Today
-            </Text>
-            <Text
-              style={[styles.heroTime, { color: colors.primaryForeground }]}
-            >
-              {today?.grand_total?.text ?? "0 mins"}
-            </Text>
-            <Text style={[styles.heroSub, { color: colors.primaryForeground }]}>
-              Weekly avg: {fmtSeconds(weekAvg)}
-            </Text>
-          </View>
-
-          {/* <View style={styles.row}>
+          {(today?.categories?.length ?? 0) > 0 && (
+            <View>
+              <CategoryPieChart
+                items={(today?.categories ?? []).slice(0, 5).map((item) => ({
+                  name: item.name,
+                  percent: item.percent,
+                  total_seconds: item.total_seconds,
+                  text: item.text,
+                }))}
+              />
+            </View>
+          )}
+          <View style={styles.row}>
             <StatCard
-              label="Top lang"
-              value={topLang?.name ?? "-"}
-              subtitle={topLang?.text}
+              label="Weekly avg"
+              value={fmtSeconds(weekAvg)}
+              subtitle="per day"
             />
             <StatCard
               label="Top project"
               value={topProject?.name ?? "-"}
               subtitle={topProject?.text}
             />
-          </View> */}
-
+          </View>
           {renderSection(
             "Languages",
             (today?.languages ?? []).slice(0, 4).map((item) => ({
@@ -188,6 +180,7 @@ export default function OverviewScreen() {
               percent: item.percent,
             })),
           )}
+
           {renderSection(
             "Operating Systems",
             (today?.operating_systems ?? []).slice(0, 4).map((item) => ({
