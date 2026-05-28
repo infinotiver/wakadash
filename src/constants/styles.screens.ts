@@ -22,39 +22,6 @@ export const overviewScreenStyles = StyleSheet.create({
   errorText: t.body,
 });
 
-export const historyScreenStyles = StyleSheet.create({
-  content: commonStyles.screenContent,
-  title: t.pageTitle,
-  sub: { ...t.pageSub, marginBottom: SPACING.xs },
-  list: { gap: SPACING.lg },
-  card: { ...commonStyles.card, borderRadius: RADIUS.xl, gap: SPACING.md },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  dayName: { fontSize: FONT_SIZES["2xl"], fontFamily: "Inter_600SemiBold" },
-  dateStr: {
-    fontSize: FONT_SIZES.sm,
-    fontFamily: "Inter_400Regular",
-    marginTop: SPACING.xs,
-  },
-  totalTime: t.value,
-  barTrack: { height: 6, borderRadius: RADIUS.sm, overflow: "hidden" },
-  barFill: { height: "100%", borderRadius: RADIUS.sm },
-  tags: { flexDirection: "row", flexWrap: "wrap", gap: SPACING.sm },
-  tag: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: SPACING.xs,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-    borderRadius: RADIUS.md,
-  },
-  tagText: { fontSize: FONT_SIZES.sm, fontFamily: "Inter_500Medium" },
-  error: t.body,
-});
-
 export const breakdownScreenStyles = StyleSheet.create({
   content: commonStyles.screenContent,
   title: t.pageTitle,
@@ -66,8 +33,7 @@ export const breakdownScreenStyles = StyleSheet.create({
     borderWidth: 1,
   },
   pillText: { fontSize: FONT_SIZES.md, fontFamily: "Inter_500Medium" },
-  
- 
+
   summaryRow: { flexDirection: "row", gap: SPACING.lg },
   summaryItem: {
     flex: 1,
