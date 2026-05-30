@@ -43,20 +43,8 @@ export function SplitBar({ left, right, height = 8 }: Props) {
         <View style={{ flex: 1, backgroundColor: c.primary + "33" }} />
       </View>
       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <Text
-          style={[
-            t.caption,
-            { color: c.primary, fontFamily: "Inter_500Medium" },
-          ]}
-        >
-          {left.displayValue}
-        </Text>
-        <Text
-          style={[
-            t.caption,
-            { color: c.mutedForeground, fontFamily: "Inter_500Medium" },
-          ]}
-        >
+        <Text style={[t.body, { color: c.primary }]}>{left.displayValue}</Text>
+        <Text style={[t.body, { color: c.mutedForeground }]}>
           {right.displayValue}
         </Text>
       </View>

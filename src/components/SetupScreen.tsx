@@ -1,18 +1,23 @@
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Platform,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
 import { useColors } from "@/src/hooks/useColors";
-import { commonStyles } from "@/src/constants/styles.common";
-import { setupScreenStyles as styles } from "@/src/constants/styles.screens";
+import {
+  commonStyles,
+  t,
+  SPACING,
+  RADIUS,
+  FONT_SIZES,
+} from "@/src/constants/styles.common";
 
 export function SetupScreen() {
   const colors = useColors();
@@ -23,21 +28,6 @@ export function SetupScreen() {
   const [error, setError] = useState<string | null>(null);
   const [show, setShow] = useState(false);
 
-  function getVerifyUrl(): string {
-    if (Platform.OS !== "web") {
-      return "https://api.wakatime.com/api/v1/users/current";
-    }
-    // On web, route through the shared proxy to avoid CORS.
-    // Expo dev runs on expo.<host>; the proxy lives at <host>.
-    const host =
-      typeof window !== "undefined"
-        ? window.location.host.replace(/^expo\./, "")
-        : (process.env.EXPO_PUBLIC_DOMAIN ?? "");
-    const proto =
-      typeof window !== "undefined" ? window.location.protocol : "https:";
-    return `${proto}//${host}/api/wakatime/users/current`;
-  }
-
   async function handleSave() {
     const trimmed = key.trim();
     if (!trimmed) return;
@@ -46,14 +36,13 @@ export function SetupScreen() {
     try {
       const encoded =
         typeof btoa !== "undefined"
-          ? btoa(trimmed)
-          : Buffer.from(trimmed).toString("base64");
-      const res = await fetch(getVerifyUrl(), {
+          ? btoa(trimmed + ":")
+          : Buffer.from(trimmed + ":").toString("base64");
+      const res = await fetch("https://api.wakatime.com/api/v1/users/current", {
         headers: { Authorization: `Basic ${encoded}` },
       });
-      if (res.status === 401)
-        throw new Error("Invalid API key. Check and try again.");
-      if (!res.ok) throw new Error("Could not verify key. Try again.");
+      if (res.status === 401) throw new Error("Invalid API key.");
+      if (!res.ok) throw new Error("Could not verify. Try again.");
       await setApiKey(trimmed);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
@@ -62,99 +51,143 @@ export function SetupScreen() {
     }
   }
 
+  const canSubmit = key.trim().length > 0 && !loading;
+
   return (
     <View
-      style={[
-        commonStyles.container,
-        styles.container,
-        {
-          backgroundColor: colors.background,
-          paddingTop: Platform.OS === "web" ? 67 : insets.top + 24,
-          paddingBottom: Platform.OS === "web" ? 34 : insets.bottom + 24,
-        },
-      ]}
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+        paddingTop: Platform.OS === "web" ? 80 : insets.top + 32,
+        paddingBottom: Platform.OS === "web" ? 40 : insets.bottom + 32,
+        paddingHorizontal: SPACING.xl + 4,
+      }}
     >
-      <View style={styles.iconWrap}>
-        <Feather name="clock" size={48} color={colors.primary} />
-      </View>
-      <Text style={[styles.title, { color: colors.foreground }]}>WakaTime</Text>
-      <Text style={[styles.sub, { color: colors.mutedForeground }]}>
-        Enter your WakaTime API key to get started. Find it at{" "}
-        <Text style={{ color: colors.primary }}>
-          wakatime.com/settings/api-key
-        </Text>
-      </Text>
-
-      <View
-        style={[
-          styles.inputRow,
-          {
-            backgroundColor: colors.card,
-            borderColor: error ? colors.destructive : colors.border,
-          },
-        ]}
-      >
-        <TextInput
-          style={[
-            styles.input,
-            { color: colors.foreground, fontFamily: "Inter_400Regular" },
-          ]}
-          placeholder="waka_..."
-          placeholderTextColor={colors.mutedForeground}
-          value={key}
-          onChangeText={(v) => {
-            setKey(v);
-            setError(null);
-          }}
-          secureTextEntry={!show}
-          autoCapitalize="none"
-          autoCorrect={false}
-          returnKeyType="done"
-          onSubmitEditing={handleSave}
-        />
-        <TouchableOpacity
-          onPress={() => setShow((s) => !s)}
-          style={styles.eyeBtn}
-        >
-          <Feather
-            name={show ? "eye-off" : "eye"}
-            size={18}
-            color={colors.mutedForeground}
-          />
-        </TouchableOpacity>
-      </View>
-
-      {error ? (
-        <Text style={[styles.error, { color: colors.destructive }]}>
-          {error}
-        </Text>
-      ) : null}
-
-      <TouchableOpacity
-        style={[
-          commonStyles.button,
-          {
-            backgroundColor: colors.primary,
-            opacity: loading || !key.trim() ? 0.5 : 1,
-          },
-        ]}
-        onPress={handleSave}
-        disabled={loading || !key.trim()}
-        activeOpacity={0.8}
-      >
-        {loading ? (
-          <ActivityIndicator color={colors.primaryForeground} />
-        ) : (
+      {/* Top wordmark */}
+      <View style={{ flex: 1, justifyContent: "center", gap: SPACING.xxl }}>
+        <View style={{ gap: SPACING.sm }}>
           <Text
-            style={[
-              commonStyles.buttonText,
-              { color: colors.primaryForeground },
-            ]}
+            style={{
+              fontSize: FONT_SIZES["8xl"],
+              fontFamily: "Inter_700Bold",
+              letterSpacing: -1.5,
+              color: colors.foreground,
+              lineHeight: FONT_SIZES["8xl"] * 1.1,
+            }}
           >
-            Connect
+            WakaDash
           </Text>
-        )}
-      </TouchableOpacity>
+          <Text style={[t.body, { color: colors.mutedForeground }]}>
+            Paste your API key to get started.
+          </Text>
+        </View>
+
+        <View style={{ gap: SPACING.md }}>
+          {/* Key input */}
+          <View
+            style={{
+              borderWidth: 1,
+              borderColor: error ? colors.destructive : colors.border,
+              borderRadius: RADIUS.lg,
+              backgroundColor: colors.card,
+              flexDirection: "row",
+              alignItems: "center",
+              height: 52,
+              paddingHorizontal: SPACING.lg,
+            }}
+          >
+            <TextInput
+              style={{
+                flex: 1,
+                fontSize: FONT_SIZES.md,
+                fontFamily: "Inter_400Regular",
+                color: colors.foreground,
+                height: "100%",
+              }}
+              placeholder="waka_xxxxxxxxxxxxxxxx"
+              placeholderTextColor={colors.mutedForeground}
+              value={key}
+              onChangeText={(v) => {
+                setKey(v);
+                setError(null);
+              }}
+              secureTextEntry={!show}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="done"
+              onSubmitEditing={handleSave}
+            />
+            <TouchableOpacity
+              onPress={() => setShow((s) => !s)}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Feather
+                name={show ? "eye-off" : "eye"}
+                size={16}
+                color={colors.mutedForeground}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Error */}
+          {error && (
+            <Text
+              style={[
+                t.caption,
+                { color: colors.destructive, paddingHorizontal: 2 },
+              ]}
+            >
+              {error}
+            </Text>
+          )}
+
+          {/* Connect button */}
+          <TouchableOpacity
+            onPress={handleSave}
+            disabled={!canSubmit}
+            activeOpacity={0.8}
+            style={{
+              height: 52,
+              borderRadius: RADIUS.lg,
+              backgroundColor: colors.primary,
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: canSubmit ? 1 : 0.4,
+            }}
+          >
+            {loading ? (
+              <ActivityIndicator color={colors.primaryForeground} />
+            ) : (
+              <Text
+                style={{
+                  fontSize: FONT_SIZES.lg,
+                  fontFamily: "Inter_600SemiBold",
+                  color: colors.primaryForeground,
+                }}
+              >
+                Connect
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* Footer hint */}
+        <Text
+          style={[
+            t.caption,
+            {
+              color: colors.mutedForeground,
+              textAlign: "center",
+              lineHeight: 18,
+            },
+          ]}
+        >
+          Find your key at{" "}
+          <Text style={{ color: colors.primary }}>
+            wakatime.com/settings/api-key
+          </Text>
+        </Text>
+      </View>
     </View>
   );
 }
