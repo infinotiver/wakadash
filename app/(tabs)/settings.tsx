@@ -314,13 +314,13 @@ export default function SettingsScreen() {
         )}
       </View>
 
-      {/* Custom API URL */}
+      {/* Custom API URL 
       <View
         style={[
           styles.section,
           { backgroundColor: colors.card, borderColor: colors.border },
         ]}
-      >
+     
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
             Custom API URL
@@ -438,7 +438,7 @@ export default function SettingsScreen() {
             </View>
           </View>
         )}
-      </View>
+      </View> >*/}
 
       {/* Credits */}
       <View
