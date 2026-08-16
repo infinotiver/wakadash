@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <a href="https://expo.dev/accounts/infinotiver/projects/wakatime-dashboard/builds/43489240-d5fd-47df-af5b-367635c45645">Install preview</a>
+  <a href="https://github.com/infinotiver/wakadash/releases/tag/v1.0.0">Install preview</a>
   ·
   <a href="https://github.com/infinotiver/wakadash/issues">Report Bug</a>
 </p>
