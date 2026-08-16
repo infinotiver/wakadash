@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { wakatimeApi } from "@/src/api/wakatime";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
 
@@ -12,27 +12,32 @@ export const wakaKeys = {
   today: () => [...wakaKeys.all, "today"] as const,
   week: () => [...wakaKeys.all, "week"] as const,
   stats: (range: string) => [...wakaKeys.all, "stats", range] as const,
-  allTime: () => [...wakaKeys.all, "allTime"] as const, // add this
+  allTime: () => [...wakaKeys.all, "allTime"] as const,
 };
 
+function useWakaQueryScope() {
+  const { authGeneration } = useWakaTime();
+  return [authGeneration] as const;
+}
 export function useWakaUser() {
-  const { apiKey, customApiUrl, isConfigured } = useWakaTime();
+  const { apiKey, isConfigured } = useWakaTime();
+  const scope = useWakaQueryScope();
   return useQuery({
-    queryKey: [...wakaKeys.user(), apiKey],
-    queryFn: () => wakatimeApi.getUser(apiKey!, customApiUrl ?? undefined),
+    queryKey: [...wakaKeys.user(), ...scope],
+    queryFn: () => wakatimeApi.getUser(apiKey!),
     enabled: isConfigured,
     staleTime: THIRTY_MIN,
     gcTime: THIRTY_MIN,
     retry: 1,
   });
 }
-
 export function useTodaySummary() {
-  const { apiKey, customApiUrl, isConfigured } = useWakaTime();
+  const { apiKey, isConfigured } = useWakaTime();
+  const scope = useWakaQueryScope();
   return useQuery({
-    queryKey: [...wakaKeys.today(), apiKey],
+    queryKey: [...wakaKeys.today(), ...scope],
     queryFn: () =>
-      wakatimeApi.getTodaySummary(apiKey!, customApiUrl ?? undefined),
+      wakatimeApi.getTodaySummary(apiKey!),
     enabled: isConfigured,
     staleTime: FIVE_MIN,
     gcTime: TEN_MIN,
@@ -41,11 +46,12 @@ export function useTodaySummary() {
 }
 
 export function useWeekSummaries() {
-  const { apiKey, customApiUrl, isConfigured } = useWakaTime();
+  const { apiKey, isConfigured } = useWakaTime();
+  const scope = useWakaQueryScope();
   return useQuery({
-    queryKey: [...wakaKeys.week(), apiKey],
+    queryKey: [...wakaKeys.week(), ...scope],
     queryFn: () =>
-      wakatimeApi.getWeekSummaries(apiKey!, customApiUrl ?? undefined),
+      wakatimeApi.getWeekSummaries(apiKey!),
     enabled: isConfigured,
     staleTime: TEN_MIN,
     gcTime: THIRTY_MIN,
@@ -53,11 +59,12 @@ export function useWeekSummaries() {
   });
 }
 export function useAllTimeSinceToday() {
-  const { apiKey, customApiUrl, isConfigured } = useWakaTime();
+  const { apiKey, isConfigured } = useWakaTime();
+  const scope = useWakaQueryScope();
   return useQuery({
-    queryKey: [...wakaKeys.all, "allTimeSinceToday", apiKey],
+    queryKey: [...wakaKeys.all, "allTimeSinceToday", ...scope],
     queryFn: () =>
-      wakatimeApi.getAllTimeSinceToday(apiKey!, customApiUrl ?? undefined),
+      wakatimeApi.getAllTimeSinceToday(apiKey!),
     enabled: isConfigured,
     staleTime: THIRTY_MIN,
     gcTime: THIRTY_MIN,
@@ -65,11 +72,12 @@ export function useAllTimeSinceToday() {
   });
 }
 export function useWakaStats(range: "last_7_days" | "last_30_days") {
-  const { apiKey, customApiUrl, isConfigured } = useWakaTime();
+  const { apiKey, isConfigured } = useWakaTime();
+  const scope = useWakaQueryScope();
   return useQuery({
-    queryKey: [...wakaKeys.stats(range), apiKey],
+    queryKey: [...wakaKeys.stats(range), ...scope],
     queryFn: () =>
-      wakatimeApi.getStats(range, apiKey!, customApiUrl ?? undefined),
+      wakatimeApi.getStats(range, apiKey!),
     enabled: isConfigured,
     staleTime: TEN_MIN,
     gcTime: THIRTY_MIN,
@@ -77,7 +85,3 @@ export function useWakaStats(range: "last_7_days" | "last_30_days") {
   });
 }
 
-export function useInvalidateWakaTime() {
-  const queryClient = useQueryClient();
-  return () => queryClient.invalidateQueries({ queryKey: wakaKeys.all });
-}

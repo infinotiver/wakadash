@@ -1,5 +1,5 @@
-// src/types/wakatime.ts
-
+// type declarations for the entire project
+// TODO: up to date types with responses of wakatime api (support custom api)
 export interface AiAgentBreakdown {
   name: string;
   lines: number;
@@ -31,6 +31,7 @@ export interface WakaEntry {
   ai_prompt_events?: number;
   ai_prompt_length_avg?: number;
   ai_prompt_length_sum?: number;
+  ai_line_changes_total?: number;
 
   // agent breakdown / costs
   ai_agent_breakdown?: AiAgentBreakdown[];
@@ -107,6 +108,8 @@ export interface WakaStats {
   ai_prompt_events?: number;
   ai_additions?: number;
   ai_deletions?: number;
+  human_additions?: number;
+  human_deletions?: number;
   ai_prompt_length_avg?: number;
   ai_prompt_length_sum?: number;
 

@@ -5,50 +5,62 @@ import type {
   WakaAllTime,
 } from "@/src/types/wakatime";
 
-const DEFAULT_BASE_URL = "https://wakatime.com/api/v1";
+export const DEFAULT_BASE_URL = "https://wakatime.com/api/v1";
+
+export class WakaTimeApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+    this.name = "WakaTimeApiError";
+  }
+}
 
 function authHeader(apiKey: string): string {
-  const encoded =
-    typeof btoa !== "undefined"
-      ? btoa(apiKey + ":")
-      : Buffer.from(apiKey + ":").toString("base64");
+  const encoded = btoa(`${apiKey}:`);
   return `Basic ${encoded}`;
 }
 
 async function wakFetch(
   path: string,
   apiKey: string,
-  baseUrl = DEFAULT_BASE_URL,
 ) {
-  const res = await fetch(`${baseUrl}${path}`, {
+  const res = await fetch(`${DEFAULT_BASE_URL}${path}`, {
     headers: { Authorization: authHeader(apiKey) },
   });
-  if (res.status === 401) throw new Error("Invalid API key");
-  if (res.status === 202) throw new Error("Stats processing, retry shortly");
-  if (!res.ok) throw new Error(`API error ${res.status}`);
+  if (res.status === 401) throw new WakaTimeApiError("Invalid API key", 401);
+  if (res.status === 202) {
+    throw new WakaTimeApiError("Stats processing, retry shortly", 202);
+  }
+  if (!res.ok) throw new WakaTimeApiError(`API error ${res.status}`, res.status);
   return res.json();
 }
 
-const fmt = (d: Date) => d.toISOString().split("T")[0];
+const fmt = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 export const wakatimeApi = {
-  getUser: (apiKey: string, baseUrl?: string): Promise<WakaUser> =>
-    wakFetch("/users/current", apiKey, baseUrl).then((d) => d.data),
+  verifyKey: (apiKey: string): Promise<WakaUser> =>
+    wakFetch("/users/current", apiKey).then((d) => d.data),
+  getUser: (apiKey: string): Promise<WakaUser> =>
+    wakFetch("/users/current", apiKey).then((d) => d.data),
 
   getTodaySummary: (
     apiKey: string,
-    baseUrl?: string,
   ): Promise<WakaSummaryDay | null> => {
     const today = fmt(new Date());
     return wakFetch(
       `/users/current/summaries?start=${today}&end=${today}`,
       apiKey,
-      baseUrl,
     ).then((d) => d.data?.[0] ?? null);
   },
   getWeekSummaries: (
     apiKey: string,
-    baseUrl?: string,
   ): Promise<WakaSummaryDay[]> => {
     const end = new Date();
     const start = new Date();
@@ -56,23 +68,20 @@ export const wakatimeApi = {
     return wakFetch(
       `/users/current/summaries?start=${fmt(start)}&end=${fmt(end)}`,
       apiKey,
-      baseUrl,
     ).then((d) => d.data ?? []);
   },
   getAllTimeSinceToday: (
     apiKey: string,
-    baseUrl?: string,
   ): Promise<WakaAllTime> =>
-    wakFetch("/users/current/all_time_since_today", apiKey, baseUrl).then(
+    wakFetch("/users/current/all_time_since_today", apiKey).then(
       (d) => d.data,
     ),
 
   getStats: (
     range: "last_7_days" | "last_30_days",
     apiKey: string,
-    baseUrl?: string,
   ): Promise<WakaStats> =>
-    wakFetch(`/users/current/stats/${range}`, apiKey, baseUrl).then(
+    wakFetch(`/users/current/stats/${range}`, apiKey).then(
       (d) => d.data,
     ),
 };
