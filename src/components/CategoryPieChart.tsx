@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 import { PieChart } from "react-native-gifted-charts";
 import { useColors } from "@/src/hooks/useColors";
-import { FONT_SIZES, SPACING, t } from "@/src/constants/styles.common";
+import { ct } from "@/src/constants/styles.common";
 
 interface CategoryItem {
   name: string;
@@ -88,10 +88,10 @@ function LegendRow({
         style={{
           flexDirection: "row",
           alignItems: "center",
-          gap: SPACING.sm,
-          paddingVertical: SPACING.sm,
-          paddingHorizontal: SPACING.sm,
-          borderRadius: 10,
+          gap: ct.sm,
+          paddingVertical: ct.sm,
+          paddingHorizontal: ct.sm,
+          borderRadius: ct.radius.md - 2,
           transform: [{ scale }],
           backgroundColor,
         }}
@@ -100,17 +100,17 @@ function LegendRow({
           style={{
             width: 10,
             height: 10,
-            borderRadius: 5,
+            borderRadius: ct.size.marker,
             backgroundColor: dotColor,
           }}
         />
         <Text
           style={[
-            t.body,
+            ct.text.body,
             {
               flex: 1,
               color: isActive ? colors.foreground : colors.foreground + "BB",
-              fontFamily: isActive ? "Inter_500Medium" : "Inter_400Regular",
+              fontFamily: isActive ? ct.fontFamily.medium : ct.fontFamily.regular,
             },
           ]}
           numberOfLines={1}
@@ -119,18 +119,18 @@ function LegendRow({
         </Text>
         <Text
           style={[
-            t.caption,
-            { color: colors.mutedForeground, marginRight: SPACING.xs },
+            ct.text.caption,
+            { color: colors.mutedForeground, marginRight: ct.xs },
           ]}
         >
           {item.text}
         </Text>
         <Text
           style={[
-            t.caption,
+            ct.text.caption,
             {
               color: isActive ? colors.primary : colors.mutedForeground,
-              fontFamily: "Inter_500Medium",
+              fontFamily: ct.fontFamily.medium,
               width: 36,
               textAlign: "right",
             },
@@ -212,12 +212,12 @@ export function CategoryPieChart({
   return (
     <View
       onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
-      style={{ gap: SPACING.md }}
+      style={{ gap: ct.md }}
     >
       {/* Only render chart once we have a measured width */}
       {containerWidth > 0 && (
         <>
-          <View style={{ alignItems: "center", marginVertical: SPACING.md }}>
+          <View style={{ alignItems: "center", marginVertical: ct.md }}>
             <PieChart
               data={pieData}
               donut
@@ -231,19 +231,19 @@ export function CategoryPieChart({
                 <Animated.View
                   style={{
                     alignItems: "center",
-                    paddingHorizontal: 10,
+                    paddingHorizontal: ct.sm + 2,
                     opacity: labelOpacity,
                     width: innerRadius * 2 - 8,
                   }}
                 >
                   <Text
                     style={[
-                      t.body,
+                      ct.text.body,
                       {
                         color: foreground,
-                        fontFamily: "Inter_600SemiBold",
+                        fontFamily: ct.fontFamily.semibold,
                         textAlign: "center",
-                        fontSize: FONT_SIZES["4xl"],
+                        fontSize: ct.fontSize["4xl"],
                       },
                     ]}
                     numberOfLines={2}
@@ -253,8 +253,8 @@ export function CategoryPieChart({
                   </Text>
                   <Text
                     style={[
-                      t.body,
-                      { color: colors.mutedForeground, marginTop: 2 },
+                      ct.text.body,
+                      { color: colors.mutedForeground, marginTop: ct.xs / 2 },
                     ]}
                   >
                     {centerSub}

@@ -23,7 +23,9 @@ export function HorizontalStackedBar({
   backgroundColor = "transparent",
   separatorColor,
 }: HorizontalStackedBarProps) {
-  const visibleSegments = segments.filter((segment) => (segment.value ?? 0) > 0);
+  const visibleSegments = segments.filter(
+    (segment) => (segment.value ?? 0) > 0,
+  );
   const totalValue = visibleSegments.reduce(
     (sum, segment) => sum + segment.value,
     0,
@@ -46,7 +48,8 @@ export function HorizontalStackedBar({
       }}
     >
       {visibleSegments.map((segment, index) => {
-        const segmentWidth = `${(segment.value / totalValue) * 100}%` as DimensionValue;
+        const segmentWidth =
+          `${(segment.value / totalValue) * 100}%` as DimensionValue;
         const showSeparator =
           index < visibleSegments.length - 1 && separatorColor != null;
 

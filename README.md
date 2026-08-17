@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="assets/logo01.png" alt="WakaDash Logo" width="96" />
+  <img src="assets/icon-512.png" alt="WakaDash Logo" width="96" />
   <h1 align="center">WakaDash</h1>
 </p>
 
 <p align="center">
-  A modern React Native client for viewing WakaTime statistics across mobile and web.
+  A React Native client for viewing WakaTime statistics on Android.
 </p>
 
 <p align="center">

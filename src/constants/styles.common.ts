@@ -1,23 +1,21 @@
 import { StyleSheet } from "react-native";
 
-export const SPACING = {
+const spacing = {
   xs: 4,
   sm: 8,
   md: 12,
   lg: 16,
-  xl: 24,
-  xxl: 32,
-} as const;
-
-export const RADIUS = {
-  sm: 8,
-  md: 12,
-  lg: 14,
-  xl: 16,
+  xl: 20,
+  "2xl": 24,
+  "3xl": 32,
+  "4xl": 40,
   full: 999,
 } as const;
 
-export const FONT_SIZES = {
+const padding = spacing;
+const radius = spacing;
+
+const fontSize = {
   xs: 10,
   sm: 11,
   base: 12,
@@ -34,167 +32,127 @@ export const FONT_SIZES = {
   "9xl": 44,
 } as const;
 
-export const t = StyleSheet.create({
-  // Page
+const fontFamily = {
+  regular: "Inter_400Regular",
+  medium: "Inter_500Medium",
+  semibold: "Inter_600SemiBold",
+  bold: "Inter_700Bold",
+} as const;
+
+const lineHeight = {
+  xs: 12,
+  sm: 18,
+  md: 20,
+  lg: 22,
+  xl: 52,
+} as const;
+
+const size = {
+  avatar: 60,
+  dot: 8,
+  tinyDot: 3,
+  marker: 5,
+  tooltipHeight: 32,
+  chartBottom: 20,
+} as const;
+
+const layout = {
+  listGap: 10,
+  loading: 40,
+  loadingCompact: 20,
+  webHeader: 67,
+  webTabBar: 34,
+  tabBarExtra: 80,
+  inputErrorPadding: 2,
+  emptyTop: 60,
+} as const;
+
+const text = StyleSheet.create({
   pageTitle: {
-    fontSize: FONT_SIZES["7xl"],
-    fontFamily: "Inter_700Bold",
+    fontSize: fontSize["7xl"],
+    fontFamily: fontFamily.bold,
     letterSpacing: -0.8,
   },
-  pageSub: {
-    fontSize: FONT_SIZES.lg,
-    fontFamily: "Inter_400Regular",
-  },
-
-  // Sections
-  sectionTitle: {
-    fontSize: FONT_SIZES.xl,
-    fontFamily: "Inter_600SemiBold",
-  },
+  pageSub: { fontSize: fontSize.lg, fontFamily: fontFamily.regular },
+  sectionTitle: { fontSize: fontSize.xl, fontFamily: fontFamily.semibold },
   sectionLabel: {
-    fontSize: FONT_SIZES.xs,
-    fontFamily: "Inter_600SemiBold",
+    fontSize: fontSize.xs,
+    fontFamily: fontFamily.semibold,
     letterSpacing: 0.6,
     textTransform: "uppercase",
   },
-
-  // Labels / tags
   label: {
-    fontSize: FONT_SIZES.xs,
-    fontFamily: "Inter_500Medium",
+    fontSize: fontSize.xs,
+    fontFamily: fontFamily.medium,
     letterSpacing: 0.5,
     textTransform: "uppercase",
   },
   labelSm: {
-    fontSize: FONT_SIZES.xs,
-    fontFamily: "Inter_500Medium",
+    fontSize: fontSize.xs,
+    fontFamily: fontFamily.medium,
     letterSpacing: 0.4,
   },
-
-  // Values
   value: {
-    fontSize: FONT_SIZES["5xl"],
-    fontFamily: "Inter_700Bold",
+    fontSize: fontSize["5xl"],
+    fontFamily: fontFamily.bold,
     letterSpacing: -0.5,
   },
-  valueSm: {
-    fontSize: FONT_SIZES["2xl"],
-    fontFamily: "Inter_600SemiBold",
-  },
+  valueSm: { fontSize: fontSize["2xl"], fontFamily: fontFamily.semibold },
   valueLg: {
-    fontSize: FONT_SIZES["6xl"],
-    fontFamily: "Inter_700Bold",
+    fontSize: fontSize["6xl"],
+    fontFamily: fontFamily.bold,
     letterSpacing: -0.5,
   },
-
-  // Body
-  body: {
-    fontSize: FONT_SIZES.md,
-    fontFamily: "Inter_400Regular",
-  },
-  bodyMedium: {
-    fontSize: FONT_SIZES.md,
-    fontFamily: "Inter_500Medium",
-  },
-  bodySemibold: {
-    fontSize: FONT_SIZES.md,
-    fontFamily: "Inter_600SemiBold",
-  },
-
-  // Caption
-  caption: {
-    fontSize: FONT_SIZES.xs,
-    fontFamily: "Inter_400Regular",
-  },
-  captionMedium: {
-    fontSize: FONT_SIZES.xs,
-    fontFamily: "Inter_500Medium",
-  },
-
-  // Hero
+  body: { fontSize: fontSize.md, fontFamily: fontFamily.regular },
+  bodyMedium: { fontSize: fontSize.md, fontFamily: fontFamily.medium },
+  bodySemibold: { fontSize: fontSize.md, fontFamily: fontFamily.semibold },
+  caption: { fontSize: fontSize.xs, fontFamily: fontFamily.regular },
+  captionMedium: { fontSize: fontSize.xs, fontFamily: fontFamily.medium },
   heroTime: {
-    fontSize: FONT_SIZES["9xl"],
-    fontFamily: "Inter_700Bold",
+    fontSize: fontSize["9xl"],
+    fontFamily: fontFamily.bold,
     letterSpacing: -1.5,
     lineHeight: 52,
   },
   heroLabel: {
-    fontSize: FONT_SIZES.sm,
-    fontFamily: "Inter_500Medium",
+    fontSize: fontSize.sm,
+    fontFamily: fontFamily.medium,
     textTransform: "uppercase",
     letterSpacing: 0.6,
   },
   heroSub: {
-    fontSize: FONT_SIZES.lg,
-    fontFamily: "Inter_400Regular",
-    marginTop: SPACING.xs,
+    fontSize: fontSize.lg,
+    fontFamily: fontFamily.regular,
+    marginTop: padding.xs,
   },
-
-  // UI elements
-  pillText: {
-    fontSize: FONT_SIZES.md,
-    fontFamily: "Inter_500Medium",
-  },
-  tagText: {
-    fontSize: FONT_SIZES.sm,
-    fontFamily: "Inter_500Medium",
-  },
-  buttonText: {
-    fontSize: FONT_SIZES.lg,
-    fontFamily: "Inter_600SemiBold",
-  },
-  inputText: {
-    fontSize: FONT_SIZES.md,
-    fontFamily: "Inter_400Regular",
-  },
-
-  // Cards
+  pillText: { fontSize: fontSize.md, fontFamily: fontFamily.medium },
+  tagText: { fontSize: fontSize.sm, fontFamily: fontFamily.medium },
+  buttonText: { fontSize: fontSize.lg, fontFamily: fontFamily.semibold },
+  inputText: { fontSize: fontSize.md, fontFamily: fontFamily.regular },
   cardLabel: {
-    fontSize: FONT_SIZES.xs,
-    fontFamily: "Inter_500Medium",
+    fontSize: fontSize.xs,
+    fontFamily: fontFamily.medium,
     letterSpacing: 0.5,
     textTransform: "uppercase",
   },
-  cardValue: {
-    fontSize: FONT_SIZES.xl,
-    fontFamily: "Inter_700Bold",
-  },
-  cardSub: {
-    fontSize: FONT_SIZES.sm,
-    fontFamily: "Inter_400Regular",
-  },
-
-  // Navigation
-  tabLabel: {
-    fontSize: FONT_SIZES.base,
-    fontFamily: "Inter_500Medium",
-  },
-
-  // Settings specific
+  cardValue: { fontSize: fontSize.xl, fontFamily: fontFamily.bold },
+  cardSub: { fontSize: fontSize.sm, fontFamily: fontFamily.regular },
+  tabLabel: { fontSize: fontSize.base, fontFamily: fontFamily.medium },
   settingTitle: {
-    fontSize: FONT_SIZES.base,
-    fontFamily: "Inter_600SemiBold",
+    fontSize: fontSize.base,
+    fontFamily: fontFamily.semibold,
     textTransform: "uppercase",
     letterSpacing: 0.4,
   },
-  settingValue: {
-    fontSize: FONT_SIZES.md,
-    fontFamily: "Inter_600SemiBold",
-  },
-  displayName: {
-    fontSize: FONT_SIZES["2xl"],
-    fontFamily: "Inter_600SemiBold",
-  },
+  settingValue: { fontSize: fontSize.md, fontFamily: fontFamily.semibold },
+  displayName: { fontSize: fontSize["2xl"], fontFamily: fontFamily.semibold },
 });
 
-export const typographies = t;
-
-export const commonStyles = StyleSheet.create({
-  // Layout
+const styles = {
   container: {
     flex: 1,
     justifyContent: "center",
-    paddingHorizontal: SPACING.lg,
+    paddingHorizontal: padding.lg,
   },
   flex: { flex: 1 },
   row: { flexDirection: "row" },
@@ -203,146 +161,265 @@ export const commonStyles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  rowCenter: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
+  rowCenter: { flexDirection: "row", alignItems: "center" },
   center: { justifyContent: "center", alignItems: "center" },
   scroll: { flex: 1 },
-  screenContent: {
-    paddingHorizontal: SPACING.lg,
-    gap: SPACING.md,
-  },
-
-  // Cards
-  card: {
-    borderRadius: RADIUS.lg,
-    padding: SPACING.lg,
-    borderWidth: 1,
-  },
+  screenContent: { paddingHorizontal: padding.lg, gap: padding.md },
+  card: { borderRadius: radius.lg, padding: padding.lg, borderWidth: 1 },
   cardLg: {
-    borderRadius: RADIUS.xl,
-    padding: SPACING.lg,
+    borderRadius: radius.xl,
+    padding: padding.lg,
     borderWidth: 1,
-    gap: SPACING.md,
+    gap: padding.md,
   },
   section: {
-    borderRadius: RADIUS.xl,
-    padding: SPACING.xl - 6,
+    borderRadius: radius.xl,
+    padding: padding.xl - 6,
     borderWidth: 1,
-    gap: SPACING.xs,
+    gap: padding.xs,
   },
   heroCard: {
-    borderRadius: RADIUS.xl + 2,
-    padding: SPACING.xl,
-    gap: SPACING.xs,
+    borderRadius: radius.xl + 2,
+    padding: padding.xl,
+    gap: padding.xs,
   },
-
-  // Progress
-  progressBar: { height: 4, borderRadius: RADIUS.sm, overflow: "hidden" },
-  progressFill: { height: "100%", borderRadius: RADIUS.sm },
-
-  // Divider
+  progressBar: { height: 4, borderRadius: radius.sm, overflow: "hidden" },
+  progressFill: { height: "100%", borderRadius: radius.sm },
   divider: { height: StyleSheet.hairlineWidth },
-
-  // Inputs
   inputRow: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderRadius: RADIUS.lg,
-    paddingHorizontal: SPACING.lg,
+    borderRadius: radius.lg,
+    paddingHorizontal: padding.lg,
     height: 54,
   },
   inputRowSm: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderRadius: RADIUS.lg - 2,
-    paddingHorizontal: SPACING.lg - 2,
+    borderRadius: radius.lg - 2,
+    paddingHorizontal: padding.lg - 2,
     height: 48,
   },
-  input: { flex: 1, fontSize: FONT_SIZES.md, height: "100%" },
-
-  // Buttons
+  input: { flex: 1, fontSize: fontSize.md, height: "100%" },
   button: {
-    paddingVertical: SPACING.md + 4,
-    borderRadius: RADIUS.md,
-    paddingHorizontal: SPACING.xl,
+    paddingVertical: padding.md + 4,
+    borderRadius: radius.md,
+    paddingHorizontal: padding.xl,
     alignItems: "center",
     justifyContent: "center",
   },
   buttonSm: {
     height: 44,
-    borderRadius: RADIUS.lg - 2,
+    borderRadius: radius.lg - 2,
     alignItems: "center",
     justifyContent: "center",
   },
-
-  // Pills / tags
   pill: {
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-    borderRadius: RADIUS.full,
+    paddingHorizontal: padding.md,
+    paddingVertical: padding.xs,
+    borderRadius: radius.full,
     borderWidth: 1,
   },
   tag: {
     flexDirection: "row",
     alignItems: "center",
-    gap: SPACING.xs,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-    borderRadius: RADIUS.md,
+    gap: padding.xs,
+    paddingHorizontal: padding.md,
+    paddingVertical: padding.xs,
+    borderRadius: radius.md,
   },
-
-  // Empty state
-  emptyWrap: { alignItems: "center", gap: SPACING.md, marginTop: 60 },
-  emptyText: { fontSize: FONT_SIZES.lg, textAlign: "center" },
-
-  // Modals
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
-    justifyContent: "flex-end",
+  emptyWrap: {
+    alignItems: "center",
+    gap: padding.md,
+    marginTop: layout.emptyTop,
   },
-  modalContainer: {
-    maxHeight: "82%",
-    borderTopLeftRadius: RADIUS.xl,
-    borderTopRightRadius: RADIUS.xl,
-    overflow: "hidden",
-  },
-  modalHeader: {
+  emptyText: { fontSize: fontSize.lg, textAlign: "center" },
+  appBar: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: SPACING.lg,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: padding.lg,
+    paddingVertical: padding.lg,
+    marginVertical: padding.sm,
   },
-  modalScrollContent: { padding: SPACING.lg },
-  closeButton: {
+  appBarTitle: {
+    fontSize: fontSize["4xl"],
+    fontFamily: fontFamily.semibold,
+    paddingHorizontal: padding.md,
+    paddingVertical: padding.xs,
+    borderRadius: radius.md,
+  },
+  appBarIcon: {
     width: 40,
     height: 40,
-    borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
+    borderRadius: radius.full,
   },
+  overview: {
+    content: { paddingHorizontal: padding.lg, gap: padding.md },
+    title: text.pageTitle,
+    row: { flexDirection: "row" },
+    section: {
+      borderRadius: radius.xl,
+      padding: padding.xl - 6,
+      borderWidth: 1,
+      gap: padding.xs,
+    },
+    sectionTitle: text.sectionTitle,
+    heroSub: text.heroSub,
+    empty: text.body,
+    errorCard: {
+      borderRadius: radius.lg,
+      padding: padding.lg,
+      borderWidth: 1,
+      alignItems: "center",
+      marginTop: padding.lg,
+    },
+    errorText: text.body,
+  },
+  breakdown: {
+    content: { paddingHorizontal: padding.lg, gap: padding.md },
+    title: text.pageTitle,
+    pills: { flexDirection: "row", gap: padding.md },
+    pill: {
+      paddingHorizontal: padding.md,
+      paddingVertical: padding.xs,
+      borderRadius: radius.full,
+      borderWidth: 1,
+    },
+    pillText: text.pillText,
+    summaryRow: { flexDirection: "row", gap: padding.lg },
+    catRow: { flexDirection: "row", flexWrap: "wrap", gap: padding.md },
+    catText: { fontSize: fontSize.md, fontFamily: fontFamily.medium },
+    card: {
+      borderRadius: radius.xl,
+      padding: padding.xl - 6,
+      borderWidth: 1,
+      gap: padding.xs,
+    },
+    empty: text.body,
+    error: text.body,
+  },
+  settings: {
+    content: { paddingHorizontal: padding.lg, gap: padding.md },
+    title: text.pageTitle,
+    profileCard: {
+      borderRadius: radius.xl,
+      padding: padding.lg,
+      borderWidth: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: padding.lg - 2,
+    },
+    avatar: {
+      width: size.avatar,
+      height: size.avatar,
+      borderRadius: size.avatar / 2,
+    },
+    avatarFallback: {
+      width: size.avatar,
+      height: size.avatar,
+      borderRadius: size.avatar / 2,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    profileInfo: { flex: 1, gap: padding.xs },
+    displayName: text.displayName,
+    username: text.body,
+    locationRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: padding.xs,
+      marginTop: padding.xs,
+    },
+    location: { fontSize: fontSize.sm, fontFamily: fontFamily.regular },
+    section: {
+      borderRadius: radius.xl,
+      padding: padding.lg,
+      borderWidth: 1,
+      gap: padding.md,
+    },
+    sectionTitle: text.settingTitle,
+    keyRow: { flexDirection: "row", alignItems: "center", gap: padding.sm },
+    keyText: { flex: 1, fontSize: fontSize.md, fontFamily: fontFamily.medium },
+    inputRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      borderWidth: 1,
+      borderRadius: radius.lg - 2,
+      paddingHorizontal: padding.lg,
+      height: 48,
+    },
+    input: { flex: 1, fontSize: fontSize.md },
+    btnRow: { flexDirection: "row", gap: padding.md },
+    cancelBtn: {
+      flex: 1,
+      height: 44,
+      borderRadius: radius.lg - 2,
+      borderWidth: 1,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    cancelText: { fontSize: fontSize.md, fontFamily: fontFamily.medium },
+    saveBtn: {
+      flex: 2,
+      height: 44,
+      borderRadius: radius.lg - 2,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    saveText: { fontSize: fontSize.md, fontFamily: fontFamily.semibold },
+    editBtn: { padding: padding.md, borderRadius: radius.md },
+    editSection: { gap: padding.lg - 6 },
+  },
+  weeklyChart: {
+    container: { width: "100%" },
+    bars: {
+      flexDirection: "row",
+      alignItems: "flex-end",
+      height: 120,
+      gap: padding.xs,
+    },
+    barCol: {
+      flex: 1,
+      alignItems: "center",
+      height: "100%",
+      justifyContent: "flex-end",
+      gap: padding.xs,
+    },
+    tooltip: {
+      fontSize: fontSize.xs,
+      fontFamily: fontFamily.medium,
+      textAlign: "center",
+    },
+    barTrack: {
+      flex: 1,
+      width: "75%",
+      justifyContent: "flex-end",
+      borderRadius: radius.sm,
+      overflow: "hidden",
+    },
+    barFill: { width: "100%", borderRadius: radius.sm },
+    dayLabel: {
+      fontSize: fontSize.xs,
+      textAlign: "center",
+      fontFamily: fontFamily.regular,
+    },
+  },
+} as const;
 
-  // Top floating button
-  topButton: {
-    position: "absolute",
-    right: SPACING.lg,
-    zIndex: 10,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  // Error
-  errorText: {
-    fontSize: FONT_SIZES.lg,
-    textAlign: "center",
-    marginTop: SPACING.lg,
-  },
-});
+export const ct = {
+  ...padding,
+  padding,
+  radius,
+  fontSize,
+  fontFamily,
+  lineHeight,
+  size,
+  layout,
+  text,
+  styles,
+} as const;

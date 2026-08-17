@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { HorizontalStackedBar } from "@/src/components/HorizontalStackedBar";
-import { commonStyles, RADIUS, SPACING, t } from "@/src/constants/styles.common";
+import { ct } from "@/src/constants/styles.common";
 
 export type HorizontalBreakdownChartItem = {
   key?: string;
@@ -34,37 +34,36 @@ export function HorizontalBreakdownChart({
   }
 
   return (
-    <View style={{ gap: 10 }}>
+    <View style={{ gap: ct.layout.listGap }}>
       <HorizontalStackedBar
         segments={visibleItems.map((item) => ({
           key: item.key ?? item.label,
           value: item.percent,
           color: item.color,
         }))}
-        height={12}
-        radius={999}
+        height={20}
         backgroundColor={trackColor}
         separatorColor={separatorColor ?? trackColor}
       />
 
-      <View style={{ gap: 10 }}>
+      <View style={{ gap: ct.xs }}>
         {visibleItems.map((item) => (
           <View
             key={item.key ?? item.label}
-            style={[commonStyles.row, { alignItems: "flex-start", gap: SPACING.sm }]}
+            style={[ct.styles.row, { alignItems: "flex-start", gap: ct.sm }]}
           >
             <View
               style={{
                 width: 8,
                 height: 8,
-                borderRadius: RADIUS.full,
+                borderRadius: ct.radius.full,
                 backgroundColor: item.color,
-                marginTop: 5,
+                marginTop: ct.size.marker,
               }}
             />
             <Text
               style={[
-                t.body,
+                ct.text.body,
                 {
                   flex: 1,
                   minWidth: 0,
@@ -76,18 +75,18 @@ export function HorizontalBreakdownChart({
             </Text>
             <View
               style={[
-                commonStyles.row,
+                ct.styles.row,
                 {
                   flexShrink: 0,
                   alignItems: "center",
-                  gap: SPACING.sm,
+                  gap: ct.sm,
                 },
               ]}
             >
               {item.secondaryText ? (
                 <Text
                   style={[
-                    t.body,
+                    ct.text.body,
                     {
                       color: mutedTextColor,
                       textAlign: "right",
@@ -101,7 +100,7 @@ export function HorizontalBreakdownChart({
               {item.trailingText ? (
                 <Text
                   style={[
-                    t.body,
+                    ct.text.body,
                     {
                       minWidth: 48,
                       textAlign: "right",

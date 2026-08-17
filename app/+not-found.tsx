@@ -2,8 +2,7 @@ import { Link, Stack } from "expo-router";
 import { Text, View } from "react-native";
 
 import { useColors } from "@/src/hooks/useColors";
-import { commonStyles, t } from "@/src/constants/styles.common";
-import { overviewScreenStyles} from "@/src/constants/styles.screens";
+import { ct } from "@/src/constants/styles.common";
 
 export default function NotFoundScreen() {
   const colors = useColors();
@@ -11,16 +10,16 @@ export default function NotFoundScreen() {
   return (
     <>
       <Stack.Screen options={{ title: "Oops!" }} />
-      <View style={[commonStyles.card, { backgroundColor: colors.background }]}>
+      <View style={[ct.styles.card, { backgroundColor: colors.background }]}>
         <Text
-          style={[overviewScreenStyles.title, { color: colors.foreground }]}
+          style={[ct.styles.overview.title, { color: colors.foreground }]}
         >
           This screen doesn&apos;t exist.
         </Text>
 
-        <Link href="/" style={t.body}>
+        <Link href="/" style={ct.text.body}>
           <Text
-            style={[t.body, { color: colors.primary }]}
+            style={[ct.text.body, { color: colors.primary }]}
           >
             Go to home screen!
           </Text>

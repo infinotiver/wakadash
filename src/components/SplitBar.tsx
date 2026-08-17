@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, View } from "react-native";
-import { t, SPACING, RADIUS } from "@/src/constants/styles.common";
+import { ct } from "@/src/constants/styles.common";
 import { useColors } from "@/src/hooks/useColors";
 
 interface Segment {
@@ -21,19 +21,19 @@ export function SplitBar({ left, right, height = 8 }: Props) {
   const leftPct = total > 0 ? (left.value / total) * 100 : 50;
 
   return (
-    <View style={{ gap: SPACING.xs }}>
+    <View style={{ gap: ct.xs }}>
       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <Text style={[t.caption, { color: c.mutedForeground }]}>
+        <Text style={[ct.text.caption, { color: c.mutedForeground }]}>
           {left.label}
         </Text>
-        <Text style={[t.caption, { color: c.mutedForeground }]}>
+        <Text style={[ct.text.caption, { color: c.mutedForeground }]}>
           {right.label}
         </Text>
       </View>
       <View
         style={{
           height,
-          borderRadius: RADIUS.full,
+          borderRadius: ct.radius.full,
           overflow: "hidden",
           flexDirection: "row",
           backgroundColor: c.secondary,
@@ -43,8 +43,8 @@ export function SplitBar({ left, right, height = 8 }: Props) {
         <View style={{ flex: 1, backgroundColor: c.primary + "33" }} />
       </View>
       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <Text style={[t.body, { color: c.primary }]}>{left.displayValue}</Text>
-        <Text style={[t.body, { color: c.mutedForeground }]}>
+        <Text style={[ct.text.body, { color: c.primary }]}>{left.displayValue}</Text>
+        <Text style={[ct.text.body, { color: c.mutedForeground }]}>
           {right.displayValue}
         </Text>
       </View>

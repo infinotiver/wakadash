@@ -11,13 +11,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
 import { useColors } from "@/src/hooks/useColors";
-import {
-  commonStyles,
-  t,
-  SPACING,
-  RADIUS,
-  FONT_SIZES,
-} from "@/src/constants/styles.common";
+import { wakatimeApi } from "@/src/api/wakatime";
+import { ct } from "@/src/constants/styles.common";
 
 export function SetupScreen() {
   const colors = useColors();
@@ -34,15 +29,7 @@ export function SetupScreen() {
     setLoading(true);
     setError(null);
     try {
-      const encoded =
-        typeof btoa !== "undefined"
-          ? btoa(trimmed + ":")
-          : Buffer.from(trimmed + ":").toString("base64");
-      const res = await fetch("https://api.wakatime.com/api/v1/users/current", {
-        headers: { Authorization: `Basic ${encoded}` },
-      });
-      if (res.status === 401) throw new Error("Invalid API key.");
-      if (!res.ok) throw new Error("Could not verify. Try again.");
+      await wakatimeApi.verifyKey(trimmed);
       await setApiKey(trimmed);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
@@ -60,47 +47,52 @@ export function SetupScreen() {
         backgroundColor: colors.background,
         paddingTop: Platform.OS === "web" ? 80 : insets.top + 32,
         paddingBottom: Platform.OS === "web" ? 40 : insets.bottom + 32,
-        paddingHorizontal: SPACING.xl + 4,
+        paddingHorizontal: ct.xl + 4,
       }}
     >
       {/* Top wordmark */}
-      <View style={{ flex: 1, justifyContent: "center", gap: SPACING.xxl }}>
-        <View style={{ gap: SPACING.sm }}>
+      <View style={{ flex: 1, justifyContent: "center", gap: ct.padding["2xl"] }}>
+        <View style={{ gap: ct.sm }}>
           <Text
             style={{
-              fontSize: FONT_SIZES["8xl"],
-              fontFamily: "Inter_700Bold",
-              letterSpacing: -1.5,
+              fontSize: ct.fontSize["8xl"],
+              fontFamily: ct.fontFamily.bold,
               color: colors.foreground,
-              lineHeight: FONT_SIZES["8xl"] * 1.1,
+              textAlign: "center",
+              lineHeight: ct.fontSize["8xl"],
             }}
           >
             WakaDash
           </Text>
-          <Text style={[t.body, { color: colors.mutedForeground }]}>
+          <Text
+            style={[
+              ct.text.body,
+              { color: colors.mutedForeground, textAlign: "center" },
+            ]}
+          >
             Paste your API key to get started.
           </Text>
         </View>
 
-        <View style={{ gap: SPACING.md }}>
+        <View style={{ gap: ct.md }}>
           {/* Key input */}
           <View
             style={{
               borderWidth: 1,
               borderColor: error ? colors.destructive : colors.border,
-              borderRadius: RADIUS.lg,
+              borderRadius: ct.radius.lg,
               backgroundColor: colors.card,
               flexDirection: "row",
               alignItems: "center",
               height: 52,
-              paddingHorizontal: SPACING.lg,
+              paddingHorizontal: ct.lg,
             }}
           >
             <TextInput
               style={{
                 flex: 1,
-                fontSize: FONT_SIZES.md,
-                fontFamily: "Inter_400Regular",
+                fontSize: ct.fontSize.md,
+                fontFamily: ct.fontFamily.regular,
                 color: colors.foreground,
                 height: "100%",
               }}
@@ -133,8 +125,8 @@ export function SetupScreen() {
           {error && (
             <Text
               style={[
-                t.caption,
-                { color: colors.destructive, paddingHorizontal: 2 },
+                ct.text.caption,
+                { color: colors.destructive, paddingHorizontal: ct.layout.inputErrorPadding },
               ]}
             >
               {error}
@@ -147,8 +139,8 @@ export function SetupScreen() {
             disabled={!canSubmit}
             activeOpacity={0.8}
             style={{
-              height: 52,
-              borderRadius: RADIUS.lg,
+              padding: ct.padding.lg,
+              borderRadius: ct.radius.lg,
               backgroundColor: colors.primary,
               alignItems: "center",
               justifyContent: "center",
@@ -160,8 +152,8 @@ export function SetupScreen() {
             ) : (
               <Text
                 style={{
-                  fontSize: FONT_SIZES.lg,
-                  fontFamily: "Inter_600SemiBold",
+                  fontSize: ct.fontSize.lg,
+                  fontFamily: ct.fontFamily.semibold,
                   color: colors.primaryForeground,
                 }}
               >
@@ -174,11 +166,11 @@ export function SetupScreen() {
         {/* Footer hint */}
         <Text
           style={[
-            t.caption,
+            ct.text.caption,
             {
               color: colors.mutedForeground,
               textAlign: "center",
-              lineHeight: 18,
+              lineHeight: ct.lineHeight.sm,
             },
           ]}
         >

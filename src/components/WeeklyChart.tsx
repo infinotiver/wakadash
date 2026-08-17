@@ -2,8 +2,9 @@ import React, { useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { useColors } from "@/src/hooks/useColors";
 import type { WakaSummaryDay } from "@/src/types/wakatime";
-import { weeklyChartStyles as styles } from "@/src/constants/styles.components";
-import { FONT_SIZES, SPACING } from "@/src/constants/styles.common";
+import { ct } from "@/src/constants/styles.common";
+
+const styles = ct.styles.weeklyChart;
 
 interface Props {
   days: WakaSummaryDay[];
@@ -51,10 +52,10 @@ export function WeeklyChart({ days }: Props) {
       {/* Tooltip row */}
       <View
         style={{
-          height: 32,
+          height: ct.size.tooltipHeight,
           justifyContent: "center",
           alignItems: "center",
-          marginBottom: SPACING.sm,
+          marginBottom: ct.sm,
         }}
       >
         {activeIndex !== null && activeDateLabel ? (
@@ -62,17 +63,17 @@ export function WeeklyChart({ days }: Props) {
             style={{
               flexDirection: "row",
               alignItems: "center",
-              gap: SPACING.sm,
-              paddingHorizontal: SPACING.md,
-              paddingVertical: SPACING.xs,
+              gap: ct.sm,
+              paddingHorizontal: ct.md,
+              paddingVertical: ct.xs,
               backgroundColor: colors.primary + "18",
               borderRadius: 999,
             }}
           >
             <Text
               style={{
-                fontSize: FONT_SIZES.sm,
-                fontFamily: "Inter_500Medium",
+                fontSize: ct.fontSize.sm,
+                fontFamily: ct.fontFamily.medium,
                 color: colors.primary,
               }}
             >
@@ -82,14 +83,14 @@ export function WeeklyChart({ days }: Props) {
               style={{
                 width: 3,
                 height: 3,
-                borderRadius: 2,
+              borderRadius: ct.xs / 2,
                 backgroundColor: colors.primary + "88",
               }}
             />
             <Text
               style={{
-                fontSize: FONT_SIZES.sm,
-                fontFamily: "Inter_600SemiBold",
+                fontSize: ct.fontSize.sm,
+                fontFamily: ct.fontFamily.semibold,
                 color: colors.primary,
               }}
             >
@@ -99,9 +100,9 @@ export function WeeklyChart({ days }: Props) {
         ) : (
           <Text
             style={{
-              fontSize: FONT_SIZES.xs,
+              fontSize: ct.fontSize.xs,
               color: colors.mutedForeground,
-              fontFamily: "Inter_400Regular",
+              fontFamily: ct.fontFamily.regular,
             }}
           >
             Tap a bar for details
@@ -117,19 +118,19 @@ export function WeeklyChart({ days }: Props) {
             width: 30,
             justifyContent: "space-between",
             alignItems: "flex-end",
-            paddingRight: SPACING.xs + 2,
-            paddingBottom: 20,
+            paddingRight: ct.xs + 2,
+            paddingBottom: ct.size.chartBottom,
           }}
         >
           {yLabels.map((label, i) => (
             <Text
               key={i}
               style={{
-                fontSize: FONT_SIZES.xs,
+                fontSize: ct.fontSize.xs,
                 color: colors.mutedForeground,
-                fontFamily: "Inter_400Regular",
-                lineHeight: 12,
-              }}
+                fontFamily: ct.fontFamily.regular,
+                lineHeight: ct.lineHeight.xs,
+              }}ī
             >
               {label}
             </Text>
@@ -195,7 +196,7 @@ export function WeeklyChart({ days }: Props) {
                           backgroundColor: isActive
                             ? colors.primary
                             : colors.primary + "44",
-                          borderRadius: 4,
+                          borderRadius: ct.xs,
                         },
                       ]}
                     />
@@ -208,8 +209,8 @@ export function WeeklyChart({ days }: Props) {
                           ? colors.primary
                           : colors.mutedForeground,
                         fontFamily: isActive
-                          ? "Inter_600SemiBold"
-                          : "Inter_400Regular",
+                          ? ct.fontFamily.semibold
+                          : ct.fontFamily.regular,
                       },
                     ]}
                   >

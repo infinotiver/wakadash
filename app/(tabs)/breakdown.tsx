@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Linking,
   Platform,
+  Pressable,
   RefreshControl,
   ScrollView,
   Text,
@@ -11,17 +12,12 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { HorizontalBreakdownChart } from "@/src/components/HorizontalBreakdownChart";
 import { SplitBar } from "@/src/components/SplitBar";
 import { SetupScreen } from "@/src/components/SetupScreen";
-import colors from "@/src/constants/colors";
-import {
-  commonStyles,
-  t,
-  SPACING,
-  RADIUS,
-} from "@/src/constants/styles.common";
-import { breakdownScreenStyles as styles } from "@/src/constants/styles.screens";
+import { ct } from "@/src/constants/styles.common";
+const styles = ct.styles.breakdown;
 import { useColors } from "@/src/hooks/useColors";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
 import { useWakaStats } from "@/src/hooks/useWakaTimeQueries";
@@ -52,11 +48,11 @@ function SectionLabel({
   return (
     <Text
       style={[
-        t.label,
+        ct.text.label,
         {
           color: c.mutedForeground,
-          marginBottom: SPACING.sm,
-          marginTop: SPACING.xs,
+          marginBottom: ct.sm,
+          marginTop: ct.xs,
         },
       ]}
     >
@@ -84,6 +80,7 @@ function Card({
 export default function BreakdownScreen() {
   const c = useColors();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { isConfigured } = useWakaTime();
   const [range, setRange] = useState<Range>("last_7_days");
   const [category, setCategory] = useState<Category>("languages");
@@ -92,19 +89,19 @@ export default function BreakdownScreen() {
 
   if (!isConfigured) return <SetupScreen />;
 
-  const stats = statsQ.data as (WakaStats & Record<string, any>) | undefined;
-  const items = (stats?.[category] as WakaEntry[] | undefined) ?? [];
+  const stats = statsQ.data;
+  const items = stats?.[category] ?? [];
   const visibleItems = items.filter((item) => (item?.percent ?? 0) >= 0.1);
-  const showProError = statsQ.isError && range === "last_30_days";
+  const showProError =
+    statsQ.error instanceof Error &&
+    "status" in statsQ.error &&
+    statsQ.error.status === 403 &&
+    range === "last_30_days";
 
-  const chartColors =
-    Platform.OS === "web"
-      ? colors.light.chartColors
-      : (c.chartColors as string[]);
+  const chartColors = c.chartColors as string[];
 
   const aiPromptEvents = stats?.ai_prompt_events ?? 0;
   const aiPromptLengthAvg = stats?.ai_prompt_length_avg ?? 0;
-  const aiLineChanges = stats?.ai_line_changes_total ?? 0;
   const aiAdditions = stats?.ai_additions ?? 0;
   const aiDeletions = stats?.ai_deletions ?? 0;
   const humanAdditions = stats?.human_additions ?? 0;
@@ -114,12 +111,11 @@ export default function BreakdownScreen() {
 
   return (
     <ScrollView
-      style={[commonStyles.scroll, { backgroundColor: c.background }]}
+      style={[ct.styles.scroll, { backgroundColor: c.background }]}
       contentContainerStyle={[
         styles.content,
         {
-          paddingTop: Platform.OS === "web" ? 67 + 16 : insets.top + 16,
-          paddingBottom: Platform.OS === "web" ? 34 + 80 : insets.bottom + 80,
+          paddingBottom: insets.bottom + ct.lg,
         },
       ]}
       refreshControl={
@@ -130,7 +126,23 @@ export default function BreakdownScreen() {
         />
       }
     >
-      <Text style={[styles.title, { color: c.foreground }]}>Breakdown</Text>
+      <View
+        style={[
+          ct.styles.appBar,
+          { paddingTop: Platform.OS === "web" ? ct.sm : insets.top },
+        ]}
+      >
+        <Pressable
+          accessibilityLabel="Go back"
+          accessibilityRole="button"
+          onPress={() => router.back()}
+          style={ct.styles.appBarIcon}
+        >
+          <Feather name="arrow-left" size={22} color={c.foreground} />
+        </Pressable>
+        <Text style={[styles.title, { color: c.foreground }]}>Breakdown</Text>
+        <View style={ct.styles.appBarIcon} />
+      </View>
 
       {/* Range toggle */}
       <View style={styles.pills}>
@@ -166,7 +178,7 @@ export default function BreakdownScreen() {
       {showProError && (
         <View
           style={[
-            commonStyles.card,
+            ct.styles.card,
             { backgroundColor: c.card, borderColor: `${c.primary}44` },
           ]}
         >
@@ -177,7 +189,7 @@ export default function BreakdownScreen() {
       )}
 
       {statsQ.isLoading && (
-        <ActivityIndicator color={c.primary} style={{ marginTop: 40 }} />
+        <ActivityIndicator color={c.primary} style={{ marginTop: ct.layout.loading }} />
       )}
 
       {statsQ.isError && !showProError && (
@@ -188,7 +200,7 @@ export default function BreakdownScreen() {
         </Text>
       )}
 
-      {!showProError && stats && (
+      {stats && (
         <>
           <SectionLabel title="Summary" c={c} />
           <View style={[styles.summaryRow]}>
@@ -204,7 +216,7 @@ export default function BreakdownScreen() {
             />
           </View>
 
-          <View style={[styles.catRow, { marginBottom: 16 }]}>
+          <View style={[styles.catRow, { marginBottom: ct.lg }]}>
             {stats.ai_prompt_events ? (
               <StatCard
                 label="Prompts sent"
@@ -229,7 +241,7 @@ export default function BreakdownScreen() {
               <SectionLabel title="AI Usage" c={c} />
               <Card c={c}>
                 {aiAdditions > 0 && humanAdditions > 0 && (
-                  <View style={{ marginTop: SPACING.md }}>
+                  <View style={{ marginTop: ct.md }}>
                     <SplitBar
                       left={{
                         label: "AI additions",
@@ -246,7 +258,7 @@ export default function BreakdownScreen() {
                 )}
 
                 {aiDeletions > 0 && humanDeletions > 0 && (
-                  <View style={{ marginTop: SPACING.md }}>
+                  <View style={{ marginTop: ct.md }}>
                     <SplitBar
                       left={{
                         label: "AI deletions",
@@ -267,7 +279,7 @@ export default function BreakdownScreen() {
 
           <SectionLabel title="Breakdown" c={c} />
 
-          <View style={[styles.catRow, { marginBottom: SPACING.md }]}>
+          <View style={[styles.catRow, { marginBottom: ct.md }]}>
             {CATEGORIES.map((cat) => (
               <TouchableOpacity
                 key={cat.value}
