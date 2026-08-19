@@ -25,124 +25,6 @@ function formatTime(seconds: number): string {
   return `${m}m`;
 }
 
-function LegendRow({
-  item,
-  isActive,
-  dotColor,
-  onPress,
-  colors,
-}: {
-  item: CategoryItem;
-  isActive: boolean;
-  dotColor: string;
-  onPress: () => void;
-  colors: ReturnType<typeof useColors>;
-}) {
-  const scale = useRef(new Animated.Value(1)).current;
-  const bg = useRef(new Animated.Value(0)).current;
-
-  const handlePressIn = () => {
-    Animated.parallel([
-      Animated.spring(scale, {
-        toValue: 0.97,
-        useNativeDriver: true,
-        speed: 40,
-        bounciness: 0,
-      }),
-      Animated.timing(bg, {
-        toValue: 1,
-        duration: 120,
-        useNativeDriver: false,
-      }),
-    ]).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.parallel([
-      Animated.spring(scale, {
-        toValue: 1,
-        useNativeDriver: true,
-        speed: 20,
-        bounciness: 4,
-      }),
-      Animated.timing(bg, {
-        toValue: isActive ? 1 : 0,
-        duration: 150,
-        useNativeDriver: false,
-      }),
-    ]).start();
-  };
-
-  const backgroundColor = bg.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["transparent", colors.primary + "14"],
-  });
-
-  return (
-    <Pressable
-      onPress={onPress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-    >
-      <Animated.View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          gap: ct.sm,
-          paddingVertical: ct.sm,
-          paddingHorizontal: ct.sm,
-          borderRadius: ct.radius.md - 2,
-          transform: [{ scale }],
-          backgroundColor,
-        }}
-      >
-        <View
-          style={{
-            width: 10,
-            height: 10,
-            borderRadius: ct.size.marker,
-            backgroundColor: dotColor,
-          }}
-        />
-        <Text
-          style={[
-            ct.text.body,
-            {
-              flex: 1,
-              color: isActive ? colors.foreground : colors.foreground + "BB",
-              fontFamily: isActive ? ct.fontFamily.medium : ct.fontFamily.regular,
-            },
-          ]}
-          numberOfLines={1}
-        >
-          {item.name}
-        </Text>
-        <Text
-          style={[
-            ct.text.caption,
-            { color: colors.mutedForeground, marginRight: ct.xs },
-          ]}
-        >
-          {item.text}
-        </Text>
-        <Text
-          style={[
-            ct.text.caption,
-            {
-              color: isActive ? colors.primary : colors.mutedForeground,
-              fontFamily: ct.fontFamily.medium,
-              width: 36,
-              textAlign: "right",
-            },
-          ]}
-        >
-          {item.percent.toFixed(1)}%
-        </Text>
-      </Animated.View>
-    </Pressable>
-  );
-}
-
 export function CategoryPieChart({
   items,
   primaryColor,
@@ -153,21 +35,18 @@ export function CategoryPieChart({
   const [containerWidth, setContainerWidth] = useState(0);
   const labelOpacity = useRef(new Animated.Value(1)).current;
 
-  const foreground = primaryColor ?? colors.foreground;
-  const cardBg = backgroundColor ?? colors.card;
+  const foreground = primaryColor ?? colors.onSurface;
 
-  const chartColors = primaryColor
-    ? [
-        foreground,
-        foreground + "DD",
-        foreground + "BB",
-        foreground + "77",
-        foreground + "44",
-      ]
-    : colors.chartColors;
+  const cardBg = backgroundColor ?? colors.surfaceContainerHigh;
 
-  // Derive radius from measured container width
-  // Use a single behavior (no compact view): diameter is 90% of width
+  const chartColors = [
+    colors.accent.violet.color,
+    colors.accent.amber.color,
+    colors.accent.teal.color,
+    colors.accent.coral.color,
+    colors.accent.green.color,
+  ];
+
   const radius =
     containerWidth > 0 ? Math.floor((containerWidth * 0.9) / 2) : 120;
 
@@ -183,7 +62,7 @@ export function CategoryPieChart({
   const totalSeconds = items.reduce((s, item) => s + item.total_seconds, 0);
   const centerLabel = activeItem ? activeItem.name : formatTime(totalSeconds);
   const centerSub = activeItem
-    ? `${activeItem.percent.toFixed(1)}%`
+    ? `${formatTime(activeItem.total_seconds)}`
     : "total today";
 
   const animateLabel = (next: () => void) => {
@@ -202,19 +81,21 @@ export function CategoryPieChart({
     setTimeout(next, 100);
   };
 
-  const handlePiePress = (_item: any, index: number) => {
+  const toggleIndex = (index: number) => {
     animateLabel(() => {
       setActiveIndex((prev) => (prev === index ? null : index));
     });
   };
 
+  const handlePiePress = (_item: any, index: number) => {
+    toggleIndex(index);
+  };
 
   return (
     <View
       onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
       style={{ gap: ct.md }}
     >
-      {/* Only render chart once we have a measured width */}
       {containerWidth > 0 && (
         <>
           <View style={{ alignItems: "center", marginVertical: ct.md }}>
@@ -254,7 +135,7 @@ export function CategoryPieChart({
                   <Text
                     style={[
                       ct.text.body,
-                      { color: colors.mutedForeground, marginTop: ct.xs / 2 },
+                      { color: colors.onSurfaceVariant, marginTop: ct.xs / 2 },
                     ]}
                   >
                     {centerSub}

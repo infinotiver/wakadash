@@ -11,16 +11,12 @@ export default function NotFoundScreen() {
     <>
       <Stack.Screen options={{ title: "Oops!" }} />
       <View style={[ct.styles.card, { backgroundColor: colors.background }]}>
-        <Text
-          style={[ct.styles.overview.title, { color: colors.foreground }]}
-        >
+        <Text style={[ct.styles.overview.title, { color: colors.onSurface }]}>
           This screen doesn&apos;t exist.
         </Text>
 
         <Link href="/" style={ct.text.body}>
-          <Text
-            style={[ct.text.body, { color: colors.primary }]}
-          >
+          <Text style={[ct.text.body, { color: colors.primary }]}>
             Go to home screen!
           </Text>
         </Link>

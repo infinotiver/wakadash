@@ -29,7 +29,6 @@ function formatDateLabel(date: string): string {
   });
 }
 
-
 export function WeeklyChart({ days }: Props) {
   const colors = useColors();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -83,7 +82,7 @@ export function WeeklyChart({ days }: Props) {
               style={{
                 width: 3,
                 height: 3,
-              borderRadius: ct.xs / 2,
+                borderRadius: ct.xs / 2,
                 backgroundColor: colors.primary + "88",
               }}
             />
@@ -101,7 +100,7 @@ export function WeeklyChart({ days }: Props) {
           <Text
             style={{
               fontSize: ct.fontSize.xs,
-              color: colors.mutedForeground,
+              color: colors.onSurfaceVariant,
               fontFamily: ct.fontFamily.regular,
             }}
           >
@@ -127,7 +126,7 @@ export function WeeklyChart({ days }: Props) {
               key={i}
               style={{
                 fontSize: ct.fontSize.xs,
-                color: colors.mutedForeground,
+                color: colors.onSurfaceVariant,
                 fontFamily: ct.fontFamily.regular,
                 lineHeight: ct.lineHeight.xs,
               }}ī
@@ -158,7 +157,7 @@ export function WeeklyChart({ days }: Props) {
                   left: 0,
                   right: 0,
                   height: 0.5,
-                  backgroundColor: colors.border,
+                  backgroundColor: colors.outline,
                 }}
               />
             ))}
@@ -194,8 +193,8 @@ export function WeeklyChart({ days }: Props) {
                         {
                           height: `${heightPercent}%`,
                           backgroundColor: isActive
-                            ? colors.primary
-                            : colors.primary + "44",
+                            ? colors.accent.teal.color
+                            : colors.accent.violet.color + "44",
                           borderRadius: ct.xs,
                         },
                       ]}
@@ -207,7 +206,7 @@ export function WeeklyChart({ days }: Props) {
                       {
                         color: isActive
                           ? colors.primary
-                          : colors.mutedForeground,
+                          : colors.onSurfaceVariant,
                         fontFamily: isActive
                           ? ct.fontFamily.semibold
                           : ct.fontFamily.regular,

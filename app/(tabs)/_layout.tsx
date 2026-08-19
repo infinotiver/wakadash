@@ -5,6 +5,8 @@ import { Platform } from "react-native";
 import { SymbolView } from "expo-symbols";
 import { useColors } from "@/src/hooks/useColors";
 
+// No longer using tabs based navigation
+
 const isIOS = Platform.OS === "ios";
 
 export default function TabLayout() {
@@ -15,11 +17,11 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.mutedForeground,
+        tabBarInactiveTintColor: colors.onSurfaceVariant,
         tabBarStyle: {
           display: "none",
-          backgroundColor: colors.card,
-          borderTopColor: colors.border,
+          backgroundColor: colors.surfaceContainerHighest,
+          borderTopColor: colors.outline,
         },
       }}
     >
@@ -47,7 +49,7 @@ export default function TabLayout() {
             ),
         }}
       />
-      
+
       <Tabs.Screen
         name="settings"
         options={{

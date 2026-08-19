@@ -3,8 +3,6 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  Platform,
-  Pressable,
   ScrollView,
   Text,
   TextInput,
@@ -20,18 +18,14 @@ import { useWakaUser } from "@/src/hooks/useWakaTimeQueries";
 import { wakatimeApi } from "@/src/api/wakatime";
 import type { WakaUser } from "@/src/types/wakatime";
 import { ct } from "@/src/constants/styles.common";
+import { AppBar } from "@/src/components/AppBar";
 const styles = ct.styles.settings;
 
 export default function SettingsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const {
-    isConfigured,
-    apiKey,
-    setApiKey,
-    clearApiKey,
-  } = useWakaTime();
+  const { isConfigured, apiKey, setApiKey, clearApiKey } = useWakaTime();
 
   const [editing, setEditing] = useState(!isConfigured);
   const [newKey, setNewKey] = useState("");
@@ -86,218 +80,229 @@ export default function SettingsScreen() {
   const maskedKey = apiKey ? `${apiKey.slice(0, 4)}...${apiKey.slice(-4)}` : "";
 
   return (
-    <ScrollView
-      style={[ct.styles.scroll, { backgroundColor: colors.background }]}
-      contentContainerStyle={[
-        styles.content,
-        {
-          paddingBottom: insets.bottom + ct.lg,
-        },
-      ]}
-    >
-      <View
-        style={[
-          ct.styles.appBar,
-          { paddingTop: Platform.OS === "web" ? ct.sm : insets.top },
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <AppBar title="Settings" onLeadingPress={() => router.back()} />
+
+      <ScrollView
+        style={ct.styles.scroll}
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: insets.bottom + ct.lg },
         ]}
       >
-        <Pressable
-          accessibilityLabel="Go back"
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={ct.styles.appBarIcon}
-        >
-          <Feather name="arrow-left" size={22} color={colors.foreground} />
-        </Pressable>
-        <Text style={[styles.title, { color: colors.foreground }]}>Settings</Text>
-        <View style={ct.styles.appBarIcon} />
-      </View>
+        {userQ.isLoading ? (
+          <ActivityIndicator
+            color={colors.primary}
+            style={{ marginTop: ct.layout.loadingCompact }}
+          />
+        ) : user ? (
+          <View
+            style={[
+              styles.profileCard,
+              {
+                backgroundColor: colors.surfaceContainerHigh,
+                borderColor: colors.outlineVariant,
+              },
+            ]}
+          >
+            {user.photo ? (
+              <Image source={{ uri: user.photo }} style={styles.avatar} />
+            ) : (
+              <View
+                style={[
+                  styles.avatarFallback,
+                  { backgroundColor: colors.primary },
+                ]}
+              >
+                <Feather name="user" size={28} color={colors.onPrimary} />
+              </View>
+            )}
+            <View style={styles.profileInfo}>
+              <Text style={[styles.displayName, { color: colors.onSurface }]}>
+                {user.display_name || user.username}
+              </Text>
+              <Text
+                style={[styles.username, { color: colors.onSurfaceVariant }]}
+              >
+                @{user.username}
+              </Text>
+              {user.location ? (
+                <View style={styles.locationRow}>
+                  <Feather
+                    name="map-pin"
+                    size={12}
+                    color={colors.onSurfaceVariant}
+                  />
+                  <Text
+                    style={[
+                      styles.location,
+                      { color: colors.onSurfaceVariant },
+                    ]}
+                  >
+                    {user.location}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          </View>
+        ) : null}
 
-      {userQ.isLoading ? (
-        <ActivityIndicator color={colors.primary} style={{ marginTop: ct.layout.loadingCompact }} />
-      ) : user ? (
+        {/* API Key */}
         <View
           style={[
-            styles.profileCard,
-            { backgroundColor: colors.card, borderColor: colors.border },
+            styles.section,
+            {
+              backgroundColor: colors.surfaceContainerHigh,
+              borderColor: colors.outlineVariant,
+            },
           ]}
         >
-          {user.photo ? (
-            <Image source={{ uri: user.photo }} style={styles.avatar} />
-          ) : (
-            <View
-              style={[
-                styles.avatarFallback,
-                { backgroundColor: colors.primary },
-              ]}
-            >
-              <Feather name="user" size={28} color={colors.primaryForeground} />
-            </View>
-          )}
-          <View style={styles.profileInfo}>
-            <Text style={[styles.displayName, { color: colors.foreground }]}>
-              {user.display_name || user.username}
-            </Text>
-            <Text style={[styles.username, { color: colors.mutedForeground }]}>
-              @{user.username}
-            </Text>
-            {user.location ? (
-              <View style={styles.locationRow}>
-                <Feather
-                  name="map-pin"
-                  size={12}
-                  color={colors.mutedForeground}
-                />
-                <Text
-                  style={[styles.location, { color: colors.mutedForeground }]}
-                >
-                  {user.location}
-                </Text>
-              </View>
-            ) : null}
-          </View>
-        </View>
-      ) : null}
-
-      {/* API Key */}
-      <View
-        style={[
-          styles.section,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
-      >
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-          API Key
-        </Text>
-        {!editing ? (
-          <View style={styles.keyRow}>
-            <Text
-              style={[
-                styles.keyText,
-                {
-                  color: colors.mutedForeground,
-                  fontFamily: ct.fontFamily.regular,
-                },
-              ]}
-            >
-              {maskedKey}
-            </Text>
-            <TouchableOpacity
-              onPress={() => setEditing(true)}
-              style={[styles.editBtn, { backgroundColor: colors.secondary }]}
-            >
-              <Feather name="edit-2" size={14} color={colors.foreground} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleClear}
-              style={[
-                styles.editBtn,
-                { backgroundColor: colors.destructive + "22" },
-              ]}
-            >
-              <Feather name="trash-2" size={14} color={colors.destructive} />
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={styles.editSection}>
-            <View
-              style={[
-                styles.inputRow,
-                {
-                  backgroundColor: colors.secondary,
-                  borderColor: colors.border,
-                },
-              ]}
-            >
-              <TextInput
+          <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>
+            API Key
+          </Text>
+          {!editing ? (
+            <View style={styles.keyRow}>
+              <Text
                 style={[
-                  styles.input,
-                  { color: colors.foreground, fontFamily: ct.fontFamily.regular },
-                ]}
-                placeholder="waka_..."
-                placeholderTextColor={colors.mutedForeground}
-                value={newKey}
-                onChangeText={setNewKey}
-                secureTextEntry={!show}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-              <TouchableOpacity onPress={() => setShow((s) => !s)}>
-                <Feather
-                  name={show ? "eye-off" : "eye"}
-                  size={16}
-                  color={colors.mutedForeground}
-                />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.btnRow}>
-              {isConfigured ? (
-                <TouchableOpacity
-                  style={[styles.cancelBtn, { borderColor: colors.border }]}
-                  onPress={() => {
-                    setEditing(false);
-                    setNewKey("");
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.cancelText,
-                      { color: colors.mutedForeground },
-                    ]}
-                  >
-                    Cancel
-                  </Text>
-                </TouchableOpacity>
-              ) : null}
-              <TouchableOpacity
-                style={[
-                  styles.saveBtn,
+                  styles.keyText,
                   {
-                    backgroundColor: colors.primary,
-                    opacity: saving || !newKey.trim() ? 0.5 : 1,
+                    color: colors.onSurfaceVariant,
+                    fontFamily: ct.fontFamily.regular,
                   },
                 ]}
-                onPress={handleSave}
-                disabled={saving || !newKey.trim()}
-                activeOpacity={0.8}
               >
-                {saving ? (
-                  <ActivityIndicator
-                    color={colors.primaryForeground}
-                    size="small"
-                  />
-                ) : (
-                  <Text
-                    style={[
-                      styles.saveText,
-                      { color: colors.primaryForeground },
-                    ]}
-                  >
-                    Save
-                  </Text>
-                )}
+                {maskedKey}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setEditing(true)}
+                style={[
+                  styles.editBtn,
+                  { backgroundColor: colors.secondaryContainer },
+                ]}
+              >
+                <Feather
+                  name="edit-2"
+                  size={14}
+                  color={colors.onSecondaryContainer}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleClear}
+                style={[
+                  styles.editBtn,
+                  { backgroundColor: colors.errorContainer },
+                ]}
+              >
+                <Feather
+                  name="trash-2"
+                  size={14}
+                  color={colors.onErrorContainer}
+                />
               </TouchableOpacity>
             </View>
-          </View>
-        )}
-      </View>
-
-      {/* Credits */}
-      <View
-        style={[
-          styles.section,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
-      >
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-          Credits
-        </Text>
-        <View style={[ct.styles.row, { borderTopColor: colors.border }]}>
-          <Text style={[ct.text.body, { color: colors.foreground }]}>
-            made with love by infinotiver
-          </Text>
+          ) : (
+            <View style={styles.editSection}>
+              <View
+                style={[
+                  styles.inputRow,
+                  {
+                    backgroundColor: colors.surfaceContainerHigh,
+                    borderColor: colors.outline,
+                  },
+                ]}
+              >
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      color: colors.onSurface,
+                      fontFamily: ct.fontFamily.regular,
+                    },
+                  ]}
+                  placeholder="waka_..."
+                  placeholderTextColor={colors.onSurfaceVariant}
+                  value={newKey}
+                  onChangeText={setNewKey}
+                  secureTextEntry={!show}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                <TouchableOpacity onPress={() => setShow((s) => !s)}>
+                  <Feather
+                    name={show ? "eye-off" : "eye"}
+                    size={16}
+                    color={colors.onSurfaceVariant}
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.btnRow}>
+                {isConfigured ? (
+                  <TouchableOpacity
+                    style={[styles.cancelBtn, { borderColor: colors.outline }]}
+                    onPress={() => {
+                      setEditing(false);
+                      setNewKey("");
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.cancelText,
+                        { color: colors.onSurfaceVariant },
+                      ]}
+                    >
+                      Cancel
+                    </Text>
+                  </TouchableOpacity>
+                ) : null}
+                <TouchableOpacity
+                  style={[
+                    styles.saveBtn,
+                    {
+                      backgroundColor: colors.primary,
+                      opacity: saving || !newKey.trim() ? 0.5 : 1,
+                    },
+                  ]}
+                  onPress={handleSave}
+                  disabled={saving || !newKey.trim()}
+                  activeOpacity={0.8}
+                >
+                  {saving ? (
+                    <ActivityIndicator color={colors.onPrimary} size="small" />
+                  ) : (
+                    <Text
+                      style={[styles.saveText, { color: colors.onPrimary }]}
+                    >
+                      Save
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
         </View>
-      </View>
-    </ScrollView>
+
+        {/* Credits */}
+        <View
+          style={[
+            styles.section,
+            {
+              backgroundColor: colors.surfaceContainerHigh,
+              borderColor: colors.outlineVariant,
+            },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>
+            Credits
+          </Text>
+          <View
+            style={[ct.styles.row, { borderTopColor: colors.outlineVariant }]}
+          >
+            <Text style={[ct.text.body, { color: colors.onSurface }]}>
+              made with love by infinotiver
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </View>
   );
 }

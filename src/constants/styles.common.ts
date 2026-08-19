@@ -93,14 +93,12 @@ const text = StyleSheet.create({
     letterSpacing: 0.4,
   },
   value: {
-    fontSize: fontSize["5xl"],
-    fontFamily: fontFamily.bold,
+    fontSize: 22,
     letterSpacing: -0.5,
   },
-  valueSm: { fontSize: fontSize["2xl"], fontFamily: fontFamily.semibold },
+  valueSm: { fontSize: 16 },
   valueLg: {
-    fontSize: fontSize["6xl"],
-    fontFamily: fontFamily.bold,
+    fontSize: 24,
     letterSpacing: -0.5,
   },
   body: { fontSize: fontSize.md, fontFamily: fontFamily.regular },
@@ -264,8 +262,7 @@ const styles = {
     row: { flexDirection: "row" },
     section: {
       borderRadius: radius.xl,
-      padding: padding.xl - 6,
-      borderWidth: 1,
+      padding: padding.lg,
       gap: padding.xs,
     },
     sectionTitle: text.sectionTitle,

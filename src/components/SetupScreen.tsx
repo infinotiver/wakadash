@@ -51,13 +51,15 @@ export function SetupScreen() {
       }}
     >
       {/* Top wordmark */}
-      <View style={{ flex: 1, justifyContent: "center", gap: ct.padding["2xl"] }}>
+      <View
+        style={{ flex: 1, justifyContent: "center", gap: ct.padding["2xl"] }}
+      >
         <View style={{ gap: ct.sm }}>
           <Text
             style={{
               fontSize: ct.fontSize["8xl"],
               fontFamily: ct.fontFamily.bold,
-              color: colors.foreground,
+              color: colors.onSurface,
               textAlign: "center",
               lineHeight: ct.fontSize["8xl"],
             }}
@@ -67,7 +69,7 @@ export function SetupScreen() {
           <Text
             style={[
               ct.text.body,
-              { color: colors.mutedForeground, textAlign: "center" },
+              { color: colors.onSurfaceVariant, textAlign: "center" },
             ]}
           >
             Paste your API key to get started.
@@ -79,9 +81,9 @@ export function SetupScreen() {
           <View
             style={{
               borderWidth: 1,
-              borderColor: error ? colors.destructive : colors.border,
+              borderColor: error ? colors.error : colors.outline,
               borderRadius: ct.radius.lg,
-              backgroundColor: colors.card,
+              backgroundColor: colors.surfaceContainerHighest,
               flexDirection: "row",
               alignItems: "center",
               height: 52,
@@ -93,11 +95,11 @@ export function SetupScreen() {
                 flex: 1,
                 fontSize: ct.fontSize.md,
                 fontFamily: ct.fontFamily.regular,
-                color: colors.foreground,
+                color: colors.onSurface,
                 height: "100%",
               }}
               placeholder="waka_xxxxxxxxxxxxxxxx"
-              placeholderTextColor={colors.mutedForeground}
+              placeholderTextColor={colors.onSurfaceVariant}
               value={key}
               onChangeText={(v) => {
                 setKey(v);
@@ -116,7 +118,7 @@ export function SetupScreen() {
               <Feather
                 name={show ? "eye-off" : "eye"}
                 size={16}
-                color={colors.mutedForeground}
+                color={colors.onSurfaceVariant}
               />
             </TouchableOpacity>
           </View>
@@ -126,7 +128,10 @@ export function SetupScreen() {
             <Text
               style={[
                 ct.text.caption,
-                { color: colors.destructive, paddingHorizontal: ct.layout.inputErrorPadding },
+                {
+                  color: colors.error,
+                  paddingHorizontal: ct.layout.inputErrorPadding,
+                },
               ]}
             >
               {error}
@@ -148,13 +153,13 @@ export function SetupScreen() {
             }}
           >
             {loading ? (
-              <ActivityIndicator color={colors.primaryForeground} />
+              <ActivityIndicator color={colors.onPrimary} />
             ) : (
               <Text
                 style={{
                   fontSize: ct.fontSize.lg,
                   fontFamily: ct.fontFamily.semibold,
-                  color: colors.primaryForeground,
+                  color: colors.onPrimary,
                 }}
               >
                 Connect
@@ -168,7 +173,7 @@ export function SetupScreen() {
           style={[
             ct.text.caption,
             {
-              color: colors.mutedForeground,
+              color: colors.onSurfaceVariant,
               textAlign: "center",
               lineHeight: ct.lineHeight.sm,
             },

@@ -23,7 +23,7 @@ import {
   useTodaySummary,
   useWeekSummaries,
 } from "@/src/hooks/useWakaTimeQueries";
-
+import { Feather } from "@expo/vector-icons";
 const styles = ct.styles.overview;
 
 export default function OverviewScreen() {
@@ -44,7 +44,14 @@ export default function OverviewScreen() {
   const today = todayQ.data;
   const week = weekQ.data ?? [];
   const allTime = allTimeQ.data;
-  const chartColors = colors.chartColors as string[];
+  const chartColors = [
+    colors.accent.violet.color,
+    colors.accent.amber.color,
+    colors.accent.teal.color,
+    colors.accent.coral.color,
+    colors.accent.green.color,
+  ];
+
   const weekAvg = averageSummarySeconds(week);
   const loading = todayQ.isLoading || weekQ.isLoading || allTimeQ.isLoading;
 
@@ -52,12 +59,17 @@ export default function OverviewScreen() {
     <View style={[ct.styles.flex, { backgroundColor: colors.background }]}>
       <AppBar
         title="WakaDash"
-        leftIcon="menu"
-        leftLabel="Open breakdown"
-        onLeftPress={() => router.push("/(tabs)/breakdown")}
-        rightIcon="settings"
-        rightLabel="Open settings"
-        onRightPress={() => router.push("/(tabs)/settings")}
+        variant="center"
+        leadingIcon="menu"
+        leadingLabel="Open breakdown"
+        onLeadingPress={() => router.push("/(tabs)/breakdown")}
+        actions={[
+          {
+            icon: "settings",
+            label: "Open settings",
+            onPress: () => router.push("/(tabs)/settings"),
+          },
+        ]}
       />
       <ScrollView
         style={ct.styles.scroll}
@@ -84,10 +96,15 @@ export default function OverviewScreen() {
           <View
             style={[
               styles.errorCard,
-              { backgroundColor: colors.card, borderColor: colors.border },
+              {
+                backgroundColor: colors.errorContainer,
+                borderColor: colors.error,
+              },
             ]}
           >
-            <Text style={[styles.errorText, { color: colors.destructive }]}>
+            <Text
+              style={[styles.errorText, { color: colors.onErrorContainer }]}
+            >
               Failed to load
             </Text>
           </View>
@@ -103,95 +120,78 @@ export default function OverviewScreen() {
                 }))}
               />
             ) : null}
-            <View style={[styles.row, {gap:ct.padding.md}]}>
+            <View style={[styles.row, { gap: ct.padding.md }]}>
               <StatCard
                 value={formatDuration(weekAvg)}
                 subtitle="weekly avg"
-                icon={<Feather name="clock" size={20} color={colors.primary} />}
+                accent="violet"
+                icon={(tint) => <Feather name="clock" size={20} color={tint} />}
               />
               <StatCard
-                label="Top project"
-                value={today?.projects?.[0]?.name ?? "-"}
-                subtitle={today?.projects?.[0]?.text}
-                icon={
-                  <Feather name="folder" size={20} color={colors.primary} />
-                }
+                subtitle={today?.projects?.[0]?.name ?? "-"}
+                value={today?.projects?.[0]?.text}
+                accent="green"
+                icon={(tint) => (
+                  <Feather name="folder" size={20} color={tint} />
+                )}
               />
             </View>
             <DashboardBreakdownSection
               title="Languages"
               chartColors={chartColors}
-              items={
-                (today?.languages ?? [])
-                  .slice(0, 4)
-                  .map((item) => ({ name: item.name, percent: item.percent }))
-              }
+              items={(today?.languages ?? []).slice(0, 4).map((item) => ({
+                name: item.name,
+                percent: item.percent,
+                trailingText: item.text,
+              }))}
             />
             <DashboardBreakdownSection
               title="Editors"
               chartColors={chartColors}
-              items={
-                (today?.editors ?? [])
-                  .slice(0, 4)
-                  .map((item) => ({ name: item.name, percent: item.percent }))
-              }
+              items={(today?.editors ?? []).slice(0, 4).map((item) => ({
+                name: item.name,
+                percent: item.percent,
+                trailingText: item.text,
+              }))}
             />
             <DashboardBreakdownSection
               title="Projects"
               chartColors={chartColors}
-              items={
-                (today?.projects ?? [])
-                  .slice(0, 4)
-                  .map((item) => ({ name: item.name, percent: item.percent }))
-              }
+              items={(today?.projects ?? []).slice(0, 4).map((item) => ({
+                name: item.name,
+                percent: item.percent,
+                trailingText: item.text,
+              }))}
             />
             <DashboardBreakdownSection
               title="Operating Systems"
               chartColors={chartColors}
-              items={
-                (today?.operating_systems ?? [])
-                  .slice(0, 4)
-                  .map((item) => ({ name: item.name, percent: item.percent }))
-              }
+              items={(today?.operating_systems ?? [])
+                .slice(0, 4)
+                .map((item) => ({
+                  name: item.name,
+                  percent: item.percent,
+                  trailingText: item.text,
+                }))}
             />
-            {/*
-            {renderSection(
-              "Languages",
-              (today?.languages ?? [])
-                .slice(0, 4)
-                .map((item) => ({ name: item.name, percent: item.percent })),
-            )}
-            {renderSection(
-              "Editors",
-              (today?.editors ?? [])
-                .slice(0, 4)
-                .map((item) => ({ name: item.name, percent: item.percent })),
-            )}
-            {renderSection(
-              "Projects",
-              (today?.projects ?? [])
-                .slice(0, 4)
-                .map((item) => ({ name: item.name, percent: item.percent })),
-            )}
-            {renderSection(
-              "Operating Systems",
-              (today?.operating_systems ?? [])
-                .slice(0, 4)
-                .map((item) => ({ name: item.name, percent: item.percent })),
-            )} */}
             <View
               style={[
                 styles.section,
-                { backgroundColor: colors.card, borderColor: colors.border },
+                {
+                  backgroundColor: colors.surfaceContainerHigh,
+                  borderColor: colors.outlineVariant,
+                },
               ]}
             >
-              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+              <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>
                 Last 7 Days
               </Text>
               {week.length ? (
                 <WeeklyChart days={week} />
               ) : (
-                <Text style={[styles.empty, { color: colors.mutedForeground }]}>
+                <Text
+                  style={[styles.empty, { color: colors.onSurfaceVariant }]}
+                >
                   No data available
                 </Text>
               )}
@@ -200,11 +200,14 @@ export default function OverviewScreen() {
               <View
                 style={[
                   styles.section,
-                  { backgroundColor: colors.card, borderColor: colors.border },
+                  {
+                    backgroundColor: colors.surfaceContainerHigh,
+                    borderColor: colors.outlineVariant,
+                  },
                 ]}
               >
                 <Text
-                  style={[styles.sectionTitle, { color: colors.foreground }]}
+                  style={[styles.sectionTitle, { color: colors.onSurface }]}
                 >
                   All Time Stats
                 </Text>
@@ -213,14 +216,12 @@ export default function OverviewScreen() {
                     <Text
                       style={[
                         styles.heroSub,
-                        { color: colors.mutedForeground },
+                        { color: colors.onSurfaceVariant },
                       ]}
                     >
                       Total Time
                     </Text>
-                    <Text
-                      style={[styles.heroSub, { color: colors.foreground }]}
-                    >
+                    <Text style={[styles.heroSub, { color: colors.onSurface }]}>
                       {allTime.text ?? "-"}
                     </Text>
                   </View>
@@ -228,14 +229,12 @@ export default function OverviewScreen() {
                     <Text
                       style={[
                         styles.heroSub,
-                        { color: colors.mutedForeground },
+                        { color: colors.onSurfaceVariant },
                       ]}
                     >
                       Daily Avg
                     </Text>
-                    <Text
-                      style={[styles.heroSub, { color: colors.foreground }]}
-                    >
+                    <Text style={[styles.heroSub, { color: colors.onSurface }]}>
                       {formatDuration(allTime.daily_average)}
                     </Text>
                   </View>
@@ -243,14 +242,12 @@ export default function OverviewScreen() {
                     <Text
                       style={[
                         styles.heroSub,
-                        { color: colors.mutedForeground },
+                        { color: colors.onSurfaceVariant },
                       ]}
                     >
                       Data Since
                     </Text>
-                    <Text
-                      style={[styles.heroSub, { color: colors.foreground }]}
-                    >
+                    <Text style={[styles.heroSub, { color: colors.onSurface }]}>
                       {allTime.range?.start_text}
                     </Text>
                   </View>

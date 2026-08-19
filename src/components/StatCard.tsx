@@ -1,84 +1,59 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { useColors } from "@/src/hooks/useColors";
-import { ct } from "@/src/constants/styles.common";
+import { Text, View } from "react-native";
+import { ct } from "../constants/styles.common";
+import { useColors } from "../hooks/useColors";
 
 interface StatCardProps {
-  label?: string;
-  value: string;
+  value?: string;
   subtitle?: string;
-  icon?: React.ReactNode;
+  icon?: (tintColor: string) => React.ReactNode;
+  accent?: "teal" | "green" | "coral" | "amber" | "violet";
 }
 
-export function StatCard({ label, value, subtitle, icon }: StatCardProps) {
+export function StatCard({
+  value,
+  subtitle,
+  icon,
+  accent = "violet",
+}: StatCardProps) {
   const colors = useColors();
+  const { colorContainer, onColorContainer } = colors.accent[accent];
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.card }]}>
+    <View
+      style={[
+        ct.styles.flex,
+        ct.styles.row,
+        {
+          backgroundColor: colors.surfaceContainerHigh,
+          padding: ct.padding.sm,
+          borderRadius: ct.radius["2xl"],
+          gap: ct.padding.sm,
+        },
+      ]}
+    >
       {icon ? (
-        <View style={[styles.iconWrap, { backgroundColor: colors.accent }]}>
-          {icon}
+        <View
+          style={{
+            borderRadius: ct.radius["full"],
+            padding: ct.padding.sm,
+            backgroundColor: colorContainer,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {icon(onColorContainer)}
         </View>
       ) : null}
 
-      <View style={styles.textColumn}>
-        {label ? (
-          <Text
-            style={[styles.label, { color: colors.foreground }]}
-            numberOfLines={1}
-          >
-            {label}
-          </Text>
+      <View style={{ flex: 1 }}>
+        {value ? (
+          <Text style={{ color: colors.onSurfaceVariant }}>{value}</Text>
         ) : null}
-        <Text
-          style={[styles.value, { color: colors.foreground }]}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-        >
-          {value}
-        </Text>
         {subtitle ? (
-          <Text
-            style={[styles.subtitle, { color: colors.foreground }]}
-            numberOfLines={1}
-          >
-            {subtitle}
-          </Text>
+          <Text style={{ color: colors.onSurface }}>{subtitle}</Text>
         ) : null}
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "stretch",
-    gap: ct.padding.md,
-    padding: ct.padding.md,
-    borderRadius: ct.radius.lg,
-  },
-  iconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: ct.radius.lg,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  textColumn: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  label: {
-    ...ct.text.captionMedium,
-  },
-  value: {
-    ...ct.text.valueSm,
-    lineHeight: undefined,
-  },
-  subtitle: {
-    ...ct.text.caption,
-  },
-});

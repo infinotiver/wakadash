@@ -5,7 +5,7 @@ import { ct } from "@/src/constants/styles.common";
 
 interface DashboardBreakdownSectionProps {
   title: string;
-  items: Array<{ name: string; percent: number }>;
+  items: Array<{ name: string; percent: number; trailingText: string }>;
   chartColors: string[];
 }
 
@@ -22,11 +22,16 @@ export function DashboardBreakdownSection({
     <View
       style={[
         ct.styles.overview.section,
-        { backgroundColor: colors.card, borderColor: colors.border },
+        {
+          backgroundColor: colors.surfaceContainerHigh,
+        },
       ]}
     >
       <Text
-        style={[ct.styles.overview.sectionTitle, { color: colors.foreground }]}
+        style={[
+          ct.styles.overview.sectionTitle,
+          { color: colors.onSurfaceVariant },
+        ]}
       >
         {title}
       </Text>
@@ -35,13 +40,13 @@ export function DashboardBreakdownSection({
           key: `${title}-${item.name}`,
           label: item.name,
           percent: item.percent,
-          secondaryText: `${item.percent.toFixed(1)}%`,
+          trailingText: item.trailingText,
           color: chartColors[index % chartColors.length] ?? colors.primary,
         }))}
-        textColor={colors.foreground}
-        mutedTextColor={colors.mutedForeground}
-        trackColor={colors.secondary}
-        separatorColor={colors.card}
+        textColor={colors.onSurface}
+        mutedTextColor={colors.onSurfaceVariant}
+        trackColor={colors.surfaceContainerHigh}
+        separatorColor={colors.outlineVariant}
       />
     </View>
   );
