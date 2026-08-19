@@ -16,13 +16,14 @@ function formatTime(totalSeconds: number): string {
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
   const s = Math.floor(totalSeconds % 60);
+
   if (h > 0) return `${h}h ${m}m`;
-  if (m > 0) return `${m}m ${s > 0 ? `${s}s` : ""}`.trim();
+  if (m > 0) return `${m}m${s > 0 ? ` ${s}s` : ""}`;
   return `${s}s`;
 }
 
 function formatDateLabel(date: string): string {
-  return new Date(date + "T12:00:00").toLocaleDateString(undefined, {
+  return new Date(`${date}T12:00:00`).toLocaleDateString(undefined, {
     weekday: "long",
     month: "short",
     day: "numeric",
@@ -31,30 +32,32 @@ function formatDateLabel(date: string): string {
 
 export function WeeklyChart({ days }: Props) {
   const colors = useColors();
+
+  // Persistent selection.
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const maxSeconds = useMemo(
-    () => Math.max(1, ...days.map((d) => d.grand_total?.total_seconds ?? 0)),
+    () =>
+      Math.max(1, ...days.map((day) => day.grand_total?.total_seconds ?? 0)),
     [days],
   );
 
-  // const yLabels = getYAxisLabels(maxSeconds);
-
   const activeDay = activeIndex !== null ? days[activeIndex] : null;
   const activeSeconds = activeDay?.grand_total?.total_seconds ?? 0;
+
   const activeDateLabel = activeDay?.range?.date
     ? formatDateLabel(activeDay.range.date)
     : null;
 
   return (
     <View>
-      {/* Tooltip row */}
+      {/* Selected-day details */}
       <View
         style={{
-          height: ct.size.tooltipHeight,
+          minHeight: ct.size.tooltipHeight,
+          marginBottom: ct.sm,
           justifyContent: "center",
           alignItems: "center",
-          marginBottom: ct.sm,
         }}
       >
         {activeIndex !== null && activeDateLabel ? (
@@ -62,35 +65,35 @@ export function WeeklyChart({ days }: Props) {
             style={{
               flexDirection: "row",
               alignItems: "center",
-              gap: ct.sm,
-              paddingHorizontal: ct.md,
-              paddingVertical: ct.xs,
-              backgroundColor: colors.primary + "18",
-              borderRadius: 999,
             }}
           >
             <Text
               style={{
                 fontSize: ct.fontSize.sm,
+                lineHeight: ct.lineHeight.sm,
                 fontFamily: ct.fontFamily.medium,
-                color: colors.primary,
+                color: colors.onSurfaceVariant,
               }}
             >
               {activeDateLabel}
             </Text>
+
             <View
               style={{
-                width: 3,
-                height: 3,
-                borderRadius: ct.xs / 2,
-                backgroundColor: colors.primary + "88",
+                width: 4,
+                height: 4,
+                marginHorizontal: ct.sm,
+                borderRadius: 2,
+                backgroundColor: colors.outline,
               }}
             />
+
             <Text
               style={{
                 fontSize: ct.fontSize.sm,
+                lineHeight: ct.lineHeight.sm,
                 fontFamily: ct.fontFamily.semibold,
-                color: colors.primary,
+                color: colors.onSurface,
               }}
             >
               {formatTime(activeSeconds)}
@@ -100,8 +103,9 @@ export function WeeklyChart({ days }: Props) {
           <Text
             style={{
               fontSize: ct.fontSize.xs,
-              color: colors.onSurfaceVariant,
+              lineHeight: ct.lineHeight.xs,
               fontFamily: ct.fontFamily.regular,
+              color: colors.onSurfaceVariant,
             }}
           >
             Tap a bar for details
@@ -109,107 +113,102 @@ export function WeeklyChart({ days }: Props) {
         )}
       </View>
 
-      {/* Chart: Y-axis + bars */}
+      {/* Chart */}
       <View style={{ flexDirection: "row" }}>
-        {/* Y-axis
-        <View
-          style={{
-            width: 30,
-            justifyContent: "space-between",
-            alignItems: "flex-end",
-            paddingRight: ct.xs + 2,
-            paddingBottom: ct.size.chartBottom,
-          }}
-        >
-          {yLabels.map((label, i) => (
-            <Text
-              key={i}
-              style={{
-                fontSize: ct.fontSize.xs,
-                color: colors.onSurfaceVariant,
-                fontFamily: ct.fontFamily.regular,
-                lineHeight: ct.lineHeight.xs,
-              }}ī
-            >
-              {label}
-            </Text>
-          ))}
-        </View> */}
-
-        {/* Grid + bars */}
         <View style={{ flex: 1 }}>
-          {/* Horizontal grid lines */}
           <View
+            pointerEvents="none"
             style={{
               position: "absolute",
               top: 0,
               left: 0,
               right: 0,
-              bottom: 20,
+              bottom: ct.size.chartBottom,
             }}
           >
-            {[1, 0.5, 0].map((pos) => (
+            {[0, 0.5, 1].map((position) => (
               <View
-                key={pos}
+                key={position}
                 style={{
                   position: "absolute",
-                  top: `${(1 - pos) * 100}%` as any,
+                  top: `${position * 100}%`,
                   left: 0,
                   right: 0,
-                  height: 0.5,
-                  backgroundColor: colors.outline,
+                  height: 1,
+                  backgroundColor: colors.outlineVariant,
+                  opacity: position === 1 ? 0.8 : 0.5,
                 }}
               />
             ))}
           </View>
 
-          {/* Bars */}
           <View style={styles.bars}>
             {days.map((day, index) => {
               const seconds = day.grand_total?.total_seconds ?? 0;
-              const heightPercent = Math.max(
-                2,
-                Math.round((seconds / maxSeconds) * 100),
-              );
+
+              const heightPercent =
+                seconds === 0 ? 0 : Math.max(4, (seconds / maxSeconds) * 100);
+
               const isActive = activeIndex === index;
-              const dayDate = new Date((day.range?.date ?? "") + "T12:00:00");
-              const label = DAY_LABELS[dayDate.getDay()] ?? "—";
+
+              const date = day.range?.date
+                ? new Date(`${day.range.date}T12:00:00`)
+                : null;
+
+              const label = date ? DAY_LABELS[date.getDay()] : "—";
 
               return (
                 <Pressable
                   key={day.range?.date ?? index}
                   style={styles.barCol}
                   onHoverIn={() => setActiveIndex(index)}
-                  onHoverOut={() => setActiveIndex(null)}
-                  onPressIn={() => setActiveIndex(index)}
-                  onPressOut={() => setActiveIndex(null)}
+                  onHoverOut={() => {}}
+                  onPress={() => setActiveIndex(index)}
                   accessibilityRole="button"
                   accessibilityLabel={`${label}, ${formatTime(seconds)}`}
+                  accessibilityState={{
+                    selected: isActive,
+                  }}
                 >
-                  <View style={styles.barTrack}>
-                    <View
-                      style={[
-                        styles.barFill,
-                        {
+                  {/* Bar */}
+                  <View
+                    style={{
+                      flex: 1,
+                      width: "100%",
+                      justifyContent: "flex-end",
+                      alignItems: "center",
+                    }}
+                  >
+                    {seconds > 0 && (
+                      <View
+                        style={{
+                          width: "100%",
                           height: `${heightPercent}%`,
+                          minHeight: 8,
+
                           backgroundColor: isActive
-                            ? colors.accent.teal.color
-                            : colors.accent.violet.color + "44",
-                          borderRadius: ct.xs,
-                        },
-                      ]}
-                    />
+                            ? colors.tertiary
+                            : colors.tertiaryContainer,
+
+                          // Pill shape.
+                          borderRadius: 999,
+                        }}
+                      />
+                    )}
                   </View>
+
+                  {/* Day label */}
                   <Text
                     style={[
                       styles.dayLabel,
                       {
                         color: isActive
-                          ? colors.primary
+                          ? colors.tertiary
                           : colors.onSurfaceVariant,
+
                         fontFamily: isActive
                           ? ct.fontFamily.semibold
-                          : ct.fontFamily.regular,
+                          : ct.fontFamily.medium,
                       },
                     ]}
                   >
