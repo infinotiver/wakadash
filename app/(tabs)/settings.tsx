@@ -101,7 +101,6 @@ export default function SettingsScreen() {
               styles.profileCard,
               {
                 backgroundColor: colors.surfaceContainerHigh,
-                borderColor: colors.outlineVariant,
               },
             ]}
           >
@@ -153,7 +152,6 @@ export default function SettingsScreen() {
             styles.section,
             {
               backgroundColor: colors.surfaceContainerHigh,
-              borderColor: colors.outlineVariant,
             },
           ]}
         >
@@ -287,7 +285,6 @@ export default function SettingsScreen() {
             styles.section,
             {
               backgroundColor: colors.surfaceContainerHigh,
-              borderColor: colors.outlineVariant,
             },
           ]}
         >

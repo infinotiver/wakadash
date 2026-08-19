@@ -196,7 +196,7 @@ const styles = {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderRadius: radius.lg - 2,
+    borderRadius: radius.lg,
     paddingHorizontal: padding.lg - 2,
     height: 48,
   },
@@ -210,7 +210,7 @@ const styles = {
   },
   buttonSm: {
     height: 44,
-    borderRadius: radius.lg - 2,
+    borderRadius: radius.lg,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -276,6 +276,13 @@ const styles = {
       marginTop: padding.lg,
     },
     errorText: text.body,
+    breakdownGroup: {
+      borderRadius: 24,
+    },
+    cardSpacing: {
+      marginHorizontal: padding.md,
+      marginBottom: padding.md,
+    },
   },
   breakdown: {
     content: { paddingHorizontal: padding.lg, gap: padding.md },
@@ -306,7 +313,6 @@ const styles = {
     profileCard: {
       borderRadius: radius.xl,
       padding: padding.lg,
-      borderWidth: 1,
       flexDirection: "row",
       alignItems: "center",
       gap: padding.lg - 2,
@@ -336,7 +342,6 @@ const styles = {
     section: {
       borderRadius: radius.xl,
       padding: padding.lg,
-      borderWidth: 1,
       gap: padding.md,
     },
     sectionTitle: text.settingTitle,
@@ -346,7 +351,7 @@ const styles = {
       flexDirection: "row",
       alignItems: "center",
       borderWidth: 1,
-      borderRadius: radius.lg - 2,
+      borderRadius: radius.lg,
       paddingHorizontal: padding.lg,
       height: 48,
     },
@@ -354,8 +359,7 @@ const styles = {
     btnRow: { flexDirection: "row", gap: padding.md },
     cancelBtn: {
       flex: 1,
-      height: 44,
-      borderRadius: radius.lg - 2,
+      borderRadius: radius.lg,
       borderWidth: 1,
       alignItems: "center",
       justifyContent: "center",
@@ -364,7 +368,7 @@ const styles = {
     saveBtn: {
       flex: 2,
       height: 44,
-      borderRadius: radius.lg - 2,
+      borderRadius: radius.lg,
       alignItems: "center",
       justifyContent: "center",
     },
