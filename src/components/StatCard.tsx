@@ -7,17 +7,21 @@ interface StatCardProps {
   value?: string;
   subtitle?: string;
   icon?: (tintColor: string) => React.ReactNode;
-  accent?: "teal" | "green" | "coral" | "amber" | "violet";
+  iconTintColor?: string;
+  iconBackgroundColor?: string;
 }
 
 export function StatCard({
   value,
   subtitle,
   icon,
-  accent = "violet",
+  iconTintColor,
+  iconBackgroundColor,
 }: StatCardProps) {
   const colors = useColors();
-  const { colorContainer, onColorContainer } = colors.accent[accent];
+
+  const resolvedIconTintColor = iconTintColor ?? colors.onSecondary;
+  const resolvedIconBackgroundColor = iconBackgroundColor ?? colors.secondary;
 
   return (
     <View
@@ -37,12 +41,12 @@ export function StatCard({
           style={{
             borderRadius: ct.radius["full"],
             padding: ct.padding.sm,
-            backgroundColor: colorContainer,
+            backgroundColor: resolvedIconBackgroundColor,
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          {icon(onColorContainer)}
+          {icon(resolvedIconTintColor)}
         </View>
       ) : null}
 
@@ -50,6 +54,7 @@ export function StatCard({
         {value ? (
           <Text style={{ color: colors.onSurfaceVariant }}>{value}</Text>
         ) : null}
+
         {subtitle ? (
           <Text style={{ color: colors.onSurface }}>{subtitle}</Text>
         ) : null}

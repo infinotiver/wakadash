@@ -56,6 +56,13 @@ export default function OverviewScreen() {
 
   const weekAvg = averageSummarySeconds(week);
 
+  const bestDay = week.reduce(
+    (best, day) =>
+      !best || day.grand_total.total_seconds > best.grand_total.total_seconds
+        ? day
+        : best,
+    null as (typeof week)[number] | null,
+  );
   const loading = todayQ.isLoading || weekQ.isLoading || allTimeQ.isLoading;
 
   const chartColors = [
@@ -75,20 +82,7 @@ export default function OverviewScreen() {
         },
       ]}
     >
-      <AppBar
-        title="WakaDash"
-        variant="center"
-        leadingIcon="menu"
-        leadingLabel="Open breakdown"
-        onLeadingPress={() => router.push("/(tabs)/breakdown")}
-        actions={[
-          {
-            icon: "settings",
-            label: "Open settings",
-            onPress: () => router.push("/(tabs)/settings"),
-          },
-        ]}
-      />
+      <AppBar title="WakaDash" variant="center" />
 
       <ScrollView
         style={ct.styles.scroll}
@@ -136,45 +130,66 @@ export default function OverviewScreen() {
           </View>
         ) : (
           <>
-            {/* Categories */}
-            {(today?.categories?.length ?? 0) > 0 && (
-              <View style={styles.cardSpacing}>
-                <CategoryPieChart
-                  items={(today?.categories ?? []).slice(0, 5).map((item) => ({
-                    name: item.name,
-                    percent: item.percent,
-                    total_seconds: item.total_seconds,
-                    text: item.text,
-                  }))}
-                />
-              </View>
-            )}
-
-            {/* Summary stats */}
             <View
               style={[
                 styles.row,
                 styles.cardSpacing,
                 {
-                  gap: ct.padding.md,
+                  alignItems: "stretch",
                 },
               ]}
             >
-              <StatCard
-                value={formatDuration(weekAvg)}
-                subtitle="weekly avg"
-                accent="violet"
-                icon={(tint) => <Feather name="clock" size={20} color={tint} />}
-              />
-
-              <StatCard
-                subtitle={today?.projects?.[0]?.name ?? "-"}
-                value={today?.projects?.[0]?.text}
-                accent="green"
-                icon={(tint) => (
-                  <Feather name="folder" size={20} color={tint} />
+              <View style={{ flex: 1 }}>
+                {(today?.categories?.length ?? 0) > 0 && (
+                  <CategoryPieChart
+                    items={(today?.categories ?? [])
+                      .slice(0, 5)
+                      .map((item) => ({
+                        name: item.name,
+                        percent: item.percent,
+                        total_seconds: item.total_seconds,
+                        text: item.text,
+                      }))}
+                  />
                 )}
-              />
+              </View>
+
+              <View
+                style={{
+                  flex: 1,
+                  gap: ct.padding.sm,
+                }}
+              >
+                <View style={{ flex: 1 }}>
+                  <StatCard
+                    value={today?.grand_total.text ?? "-"}
+                    subtitle="today"
+                    icon={(tint) => (
+                      <Feather name="clock" size={20} color={tint} />
+                    )}
+                  />
+                </View>
+
+                <View style={{ flex: 1 }}>
+                  <StatCard
+                    value={formatDuration(weekAvg)}
+                    subtitle="daily avg"
+                    icon={(tint) => (
+                      <Feather name="bar-chart" size={20} color={tint} />
+                    )}
+                  />
+                </View>
+
+                <View style={{ flex: 1 }}>
+                  <StatCard
+                    value={bestDay?.grand_total.text ?? "-"}
+                    subtitle="best day"
+                    icon={(tint) => (
+                      <Feather name="award" size={20} color={tint} />
+                    )}
+                  />
+                </View>
+              </View>
             </View>
 
             {/* Breakdown group */}
@@ -183,8 +198,7 @@ export default function OverviewScreen() {
                 styles.breakdownGroup,
                 ct.styles.flex,
                 {
-                  paddingVertical: ct.padding["2xl"],
-                  paddingHorizontal: ct.padding.lg,
+                  padding: ct.padding.xl,
                   marginTop: ct.padding.md,
                   backgroundColor: colors.surfaceContainerLow,
                   borderTopLeftRadius: ct.radius["4xl"],

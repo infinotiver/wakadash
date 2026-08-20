@@ -19,9 +19,8 @@ export default function TabLayout() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.onSurfaceVariant,
         tabBarStyle: {
-          display: "none",
-          backgroundColor: colors.surfaceContainerHighest,
-          borderTopColor: colors.outline,
+          backgroundColor: colors.surfaceContainerLow,
+          borderTopWidth: 0,
         },
       }}
     >

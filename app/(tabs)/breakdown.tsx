@@ -1,28 +1,24 @@
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Linking,
-  Platform,
-  Pressable,
   RefreshControl,
   ScrollView,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
+import { ButtonGroup } from "@/src/components/ButtonGroup";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { HorizontalBreakdownChart } from "@/src/components/HorizontalBreakdownChart";
-import { SplitBar } from "@/src/components/SplitBar";
 import { SetupScreen } from "@/src/components/SetupScreen";
+import { AppBar } from "@/src/components/AppBar";
 import { ct } from "@/src/constants/styles.common";
-const styles = ct.styles.breakdown;
 import { useColors } from "@/src/hooks/useColors";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
 import { useWakaStats } from "@/src/hooks/useWakaTimeQueries";
-import type { WakaEntry, WakaStats } from "@/src/types/wakatime";
 import { StatCard } from "@/src/components/StatCard";
+import { Feather } from "@expo/vector-icons";
+const styles = ct.styles.breakdown;
 type Range = "last_7_days" | "last_30_days";
 type Category = "languages" | "editors" | "operating_systems" | "projects";
 
@@ -50,7 +46,7 @@ function SectionLabel({
       style={[
         ct.text.label,
         {
-          color: c.mutedForeground,
+          color: c.onSurfaceVariant,
           marginBottom: ct.sm,
           marginTop: ct.xs,
         },
@@ -58,22 +54,6 @@ function SectionLabel({
     >
       {title}
     </Text>
-  );
-}
-
-function Card({
-  children,
-  c,
-}: {
-  children: React.ReactNode;
-  c: ReturnType<typeof useColors>;
-}) {
-  return (
-    <View
-      style={[styles.card, { backgroundColor: c.card, borderColor: c.border }]}
-    >
-      {children}
-    </View>
   );
 }
 
@@ -98,14 +78,22 @@ export default function BreakdownScreen() {
     statsQ.error.status === 403 &&
     range === "last_30_days";
 
-  const chartColors = c.chartColors as string[];
+  const chartColors = [
+    c.accent.violet.color,
+    c.accent.amber.color,
+    c.accent.teal.color,
+    c.accent.coral.color,
+    c.accent.green.color,
+  ];
 
-  const aiPromptEvents = stats?.ai_prompt_events ?? 0;
+  const aiPromptEvents = stats?.ai_prompt_events_total ?? 0;
   const aiPromptLengthAvg = stats?.ai_prompt_length_avg ?? 0;
   const aiAdditions = stats?.ai_additions ?? 0;
   const aiDeletions = stats?.ai_deletions ?? 0;
   const humanAdditions = stats?.human_additions ?? 0;
   const humanDeletions = stats?.human_deletions ?? 0;
+  const aiInputTokens = stats?.ai_input_tokens ?? 0;
+  const aiOutputTokens = stats?.ai_output_tokens ?? 0;
 
   const hasAiData = aiPromptEvents > 0 || aiAdditions > 0;
 
@@ -126,74 +114,36 @@ export default function BreakdownScreen() {
         />
       }
     >
-      <View
-        style={[
-          ct.styles.appBar,
-          { paddingTop: Platform.OS === "web" ? ct.sm : insets.top },
-        ]}
-      >
-        <Pressable
-          accessibilityLabel="Go back"
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={ct.styles.appBarIcon}
-        >
-          <Feather name="arrow-left" size={22} color={c.foreground} />
-        </Pressable>
-        <Text style={[styles.title, { color: c.foreground }]}>Breakdown</Text>
-        <View style={ct.styles.appBarIcon} />
-      </View>
+      <AppBar title="Breakdown" variant="center" />
 
-      {/* Range toggle */}
-      <View style={styles.pills}>
-        {RANGES.map((r) => (
-          <TouchableOpacity
-            key={r.value}
-            style={[
-              styles.pill,
-              {
-                backgroundColor: range === r.value ? c.primary : c.card,
-                borderColor: range === r.value ? c.primary : c.border,
-              },
-            ]}
-            onPress={() => setRange(r.value)}
-            activeOpacity={0.8}
-          >
-            <Text
-              style={[
-                styles.pillText,
-                {
-                  color:
-                    range === r.value ? c.primaryForeground : c.mutedForeground,
-                },
-              ]}
-            >
-              {r.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <ButtonGroup items={RANGES} value={range} onChange={setRange} />
 
       {/* Pro upsell */}
       {showProError && (
         <View
           style={[
             ct.styles.card,
-            { backgroundColor: c.card, borderColor: `${c.primary}44` },
+            {
+              backgroundColor: c.surfaceContainerHigh,
+              borderColor: c.outline,
+            },
           ]}
         >
-          <Text style={[{ color: c.foreground }]}>
+          <Text style={[{ color: c.onSurface }]}>
             30-day stats require a WakaTime Pro account.
           </Text>
         </View>
       )}
 
       {statsQ.isLoading && (
-        <ActivityIndicator color={c.primary} style={{ marginTop: ct.layout.loading }} />
+        <ActivityIndicator
+          color={c.primary}
+          style={{ marginTop: ct.layout.loading }}
+        />
       )}
 
       {statsQ.isError && !showProError && (
-        <Text style={[styles.error, { color: c.destructive }]}>
+        <Text style={[styles.error, { color: c.error }]}>
           {statsQ.error instanceof Error
             ? statsQ.error.message
             : "Failed to load"}
@@ -203,117 +153,115 @@ export default function BreakdownScreen() {
       {stats && (
         <>
           <SectionLabel title="Summary" c={c} />
-          <View style={[styles.summaryRow]}>
+
+          <View style={styles.summaryRow}>
             <StatCard
-              label="Coding time"
               value={stats.human_readable_total ?? "—"}
-              subtitle={`Total: ${stats.human_readable_total_including_other_language}`}
+              subtitle="Coding Time"
+              icon={(color) => <Feather name="clock" size={20} color={color} />}
+              iconBackgroundColor={c.accent.amber.colorContainer}
+              iconTintColor={c.accent.amber.onColorContainer}
             />
+
             <StatCard
-              label="Coding avg"
-              value={stats.human_readable_daily_average ?? "—"}
-              subtitle={`Total Avg: ${stats.human_readable_daily_average_including_other_language}`}
+              value={stats.human_readable_total_including_other_language ?? "—"}
+              subtitle="Total coding"
+              icon={(color) => <Feather name="clock" size={20} color={color} />}
+              iconBackgroundColor={c.accent.coral.colorContainer}
+              iconTintColor={c.accent.coral.onColorContainer}
             />
           </View>
 
-          <View style={[styles.catRow, { marginBottom: ct.lg }]}>
-            {stats.ai_prompt_events ? (
-              <StatCard
-                label="Prompts sent"
-                value={String(stats.ai_prompt_events)}
-                subtitle={
-                  stats.ai_prompt_length_avg
-                    ? `Avg length: ${stats.ai_prompt_length_avg} chars`
-                    : undefined
-                }
-              />
-            ) : null}
-            {stats.ai_input_tokens || stats.ai_output_tokens ? (
-              <StatCard
-                label="Tokens"
-                value={String(stats.ai_input_tokens)}
-                subtitle={`in: ${stats.ai_input_tokens ?? 0} out: ${stats.ai_output_tokens ?? 0}`}
-              />
-            ) : null}
-          </View>
-          {hasAiData && (
-            <>
-              <SectionLabel title="AI Usage" c={c} />
-              <Card c={c}>
-                {aiAdditions > 0 && humanAdditions > 0 && (
-                  <View style={{ marginTop: ct.md }}>
-                    <SplitBar
-                      left={{
-                        label: "AI additions",
-                        value: aiAdditions,
-                        displayValue: `${aiAdditions.toLocaleString()} lines`,
-                      }}
-                      right={{
-                        label: "Human additions",
-                        value: humanAdditions,
-                        displayValue: `${humanAdditions.toLocaleString()} lines`,
-                      }}
-                    />
-                  </View>
-                )}
+          <View style={styles.summaryRow}>
+            <StatCard
+              value={stats.human_readable_daily_average ?? "—"}
+              subtitle="Coding avg"
+              icon={(color) => (
+                <Feather name="activity" size={20} color={color} />
+              )}
+              iconBackgroundColor={c.accent.violet.colorContainer}
+              iconTintColor={c.accent.violet.onColorContainer}
+            />
 
-                {aiDeletions > 0 && humanDeletions > 0 && (
-                  <View style={{ marginTop: ct.md }}>
-                    <SplitBar
-                      left={{
-                        label: "AI deletions",
-                        value: aiDeletions,
-                        displayValue: `${aiDeletions.toLocaleString()} lines`,
-                      }}
-                      right={{
-                        label: "Human deletions",
-                        value: humanDeletions,
-                        displayValue: `${humanDeletions.toLocaleString()} lines`,
-                      }}
-                    />
-                  </View>
-                )}
-              </Card>
-            </>
-          )}
+            <StatCard
+              value={
+                stats.human_readable_daily_average_including_other_language ??
+                "—"
+              }
+              subtitle="Total avg"
+              icon={(color) => (
+                <Feather name="activity" size={20} color={color} />
+              )}
+              iconBackgroundColor={c.accent.violet.colorContainer}
+              iconTintColor={c.accent.violet.onColorContainer}
+            />
+          </View>
+
+          {aiPromptEvents > 0 ||
+          aiPromptLengthAvg > 0 ||
+          aiInputTokens > 0 ||
+          aiOutputTokens > 0 ? (
+            <View style={[styles.pills, { marginBottom: ct.lg }]}>
+              {aiPromptEvents > 0 && (
+                <StatCard
+                  value={String(aiPromptEvents)}
+                  subtitle="Prompts sent"
+                  icon={(color) => (
+                    <Feather name="message-square" size={20} color={color} />
+                  )}
+                />
+              )}
+
+              {aiPromptLengthAvg > 0 && (
+                <StatCard
+                  value={`${aiPromptLengthAvg} chars`}
+                  subtitle="Avg prompt length"
+                  icon={(color) => (
+                    <Feather name="type" size={20} color={color} />
+                  )}
+                />
+              )}
+
+              {aiInputTokens > 0 && (
+                <StatCard
+                  value={aiInputTokens.toLocaleString()}
+                  subtitle="Input tokens"
+                  icon={(color) => (
+                    <Feather name="log-in" size={20} color={color} />
+                  )}
+                />
+              )}
+
+              {aiOutputTokens > 0 && (
+                <StatCard
+                  value={aiOutputTokens.toLocaleString()}
+                  subtitle="Output tokens"
+                  icon={(color) => (
+                    <Feather name="log-out" size={20} color={color} />
+                  )}
+                />
+              )}
+            </View>
+          ) : null}
 
           <SectionLabel title="Breakdown" c={c} />
 
-          <View style={[styles.catRow, { marginBottom: ct.md }]}>
-            {CATEGORIES.map((cat) => (
-              <TouchableOpacity
-                key={cat.value}
-                style={[
-                  styles.pill,
-                  {
-                    backgroundColor:
-                      category === cat.value ? c.primary : c.secondary,
-                    borderColor: category === cat.value ? c.primary : c.border,
-                  },
-                ]}
-                onPress={() => setCategory(cat.value)}
-                activeOpacity={0.8}
-              >
-                <Text
-                  style={[
-                    styles.catText,
-                    {
-                      color:
-                        category === cat.value
-                          ? c.primaryForeground
-                          : c.secondaryForeground,
-                    },
-                  ]}
-                >
-                  {cat.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <ButtonGroup
+            items={CATEGORIES}
+            value={category}
+            onChange={setCategory}
+          />
 
-          <Card c={c}>
+          <View
+            style={[
+              ct.styles.overview.section,
+              {
+                backgroundColor: c.surfaceContainerHigh,
+              },
+            ]}
+          >
             {visibleItems.length === 0 ? (
-              <Text style={[styles.empty, { color: c.mutedForeground }]}>
+              <Text style={[styles.empty, { color: c.onSurfaceVariant }]}>
                 No data
               </Text>
             ) : (
@@ -324,15 +272,16 @@ export default function BreakdownScreen() {
                   percent: item.percent,
                   secondaryText: item.text,
                   trailingText: `${item.percent.toFixed(1)}%`,
-                  color: chartColors[i % chartColors.length] ?? "#8a79ab",
+
+                  color: chartColors[i % chartColors.length] ?? c.primary,
                 }))}
-                textColor={c.foreground}
-                mutedTextColor={c.mutedForeground}
-                trackColor={c.secondary}
-                separatorColor={c.card}
+                textColor={c.onSurface}
+                mutedTextColor={c.onSurfaceVariant}
+                trackColor={c.surfaceContainerHigh}
+                separatorColor={c.outlineVariant}
               />
             )}
-          </Card>
+          </View>
         </>
       )}
     </ScrollView>

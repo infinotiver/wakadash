@@ -144,8 +144,8 @@ export function SetupScreen() {
             disabled={!canSubmit}
             activeOpacity={0.8}
             style={{
-              padding: ct.padding.lg,
-              borderRadius: ct.radius.lg,
+              padding: ct.padding.md,
+              borderRadius: ct.radius.full,
               backgroundColor: colors.primary,
               alignItems: "center",
               justifyContent: "center",

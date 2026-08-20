@@ -126,7 +126,6 @@ const text = StyleSheet.create({
   pillText: { fontSize: fontSize.md, fontFamily: fontFamily.medium },
   tagText: { fontSize: fontSize.sm, fontFamily: fontFamily.medium },
   buttonText: { fontSize: fontSize.lg, fontFamily: fontFamily.semibold },
-  inputText: { fontSize: fontSize.md, fontFamily: fontFamily.regular },
   cardLabel: {
     fontSize: fontSize.xs,
     fontFamily: fontFamily.medium,
@@ -287,16 +286,14 @@ const styles = {
   breakdown: {
     content: { paddingHorizontal: padding.lg, gap: padding.md },
     title: text.pageTitle,
-    pills: { flexDirection: "row", gap: padding.md },
+    pills: { flexDirection: "row", gap: padding.sm },
     pill: {
-      paddingHorizontal: padding.md,
-      paddingVertical: padding.xs,
+      paddingHorizontal: padding.lg,
+      paddingVertical: padding.md,
       borderRadius: radius.full,
-      borderWidth: 1,
     },
     pillText: text.pillText,
     summaryRow: { flexDirection: "row", gap: padding.lg },
-    catRow: { flexDirection: "row", flexWrap: "wrap", gap: padding.md },
     catText: { fontSize: fontSize.md, fontFamily: fontFamily.medium },
     card: {
       borderRadius: radius.xl,

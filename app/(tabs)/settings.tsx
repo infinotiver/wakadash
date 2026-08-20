@@ -81,8 +81,7 @@ export default function SettingsScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <AppBar title="Settings" onLeadingPress={() => router.back()} />
-
+      <AppBar title="Settings" variant="center" />
       <ScrollView
         style={ct.styles.scroll}
         contentContainerStyle={[
