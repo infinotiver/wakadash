@@ -139,7 +139,7 @@ export default function OverviewScreen() {
                 },
               ]}
             >
-              <View style={{ flex: 1 }}>
+              <View style={{ flex: 4 }}>
                 {(today?.categories?.length ?? 0) > 0 && (
                   <CategoryPieChart
                     items={(today?.categories ?? [])
@@ -156,7 +156,7 @@ export default function OverviewScreen() {
 
               <View
                 style={{
-                  flex: 1,
+                  flex: 5,
                   gap: ct.padding.sm,
                 }}
               >

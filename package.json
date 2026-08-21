@@ -37,6 +37,7 @@
     "@types/node": "^26.0.1",
     "@types/react": "~19.2.2",
     "babel-plugin-module-resolver": "^5.0.3",
+    "babel-preset-expo": "55.0.22",
     "typescript": "~5.9.2"
   },
   "private": true

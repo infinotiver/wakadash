@@ -8,7 +8,9 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Linking,
 } from "react-native";
+
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -290,13 +292,15 @@ export default function SettingsScreen() {
           <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>
             Credits
           </Text>
-          <View
-            style={[ct.styles.row, { borderTopColor: colors.outlineVariant }]}
+          <TouchableOpacity
+            onPress={() =>
+              Linking.openURL("https://github.com/infinotiver/wakadash")
+            }
           >
-            <Text style={[ct.text.body, { color: colors.onSurface }]}>
-              made with love by infinotiver
+            <Text style={[ct.text.body, { color: colors.onTertiary }]}>
+              source code
             </Text>
-          </View>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
