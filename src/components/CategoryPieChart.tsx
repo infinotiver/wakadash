@@ -124,7 +124,7 @@ export function CategoryPieChart({
                         color: foreground,
                         fontFamily: ct.fontFamily.semibold,
                         textAlign: "center",
-                        fontSize: ct.fontSize["4xl"],
+                        fontSize: ct.fontSize["3xl"],
                       },
                     ]}
                     numberOfLines={2}
