@@ -46,6 +46,7 @@ export default function OverviewScreen() {
   const todayQ = useTodaySummary();
   const weekQ = useWeekSummaries();
   const allTimeQ = useAllTimeSinceToday();
+  const langMetaQ = useProgramLanguages();
 
   const refetch = useCallback(async () => {
     await Promise.all([todayQ.refetch(), weekQ.refetch(), allTimeQ.refetch()]);
@@ -70,7 +71,6 @@ export default function OverviewScreen() {
   );
   const loading = todayQ.isLoading || weekQ.isLoading || allTimeQ.isLoading;
 
-  const langMetaQ = useProgramLanguages();
   const langColorMap = buildLanguageColorMap(langMetaQ.data);
   const chartColors = [
     colors.accent.violet.color,
