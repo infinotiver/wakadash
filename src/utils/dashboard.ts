@@ -1,4 +1,4 @@
-import type { WakaSummaryDay } from "@/src/types/wakatime";
+import type { WakaSummaryDay, WakaProgramLanguage } from "@/src/types/wakatime";
 
 export function formatDuration(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
@@ -15,4 +15,8 @@ export function sumSummarySeconds(days: WakaSummaryDay[]): number {
 
 export function averageSummarySeconds(days: WakaSummaryDay[]): number {
   return days.length ? sumSummarySeconds(days) / days.length : 0;
+}
+
+export function buildLanguageColorMap(languages: WakaProgramLanguage[] = []) {
+  return new Map(languages.map((l) => [l.name.toLowerCase(), l.color]));
 }

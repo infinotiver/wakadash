@@ -36,8 +36,7 @@ export function useTodaySummary() {
   const scope = useWakaQueryScope();
   return useQuery({
     queryKey: [...wakaKeys.today(), ...scope],
-    queryFn: () =>
-      wakatimeApi.getTodaySummary(apiKey!),
+    queryFn: () => wakatimeApi.getTodaySummary(apiKey!),
     enabled: isConfigured,
     staleTime: FIVE_MIN,
     gcTime: TEN_MIN,
@@ -50,8 +49,7 @@ export function useWeekSummaries() {
   const scope = useWakaQueryScope();
   return useQuery({
     queryKey: [...wakaKeys.week(), ...scope],
-    queryFn: () =>
-      wakatimeApi.getWeekSummaries(apiKey!),
+    queryFn: () => wakatimeApi.getWeekSummaries(apiKey!),
     enabled: isConfigured,
     staleTime: TEN_MIN,
     gcTime: THIRTY_MIN,
@@ -63,21 +61,26 @@ export function useAllTimeSinceToday() {
   const scope = useWakaQueryScope();
   return useQuery({
     queryKey: [...wakaKeys.all, "allTimeSinceToday", ...scope],
-    queryFn: () =>
-      wakatimeApi.getAllTimeSinceToday(apiKey!),
+    queryFn: () => wakatimeApi.getAllTimeSinceToday(apiKey!),
     enabled: isConfigured,
     staleTime: THIRTY_MIN,
     gcTime: THIRTY_MIN,
     retry: 1,
   });
 }
-export function useWakaStats(range: "last_7_days" | "last_30_days" |"last_6_months" | "last_year" | "all_time") {
+export function useWakaStats(
+  range:
+    | "last_7_days"
+    | "last_30_days"
+    | "last_6_months"
+    | "last_year"
+    | "all_time",
+) {
   const { apiKey, isConfigured } = useWakaTime();
   const scope = useWakaQueryScope();
   return useQuery({
     queryKey: [...wakaKeys.stats(range), ...scope],
-    queryFn: () =>
-      wakatimeApi.getStats(range, apiKey!),
+    queryFn: () => wakatimeApi.getStats(range, apiKey!),
     enabled: isConfigured,
     staleTime: TEN_MIN,
     gcTime: THIRTY_MIN,
@@ -85,3 +88,10 @@ export function useWakaStats(range: "last_7_days" | "last_30_days" |"last_6_mont
   });
 }
 
+export function useProgramLanguages() {
+  return useQuery({
+    queryKey: ["programLanguages"],
+    queryFn: () => wakatimeApi.getProgramLanguages(),
+    gcTime: 1000 * 60 * 60 * 24 * 7,
+  });
+}

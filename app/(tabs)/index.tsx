@@ -21,10 +21,15 @@ import { SetupScreen } from "@/src/components/SetupScreen";
 import { CategoryPieChart } from "@/src/components/CategoryPieChart";
 
 import { ct } from "@/src/constants/styles.common";
-import { averageSummarySeconds, formatDuration } from "@/src/utils/dashboard";
+import {
+  averageSummarySeconds,
+  buildLanguageColorMap,
+  formatDuration,
+} from "@/src/utils/dashboard";
 
 import {
   useAllTimeSinceToday,
+  useProgramLanguages,
   useTodaySummary,
   useWeekSummaries,
 } from "@/src/hooks/useWakaTimeQueries";
@@ -65,6 +70,8 @@ export default function OverviewScreen() {
   );
   const loading = todayQ.isLoading || weekQ.isLoading || allTimeQ.isLoading;
 
+  const langMetaQ = useProgramLanguages();
+  const langColorMap = buildLanguageColorMap(langMetaQ.data);
   const chartColors = [
     colors.accent.violet.color,
     colors.accent.amber.color,
@@ -72,6 +79,13 @@ export default function OverviewScreen() {
     colors.accent.coral.color,
     colors.accent.green.color,
   ];
+  const languageColors = (today?.languages ?? [])
+    .slice(0, 4)
+    .map(
+      (item, i) =>
+        langColorMap.get(item.name.toLowerCase()) ??
+        chartColors[i % chartColors.length],
+    );
 
   return (
     <View
@@ -213,7 +227,7 @@ export default function OverviewScreen() {
             >
               <DashboardBreakdownSection
                 title="Languages"
-                chartColors={chartColors}
+                chartColors={languageColors}
                 items={(today?.languages ?? []).slice(0, 4).map((item) => ({
                   name: item.name,
                   percent: item.percent,

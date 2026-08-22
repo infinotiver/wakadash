@@ -15,9 +15,13 @@ import { AppBar } from "@/src/components/AppBar";
 import { ct } from "@/src/constants/styles.common";
 import { useColors } from "@/src/hooks/useColors";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
-import { useWakaStats } from "@/src/hooks/useWakaTimeQueries";
+import {
+  useProgramLanguages,
+  useWakaStats,
+} from "@/src/hooks/useWakaTimeQueries";
 import { StatCard } from "@/src/components/StatCard";
 import { Feather } from "@expo/vector-icons";
+import { buildLanguageColorMap } from "@/src/utils/dashboard";
 const styles = ct.styles.breakdown;
 type Range =
   | "last_7_days"
@@ -99,6 +103,9 @@ export default function BreakdownScreen() {
     c.accent.coral.color,
     c.accent.green.color,
   ];
+
+  const langMetaQ = useProgramLanguages();
+  const langColorMap = buildLanguageColorMap(langMetaQ.data);
 
   const aiPromptEvents = stats?.ai_prompt_events_total ?? 0;
   const aiPromptLengthAvg = stats?.ai_prompt_length_avg ?? 0;
@@ -315,8 +322,11 @@ export default function BreakdownScreen() {
                   percent: item.percent,
                   secondaryText: item.text,
                   trailingText: `${item.percent.toFixed(1)}%`,
-
-                  color: chartColors[i % chartColors.length] ?? c.primary,
+                  color:
+                    category === "languages"
+                      ? (langColorMap.get(item.name.toLowerCase()) ??
+                        chartColors[i % chartColors.length])
+                      : chartColors[i % chartColors.length],
                 }))}
                 textColor={c.onSurface}
                 mutedTextColor={c.onSurfaceVariant}

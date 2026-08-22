@@ -206,3 +206,12 @@ export interface WakaAllTime {
 
   range: WakaRange;
 }
+
+export interface WakaProgramLanguage {
+  id: string;
+  name: string;
+  color: string;
+  is_verified: boolean;
+  created_at: string;
+  modified_at: string;
+}
