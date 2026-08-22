@@ -370,7 +370,14 @@ const styles = {
       justifyContent: "center",
     },
     saveText: { fontSize: fontSize.md, fontFamily: fontFamily.semibold },
-    editBtn: { padding: padding.md, borderRadius: radius.md },
+    editBtn: {
+      display: "flex",
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: padding.lg,
+      borderRadius: radius.full,
+    },
     editSection: { gap: padding.lg - 6 },
   },
   weeklyChart: {

@@ -19,15 +19,29 @@ import { useWakaStats } from "@/src/hooks/useWakaTimeQueries";
 import { StatCard } from "@/src/components/StatCard";
 import { Feather } from "@expo/vector-icons";
 const styles = ct.styles.breakdown;
-type Range = "last_7_days" | "last_30_days";
-type Category = "languages" | "editors" | "operating_systems" | "projects";
+type Range =
+  | "last_7_days"
+  | "last_30_days"
+  | "last_6_months"
+  | "last_year"
+  | "all_time";
+type Category =
+  | "categories"
+  | "languages"
+  | "editors"
+  | "operating_systems"
+  | "projects";
 
 const RANGES: { label: string; value: Range }[] = [
-  { label: "7 days", value: "last_7_days" },
-  { label: "30 days", value: "last_30_days" },
+  { label: "Last Week", value: "last_7_days" },
+  { label: "Last Month", value: "last_30_days" },
+  { label: "Last 6 Months", value: "last_6_months" },
+  { label: "Last Year", value: "last_year" },
+  { label: "All Time", value: "all_time" },
 ];
 
 const CATEGORIES: { label: string; value: Category }[] = [
+  { label: "Categories", value: "categories" },
   { label: "Languages", value: "languages" },
   { label: "Editors", value: "editors" },
   { label: "Projects", value: "projects" },
@@ -63,7 +77,7 @@ export default function BreakdownScreen() {
   const router = useRouter();
   const { isConfigured } = useWakaTime();
   const [range, setRange] = useState<Range>("last_7_days");
-  const [category, setCategory] = useState<Category>("languages");
+  const [category, setCategory] = useState<Category>("categories");
 
   const statsQ = useWakaStats(range);
 
@@ -165,7 +179,7 @@ export default function BreakdownScreen() {
 
             <StatCard
               value={stats.human_readable_total_including_other_language ?? "—"}
-              subtitle="Total coding"
+              subtitle="Total Time"
               icon={(color) => <Feather name="clock" size={20} color={color} />}
               iconBackgroundColor={c.accent.coral.colorContainer}
               iconTintColor={c.accent.coral.onColorContainer}
@@ -197,52 +211,81 @@ export default function BreakdownScreen() {
             />
           </View>
 
-          {aiPromptEvents > 0 ||
-          aiPromptLengthAvg > 0 ||
-          aiInputTokens > 0 ||
-          aiOutputTokens > 0 ? (
-            <View style={[styles.pills, { marginBottom: ct.lg }]}>
-              {aiPromptEvents > 0 && (
+          {hasAiData && (
+            <>
+              <SectionLabel title="AI Activity" c={c} />
+
+              <View style={styles.summaryRow}>
                 <StatCard
                   value={String(aiPromptEvents)}
                   subtitle="Prompts sent"
                   icon={(color) => (
                     <Feather name="message-square" size={20} color={color} />
                   )}
+                  iconBackgroundColor={c.accent.teal.colorContainer}
+                  iconTintColor={c.accent.teal.onColorContainer}
                 />
-              )}
 
-              {aiPromptLengthAvg > 0 && (
                 <StatCard
                   value={`${aiPromptLengthAvg} chars`}
                   subtitle="Avg prompt length"
                   icon={(color) => (
                     <Feather name="type" size={20} color={color} />
                   )}
+                  iconBackgroundColor={c.accent.teal.colorContainer}
+                  iconTintColor={c.accent.teal.onColorContainer}
                 />
-              )}
+              </View>
 
-              {aiInputTokens > 0 && (
+              <View style={styles.summaryRow}>
                 <StatCard
-                  value={aiInputTokens.toLocaleString()}
+                  value={aiInputTokens.toLocaleString("en-US", {
+                    notation: "compact",
+                  })}
                   subtitle="Input tokens"
                   icon={(color) => (
                     <Feather name="log-in" size={20} color={color} />
                   )}
+                  iconBackgroundColor={c.accent.green.colorContainer}
+                  iconTintColor={c.accent.green.onColorContainer}
                 />
-              )}
 
-              {aiOutputTokens > 0 && (
                 <StatCard
-                  value={aiOutputTokens.toLocaleString()}
+                  value={aiOutputTokens.toLocaleString("en-US", {
+                    notation: "compact",
+                  })}
                   subtitle="Output tokens"
                   icon={(color) => (
                     <Feather name="log-out" size={20} color={color} />
                   )}
+                  iconBackgroundColor={c.accent.green.colorContainer}
+                  iconTintColor={c.accent.green.onColorContainer}
                 />
-              )}
-            </View>
-          ) : null}
+              </View>
+
+              <View style={[styles.summaryRow, { marginBottom: ct.lg }]}>
+                <StatCard
+                  value={`+${aiAdditions.toLocaleString("en-US", { notation: "compact" })} / -${aiDeletions.toLocaleString("en-US", { notation: "compact" })}`}
+                  subtitle="AI code changes"
+                  icon={(color) => (
+                    <Feather name="cpu" size={20} color={color} />
+                  )}
+                  iconBackgroundColor={c.accent.coral.colorContainer}
+                  iconTintColor={c.accent.coral.onColorContainer}
+                />
+
+                <StatCard
+                  value={`+${humanAdditions.toLocaleString("en-US", { notation: "compact" })} / -${humanDeletions.toLocaleString("en-US", { notation: "compact" })}`}
+                  subtitle="Human code changes"
+                  icon={(color) => (
+                    <Feather name="user" size={20} color={color} />
+                  )}
+                  iconBackgroundColor={c.accent.violet.colorContainer}
+                  iconTintColor={c.accent.violet.onColorContainer}
+                />
+              </View>
+            </>
+          )}
 
           <SectionLabel title="Breakdown" c={c} />
 

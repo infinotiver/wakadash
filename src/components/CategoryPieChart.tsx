@@ -48,9 +48,9 @@ export function CategoryPieChart({
   ];
 
   const radius =
-    containerWidth > 0 ? Math.floor((containerWidth * 0.9) / 2) : 120;
+    containerWidth > 0 ? Math.floor((containerWidth * 0.8) / 2) : 120;
 
-  const innerRadius = Math.floor(radius * 0.62);
+  const innerRadius = Math.floor(radius * 0.7);
 
   const pieData = items.map((item, i) => ({
     value: item.percent,
@@ -60,10 +60,10 @@ export function CategoryPieChart({
 
   const activeItem = activeIndex !== null ? items[activeIndex] : null;
   const totalSeconds = items.reduce((s, item) => s + item.total_seconds, 0);
-  const centerLabel = activeItem ? activeItem.name : formatTime(totalSeconds);
-  const centerSub = activeItem
+  const centerLabel = activeItem
     ? `${formatTime(activeItem.total_seconds)}`
-    : "total today";
+    : formatTime(totalSeconds);
+  const centerSub = activeItem ? activeItem.name : "total today";
 
   const animateLabel = (next: () => void) => {
     Animated.sequence([
@@ -92,10 +92,7 @@ export function CategoryPieChart({
   };
 
   return (
-    <View
-      onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
-      style={{ gap: ct.md }}
-    >
+    <View onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}>
       {containerWidth > 0 && (
         <>
           <View style={{ alignItems: "center", marginVertical: ct.md }}>
@@ -112,9 +109,8 @@ export function CategoryPieChart({
                 <Animated.View
                   style={{
                     alignItems: "center",
-                    paddingHorizontal: ct.sm + 2,
                     opacity: labelOpacity,
-                    width: innerRadius * 2 - 8,
+                    width: innerRadius * 2,
                   }}
                 >
                   <Text
@@ -124,7 +120,7 @@ export function CategoryPieChart({
                         color: foreground,
                         fontFamily: ct.fontFamily.semibold,
                         textAlign: "center",
-                        fontSize: ct.fontSize["3xl"],
+                        fontSize: ct.fontSize["4xl"],
                       },
                     ]}
                     numberOfLines={2}

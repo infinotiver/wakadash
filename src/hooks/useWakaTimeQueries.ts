@@ -71,7 +71,7 @@ export function useAllTimeSinceToday() {
     retry: 1,
   });
 }
-export function useWakaStats(range: "last_7_days" | "last_30_days") {
+export function useWakaStats(range: "last_7_days" | "last_30_days" |"last_6_months" | "last_year" | "all_time") {
   const { apiKey, isConfigured } = useWakaTime();
   const scope = useWakaQueryScope();
   return useQuery({

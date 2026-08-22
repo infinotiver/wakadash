@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { useColors } from "@/src/hooks/useColors";
 import { ct } from "@/src/constants/styles.common";
@@ -23,7 +23,11 @@ export function ButtonGroup<T extends string>({
   const c = useColors();
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.container}
+    >
       {items.map((item) => {
         const selected = item.value === value;
 
@@ -56,7 +60,7 @@ export function ButtonGroup<T extends string>({
           </Pressable>
         );
       })}
-    </View>
+    </ScrollView>
   );
 }
 

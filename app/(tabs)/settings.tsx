@@ -174,16 +174,9 @@ export default function SettingsScreen() {
               </Text>
               <TouchableOpacity
                 onPress={() => setEditing(true)}
-                style={[
-                  styles.editBtn,
-                  { backgroundColor: colors.secondaryContainer },
-                ]}
+                style={[styles.editBtn, { backgroundColor: colors.primary }]}
               >
-                <Feather
-                  name="edit-2"
-                  size={14}
-                  color={colors.onSecondaryContainer}
-                />
+                <Feather name="edit" size={14} color={colors.onPrimary} />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleClear}
@@ -279,28 +272,79 @@ export default function SettingsScreen() {
             </View>
           )}
         </View>
-
-        {/* Credits */}
+        {/* About */}
         <View
           style={[
             styles.section,
-            {
-              backgroundColor: colors.surfaceContainerHigh,
-            },
+            { backgroundColor: colors.surfaceContainerHigh },
           ]}
         >
           <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>
-            Credits
+            About
           </Text>
-          <TouchableOpacity
-            onPress={() =>
-              Linking.openURL("https://github.com/infinotiver/wakadash")
-            }
+          <Text
+            style={[
+              ct.text.body,
+              { color: colors.onSurfaceVariant, marginBottom: ct.md },
+            ]}
           >
-            <Text style={[ct.text.body, { color: colors.onTertiary }]}>
-              source code
-            </Text>
-          </TouchableOpacity>
+            made by infinotiver {"<3"}
+          </Text>
+          <View style={{ flexDirection: "row", gap: ct.sm }}>
+            <TouchableOpacity
+              onPress={() =>
+                Linking.openURL("https://github.com/infinotiver/wakadash")
+              }
+              activeOpacity={0.8}
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: ct.xs,
+                padding: ct.padding.lg,
+                borderRadius: ct.radius.full,
+                backgroundColor: colors.primary,
+              }}
+            >
+              <Feather name="github" size={18} color={colors.onPrimary} />
+              <Text style={[ct.text.buttonText, { color: colors.onPrimary }]}>
+                Source Code
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() =>
+                Linking.openURL(
+                  "https://github.com/infinotiver/wakadash/issues",
+                )
+              }
+              activeOpacity={0.8}
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: ct.xs,
+                padding: ct.padding.lg,
+                borderRadius: ct.radius.full,
+                backgroundColor: colors.secondaryContainer,
+              }}
+            >
+              <Feather
+                name="alert-circle"
+                size={18}
+                color={colors.onSecondaryContainer}
+              />
+              <Text
+                style={[
+                  ct.text.buttonText,
+                  { color: colors.onSecondaryContainer },
+                ]}
+              >
+                Report Issue
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </View>

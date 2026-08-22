@@ -52,11 +52,21 @@ export function StatCard({
 
       <View style={{ flex: 1 }}>
         {value ? (
-          <Text style={{ color: colors.onSurfaceVariant }}>{value}</Text>
+          <Text
+            style={{
+              fontSize: ct.fontSize["xl"],
+              fontFamily: ct.fontFamily.semibold,
+              color: colors.onSurface,
+            }}
+            adjustsFontSizeToFit
+            numberOfLines={1}
+          >
+            {value}
+          </Text>
         ) : null}
 
         {subtitle ? (
-          <Text style={{ color: colors.onSurface }}>{subtitle}</Text>
+          <Text style={{ color: colors.onSurfaceVariant }}>{subtitle}</Text>
         ) : null}
       </View>
     </View>

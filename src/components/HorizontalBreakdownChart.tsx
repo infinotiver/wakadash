@@ -46,7 +46,7 @@ export function HorizontalBreakdownChart({
         separatorColor={separatorColor ?? trackColor}
       />
 
-      <View style={{ gap: ct.xs }}>
+      <View style={{ gap: ct.sm }}>
         {visibleItems.map((item) => (
           <View
             key={item.key ?? item.label}

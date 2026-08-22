@@ -78,7 +78,7 @@ export const wakatimeApi = {
     ),
 
   getStats: (
-    range: "last_7_days" | "last_30_days",
+    range: "last_7_days" | "last_30_days" |"last_6_months" | "last_year" | "all_time",
     apiKey: string,
   ): Promise<WakaStats> =>
     wakFetch(`/users/current/stats/${range}`, apiKey).then(

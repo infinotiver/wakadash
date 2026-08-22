@@ -139,7 +139,7 @@ export default function OverviewScreen() {
                 },
               ]}
             >
-              <View style={{ flex: 4 }}>
+              <View style={{ flex: 5 }}>
                 {(today?.categories?.length ?? 0) > 0 && (
                   <CategoryPieChart
                     items={(today?.categories ?? [])
@@ -156,7 +156,7 @@ export default function OverviewScreen() {
 
               <View
                 style={{
-                  flex: 5,
+                  flex: 3,
                   gap: ct.padding.sm,
                 }}
               >
@@ -182,7 +182,11 @@ export default function OverviewScreen() {
 
                 <View style={{ flex: 1 }}>
                   <StatCard
-                    value={bestDay?.grand_total.text ?? "-"}
+                    value={
+                      bestDay
+                        ? formatDuration(bestDay.grand_total.total_seconds)
+                        : "-"
+                    }
                     subtitle="best day"
                     icon={(tint) => (
                       <Feather name="award" size={20} color={tint} />
