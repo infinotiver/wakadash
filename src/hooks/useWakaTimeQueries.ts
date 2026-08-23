@@ -2,10 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { wakatimeApi } from "@/src/api/wakatime";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
 
+// reusable math consts cuz I'll mess up them later
+
 const FIVE_MIN = 5 * 60 * 1000;
 const TEN_MIN = 10 * 60 * 1000;
 const THIRTY_MIN = 30 * 60 * 1000;
 
+// keys for react-query, so that we can invalidate them when the auth changes
 export const wakaKeys = {
   all: ["wakatime"] as const,
   user: () => [...wakaKeys.all, "user"] as const,
@@ -16,6 +19,9 @@ export const wakaKeys = {
 };
 
 function useWakaQueryScope() {
+  // ts is important
+  // ever query key ends with `...scope` so that if the auth generation changes, all queries will be invalidated and refetched
+
   const { authGeneration } = useWakaTime();
   return [authGeneration] as const;
 }
@@ -88,6 +94,8 @@ export function useWakaStats(
   });
 }
 
+// the only public query endpoint that doesn't req an API key
+// used to get programming langauge colors
 export function useProgramLanguages() {
   return useQuery({
     queryKey: ["programLanguages"],

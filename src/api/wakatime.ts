@@ -8,6 +8,8 @@ import type {
 
 export const DEFAULT_BASE_URL = "https://wakatime.com/api/v1";
 
+
+// just a basic error class
 export class WakaTimeApiError extends Error {
   constructor(
     message: string,
@@ -18,6 +20,7 @@ export class WakaTimeApiError extends Error {
   }
 }
 
+// basic auth
 function authHeader(apiKey: string): string {
   const encoded = btoa(`${apiKey}:`);
   return `Basic ${encoded}`;
@@ -42,6 +45,8 @@ async function wakFetchPublic(path: string) {
     throw new WakaTimeApiError(`API error ${res.status}`, res.status);
   return res.json();
 }
+
+// not to be confused with the other user facing date formatter, wakatime requires a specific format for the API, which is YYYY-MM-DD. This function formats a Date object into that string format.
 
 const fmt = (date: Date) => {
   const year = date.getFullYear();

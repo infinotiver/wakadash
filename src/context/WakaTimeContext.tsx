@@ -13,10 +13,15 @@ interface WakaTimeContextValue {
 
 const WakaTimeContext = createContext<WakaTimeContextValue | null>(null);
 
+// context provider for wakatime api key and auth 
 export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
+  // state for apiKey, authGeneration, and loaded
+
   const [apiKey, setApiKeyState] = useState<string | null>(null);
   const [authGeneration, setAuthGeneration] = useState(0);
   const [loaded, setLoaded] = useState(false);
+ 
+  // read SecureStore once and load the apiKey into state, then set loaded to true
 
   useEffect(() => {
     async function loadConfiguration() {
@@ -39,6 +44,9 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
     const trimmed = key.trim();
     await SecureStore.setItemAsync(STORAGE_KEY, trimmed);
     setApiKeyState(trimmed);
+
+    // increment authGeneration counter bust cached queries that depend on the apiKey 
+
     setAuthGeneration((generation) => generation + 1);
   };
 
@@ -51,9 +59,11 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
   return (
     <WakaTimeContext.Provider
       value={{
-        apiKey: loaded ? apiKey : null,
-        isConfigured: loaded && !!apiKey,
-        authGeneration,
+        apiKey: loaded ? apiKey : null, // expose apiKey as null until loaded to avoid flicker
+        // this also leads to show a null state while apiKey is being loaded (TODO: rn this shows the SetupScreen) 
+
+        isConfigured: loaded && !!apiKey, // expose isConfigured as true only if loaded and apiKey is not null
+        authGeneration, // expose authGeneration to allow queries to be invalidated when apiKey changes
         setApiKey,
         clearApiKey,
       }}
@@ -62,6 +72,8 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
     </WakaTimeContext.Provider>
   );
 }
+
+// hook to access the WakaTimeContext, throws if used outside of provider
 
 export function useWakaTime() {
   const ctx = useContext(WakaTimeContext);

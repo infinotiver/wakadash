@@ -8,24 +8,23 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/infinotiver/wakadash/releases/tag/v1.0.0">Install preview</a>
+  <a href="https://github.com/infinotiver/wakadash/releases">Install preview</a>
   ·
   <a href="https://github.com/infinotiver/wakadash/issues">Report Bug</a>
 </p>
 
----
 
 ## Features
 
 - View coding activity and time tracked by WakaTime (custom API support coming soon)
-- Clean mobile-first interface
+- Clean mobile-first interface (M3 Design)
 - Light and dark theme support
 - User profile and account statistics
 - Daily, weekly, monthly insights
 
 ## Screenshots
 
-<img src="assets/demo.png" alt="WakaDash Screenshot 1" width="300" />
+<img src="assets/demo-b.jpg" alt="WakaDash Breakdown page" height="300"/>
 
 ## Getting Started
 
@@ -75,8 +74,6 @@ npm run web
 ## Roadmap
 
 - [ ] Custom API support
-- [ ] Offline caching
-- [ ] Additional statistics views
 - [ ] Shareable stat cards
 - [ ] Widget support
 - [ ] More customization options
