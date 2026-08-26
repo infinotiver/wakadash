@@ -12,42 +12,100 @@ import {
 } from "react-native";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
+import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useColors } from "@/src/hooks/useColors";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
 import { useWakaUser } from "@/src/hooks/useWakaTimeQueries";
-import { wakatimeApi } from "@/src/api/wakatime";
+import { wakatimeApi, DEFAULT_BASE_URL } from "@/src/api/wakatime";
 import type { WakaUser } from "@/src/types/wakatime";
 import { ct } from "@/src/constants/styles.common";
 import { AppBar } from "@/src/components/AppBar";
 const styles = ct.styles.settings;
 
+const URL_SUGGESTIONS = [
+  { label: "WakaTime", url: DEFAULT_BASE_URL },
+  {
+    label: "Hackatime",
+    url: "https://hackatime.hackclub.com/api/hackatime/v1",
+  },
+];
+
+// shared row shape for both the API Key and API URL sections: a masked/plain
+// value, an edit affordance, and an optional destructive action
+function FieldRow({
+  value,
+  onEdit,
+  onDelete,
+}: {
+  value: string;
+  onEdit: () => void;
+  onDelete?: () => void;
+}) {
+  const colors = useColors();
+  return (
+    <View style={styles.keyRow}>
+      <Text
+        style={[
+          styles.keyText,
+          { color: colors.onSurfaceVariant, fontFamily: ct.fontFamily.regular },
+        ]}
+        numberOfLines={1}
+      >
+        {value}
+      </Text>
+      <TouchableOpacity
+        onPress={onEdit}
+        style={[styles.editBtn, { backgroundColor: colors.primary }]}
+      >
+        <MaterialIcons name="edit" size={16} color={colors.onPrimary} />
+      </TouchableOpacity>
+      {onDelete ? (
+        <TouchableOpacity
+          onPress={onDelete}
+          style={[styles.editBtn, { backgroundColor: colors.errorContainer }]}
+        >
+          <MaterialIcons
+            name="delete"
+            size={16}
+            color={colors.onErrorContainer}
+          />
+        </TouchableOpacity>
+      ) : null}
+    </View>
+  );
+}
+
 export default function SettingsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { isConfigured, apiKey, setApiKey, clearApiKey } = useWakaTime();
+  const { isConfigured, apiKey, setApiKey, clearApiKey, baseUrl, setBaseUrl } =
+    useWakaTime();
 
-  const [editing, setEditing] = useState(!isConfigured);
+  const [editingKey, setEditingKey] = useState(!isConfigured);
   const [newKey, setNewKey] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [savingKey, setSavingKey] = useState(false);
   const [show, setShow] = useState(false);
+
+  const [editingUrl, setEditingUrl] = useState(false);
+  const [newUrl, setNewUrl] = useState(baseUrl);
+  const [savingUrl, setSavingUrl] = useState(false);
 
   const userQ = useWakaUser();
 
   useEffect(() => {
-    if (!isConfigured) setEditing(true);
+    if (!isConfigured) setEditingKey(true);
   }, [isConfigured]);
 
-  async function handleSave() {
+  async function handleSaveKey() {
     const trimmed = newKey.trim();
     if (!trimmed) return;
-    setSaving(true);
+    setSavingKey(true);
     try {
-      await wakatimeApi.verifyKey(trimmed);
+      await wakatimeApi.verifyKey(trimmed, baseUrl);
       await setApiKey(trimmed);
-      setEditing(false);
+      setEditingKey(false);
       setNewKey("");
     } catch (error) {
       if (error instanceof Error && error.message === "Invalid API key") {
@@ -56,11 +114,11 @@ export default function SettingsScreen() {
         Alert.alert("Error", "Could not verify key. Check your connection.");
       }
     } finally {
-      setSaving(false);
+      setSavingKey(false);
     }
   }
 
-  function handleClear() {
+  function handleClearKey() {
     Alert.alert(
       "Remove API key?",
       "You'll need to re-enter it to use the app.",
@@ -71,11 +129,29 @@ export default function SettingsScreen() {
           style: "destructive",
           onPress: () => {
             clearApiKey();
-            setEditing(true);
+            setEditingKey(true);
           },
         },
       ],
     );
+  }
+
+  async function handleSaveUrl() {
+    const trimmed = newUrl.trim().replace(/\/+$/, "");
+    if (!/^https?:\/\/.+/.test(trimmed)) {
+      Alert.alert(
+        "Invalid URL",
+        "Enter a full URL starting with http:// or https://",
+      );
+      return;
+    }
+    setSavingUrl(true);
+    try {
+      await setBaseUrl(trimmed);
+      setEditingUrl(false);
+    } finally {
+      setSavingUrl(false);
+    }
   }
 
   const user = userQ.data as WakaUser | undefined;
@@ -100,9 +176,7 @@ export default function SettingsScreen() {
           <View
             style={[
               styles.profileCard,
-              {
-                backgroundColor: colors.surfaceContainerHigh,
-              },
+              { backgroundColor: colors.surfaceContainerHigh },
             ]}
           >
             {user.photo ? (
@@ -114,7 +188,11 @@ export default function SettingsScreen() {
                   { backgroundColor: colors.primary },
                 ]}
               >
-                <Feather name="user" size={28} color={colors.onPrimary} />
+                <MaterialIcons
+                  name="account-circle"
+                  size={28}
+                  color={colors.onPrimary}
+                />
               </View>
             )}
             <View style={styles.profileInfo}>
@@ -128,8 +206,8 @@ export default function SettingsScreen() {
               </Text>
               {user.location ? (
                 <View style={styles.locationRow}>
-                  <Feather
-                    name="map-pin"
+                  <MaterialIcons
+                    name="location-pin"
                     size={12}
                     color={colors.onSurfaceVariant}
                   />
@@ -147,51 +225,161 @@ export default function SettingsScreen() {
           </View>
         ) : null}
 
+        {/* API URL */}
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: colors.surfaceContainerHigh },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>
+            API URL
+          </Text>
+          {!editingUrl ? (
+            <FieldRow
+              value={baseUrl}
+              onEdit={() => {
+                setNewUrl(baseUrl);
+                setEditingUrl(true);
+              }}
+            />
+          ) : (
+            <View style={styles.editSection}>
+              <View
+                style={[
+                  styles.inputRow,
+                  {
+                    backgroundColor: colors.surfaceContainerHigh,
+                    borderColor: colors.outline,
+                  },
+                ]}
+              >
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      color: colors.onSurface,
+                      fontFamily: ct.fontFamily.regular,
+                    },
+                  ]}
+                  placeholder={DEFAULT_BASE_URL}
+                  placeholderTextColor={colors.onSurfaceVariant}
+                  value={newUrl}
+                  onChangeText={setNewUrl}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="url"
+                />
+              </View>
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  gap: ct.xs,
+                  marginTop: ct.sm,
+                }}
+              >
+                {URL_SUGGESTIONS.map((s) => {
+                  const selected = newUrl.trim().replace(/\/+$/, "") === s.url;
+                  return (
+                    <TouchableOpacity
+                      key={s.url}
+                      onPress={() => setNewUrl(s.url)}
+                      activeOpacity={0.8}
+                      style={{
+                        paddingHorizontal: ct.padding.lg,
+                        paddingVertical: ct.xs,
+                        borderRadius: ct.radius.full,
+                        borderWidth: 1,
+                        borderColor: selected
+                          ? colors.secondaryContainer
+                          : colors.outline,
+                        backgroundColor: selected
+                          ? colors.secondaryContainer
+                          : colors.surfaceContainerHigh,
+                      }}
+                    >
+                      <Text
+                        style={[
+                          ct.text.buttonText,
+                          {
+                            color: selected
+                              ? colors.onSecondaryContainer
+                              : colors.onSurfaceVariant,
+                          },
+                        ]}
+                      >
+                        {s.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              <View style={styles.btnRow}>
+                <TouchableOpacity
+                  style={[
+                    styles.cancelBtn,
+                    { backgroundColor: colors.surfaceContainerLow },
+                  ]}
+                  onPress={() => {
+                    setEditingUrl(false);
+                    setNewUrl(baseUrl);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.cancelText,
+                      { color: colors.onSurfaceVariant },
+                    ]}
+                  >
+                    Cancel
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.saveBtn,
+                    {
+                      backgroundColor: colors.primary,
+                      opacity: savingUrl || !newUrl.trim() ? 0.5 : 1,
+                    },
+                  ]}
+                  onPress={handleSaveUrl}
+                  disabled={savingUrl || !newUrl.trim()}
+                  activeOpacity={0.8}
+                >
+                  {savingUrl ? (
+                    <ActivityIndicator color={colors.onPrimary} size="small" />
+                  ) : (
+                    <Text
+                      style={[styles.saveText, { color: colors.onPrimary }]}
+                    >
+                      Save
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        </View>
+
         {/* API Key */}
         <View
           style={[
             styles.section,
-            {
-              backgroundColor: colors.surfaceContainerHigh,
-            },
+            { backgroundColor: colors.surfaceContainerHigh },
           ]}
         >
           <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>
             API Key
           </Text>
-          {!editing ? (
-            <View style={styles.keyRow}>
-              <Text
-                style={[
-                  styles.keyText,
-                  {
-                    color: colors.onSurfaceVariant,
-                    fontFamily: ct.fontFamily.regular,
-                  },
-                ]}
-              >
-                {maskedKey}
-              </Text>
-              <TouchableOpacity
-                onPress={() => setEditing(true)}
-                style={[styles.editBtn, { backgroundColor: colors.primary }]}
-              >
-                <Feather name="edit" size={14} color={colors.onPrimary} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleClear}
-                style={[
-                  styles.editBtn,
-                  { backgroundColor: colors.errorContainer },
-                ]}
-              >
-                <Feather
-                  name="trash-2"
-                  size={14}
-                  color={colors.onErrorContainer}
-                />
-              </TouchableOpacity>
-            </View>
+          {!editingKey ? (
+            <FieldRow
+              value={maskedKey}
+              onEdit={() => setEditingKey(true)}
+              onDelete={handleClearKey}
+            />
           ) : (
             <View style={styles.editSection}>
               <View
@@ -220,7 +408,7 @@ export default function SettingsScreen() {
                   autoCorrect={false}
                 />
                 <TouchableOpacity onPress={() => setShow((s) => !s)}>
-                  <Feather
+                  <MaterialCommunityIcons
                     name={show ? "eye-off" : "eye"}
                     size={16}
                     color={colors.onSurfaceVariant}
@@ -230,9 +418,12 @@ export default function SettingsScreen() {
               <View style={styles.btnRow}>
                 {isConfigured ? (
                   <TouchableOpacity
-                    style={[styles.cancelBtn, { borderColor: colors.outline }]}
+                    style={[
+                      styles.cancelBtn,
+                      { backgroundColor: colors.surfaceContainerLow },
+                    ]}
                     onPress={() => {
-                      setEditing(false);
+                      setEditingKey(false);
                       setNewKey("");
                     }}
                   >
@@ -251,14 +442,14 @@ export default function SettingsScreen() {
                     styles.saveBtn,
                     {
                       backgroundColor: colors.primary,
-                      opacity: saving || !newKey.trim() ? 0.5 : 1,
+                      opacity: savingKey || !newKey.trim() ? 0.5 : 1,
                     },
                   ]}
-                  onPress={handleSave}
-                  disabled={saving || !newKey.trim()}
+                  onPress={handleSaveKey}
+                  disabled={savingKey || !newKey.trim()}
                   activeOpacity={0.8}
                 >
-                  {saving ? (
+                  {savingKey ? (
                     <ActivityIndicator color={colors.onPrimary} size="small" />
                   ) : (
                     <Text
@@ -272,6 +463,7 @@ export default function SettingsScreen() {
             </View>
           )}
         </View>
+
         {/* About */}
         <View
           style={[
@@ -307,7 +499,11 @@ export default function SettingsScreen() {
                 backgroundColor: colors.primary,
               }}
             >
-              <Feather name="github" size={18} color={colors.onPrimary} />
+              <MaterialCommunityIcons
+                name="github"
+                size={18}
+                color={colors.onPrimary}
+              />
               <Text style={[ct.text.buttonText, { color: colors.onPrimary }]}>
                 Source Code
               </Text>
@@ -330,7 +526,7 @@ export default function SettingsScreen() {
                 backgroundColor: colors.secondaryContainer,
               }}
             >
-              <Feather
+              <MaterialCommunityIcons
                 name="alert-circle"
                 size={18}
                 color={colors.onSecondaryContainer}

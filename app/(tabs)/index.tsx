@@ -49,7 +49,11 @@ export default function OverviewScreen() {
   const langMetaQ = useProgramLanguages();
 
   const refetch = useCallback(async () => {
-    await Promise.all([todayQ.refetch(), weekQ.refetch(), allTimeQ.refetch()]);
+    await Promise.allSettled([
+      todayQ.refetch(),
+      weekQ.refetch(),
+      allTimeQ.refetch(),
+    ]);
   }, [todayQ, weekQ, allTimeQ]);
 
   if (!isConfigured) {
@@ -61,7 +65,7 @@ export default function OverviewScreen() {
   const allTime = allTimeQ.data;
 
   const weekAvg = averageSummarySeconds(week);
-
+  const hasCategories = (today?.categories?.length ?? 0) > 0;
   const bestDay = week.reduce(
     (best, day) =>
       !best || day.grand_total.total_seconds > best.grand_total.total_seconds
@@ -69,7 +73,9 @@ export default function OverviewScreen() {
         : best,
     null as (typeof week)[number] | null,
   );
-  const loading = todayQ.isLoading || weekQ.isLoading || allTimeQ.isLoading;
+
+  const loading = todayQ.isLoading || weekQ.isLoading;
+  const failed = todayQ.isError || weekQ.isError;
 
   const langColorMap = buildLanguageColorMap(langMetaQ.data);
   const chartColors = [
@@ -120,7 +126,7 @@ export default function OverviewScreen() {
               marginTop: ct.layout.loading,
             }}
           />
-        ) : todayQ.isError || weekQ.isError || allTimeQ.isError ? (
+        ) : failed ? (
           <View
             style={[
               styles.errorCard,
@@ -153,8 +159,8 @@ export default function OverviewScreen() {
                 },
               ]}
             >
-              <View style={{ flex: 5 }}>
-                {(today?.categories?.length ?? 0) > 0 && (
+              {hasCategories && (
+                <View style={{ flex: 5 }}>
                   <CategoryPieChart
                     items={(today?.categories ?? [])
                       .slice(0, 5)
@@ -162,21 +168,25 @@ export default function OverviewScreen() {
                         name: item.name,
                         percent: item.percent,
                         total_seconds: item.total_seconds,
-                        text: item.text,
+                        text: item.text ?? "",
                       }))}
                   />
-                )}
-              </View>
+                </View>
+              )}
 
               <View
                 style={{
-                  flex: 3,
+                  flex: hasCategories ? 3 : 1,
                   gap: ct.padding.sm,
                 }}
               >
                 <View style={{ flex: 1 }}>
                   <StatCard
-                    value={today?.grand_total.text ?? "-"}
+                    value={
+                      today
+                        ? formatDuration(today.grand_total.total_seconds)
+                        : "-"
+                    }
                     subtitle="today"
                     icon={(tint) => (
                       <Feather name="clock" size={20} color={tint} />
@@ -231,7 +241,7 @@ export default function OverviewScreen() {
                 items={(today?.languages ?? []).slice(0, 4).map((item) => ({
                   name: item.name,
                   percent: item.percent,
-                  trailingText: item.text,
+                  trailingText: item.text ?? "",
                 }))}
               />
 
@@ -241,7 +251,7 @@ export default function OverviewScreen() {
                 items={(today?.editors ?? []).slice(0, 4).map((item) => ({
                   name: item.name,
                   percent: item.percent,
-                  trailingText: item.text,
+                  trailingText: item.text ?? "",
                 }))}
               />
 
@@ -251,7 +261,7 @@ export default function OverviewScreen() {
                 items={(today?.projects ?? []).slice(0, 4).map((item) => ({
                   name: item.name,
                   percent: item.percent,
-                  trailingText: item.text,
+                  trailingText: item.text ?? "",
                 }))}
               />
 
@@ -263,7 +273,7 @@ export default function OverviewScreen() {
                   .map((item) => ({
                     name: item.name,
                     percent: item.percent,
-                    trailingText: item.text,
+                    trailingText: item.text ?? "",
                   }))}
               />
 

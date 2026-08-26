@@ -11,28 +11,49 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
 import { useColors } from "@/src/hooks/useColors";
-import { wakatimeApi } from "@/src/api/wakatime";
+import { wakatimeApi, DEFAULT_BASE_URL } from "@/src/api/wakatime";
 import { ct } from "@/src/constants/styles.common";
+
+const SERVER_SUGGESTIONS = [
+  { label: "WakaTime", url: DEFAULT_BASE_URL },
+  {
+    label: "Hackatime",
+    url: "https://hackatime.hackclub.com/api/hackatime/v1",
+  },
+];
 
 export function SetupScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { setApiKey } = useWakaTime();
+  const { setApiKey, baseUrl: savedBaseUrl, setBaseUrl } = useWakaTime();
+
   const [key, setKey] = useState("");
+  const [serverUrl, setServerUrl] = useState(savedBaseUrl);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [show, setShow] = useState(false);
 
+  const isHackatime = serverUrl.includes("hackatime.hackclub.com");
+
   async function handleSave() {
-    const trimmed = key.trim();
-    if (!trimmed) return;
+    const trimmedKey = key.trim();
+    const trimmedUrl = serverUrl.trim().replace(/\/+$/, "") || DEFAULT_BASE_URL;
+    if (!trimmedKey) return;
+
     setLoading(true);
     setError(null);
     try {
-      await wakatimeApi.verifyKey(trimmed);
-      await setApiKey(trimmed);
+      await wakatimeApi.verifyKey(trimmedKey, trimmedUrl);
+      await setBaseUrl(trimmedUrl);
+      await setApiKey(trimmedKey);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Something went wrong.");
+      if (e instanceof Error && e.message === "Invalid API key") {
+        setError("Invalid key — check it and try again.");
+      } else if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError("Something went wrong.");
+      }
     } finally {
       setLoading(false);
     }
@@ -50,7 +71,6 @@ export function SetupScreen() {
         paddingHorizontal: ct.xl + 4,
       }}
     >
-      {/* Top wordmark */}
       <View
         style={{ flex: 1, justifyContent: "center", gap: ct.padding["2xl"] }}
       >
@@ -72,11 +92,74 @@ export function SetupScreen() {
               { color: colors.onSurfaceVariant, textAlign: "center" },
             ]}
           >
-            Paste your API key to get started.
+            Paste your API key & choose your provider (You can change them
+            later).
           </Text>
         </View>
 
         <View style={{ gap: ct.md }}>
+          {/* Server selector */}
+          <View style={{ gap: ct.xs }}>
+            <View style={{ flexDirection: "row", gap: ct.xs }}>
+              {SERVER_SUGGESTIONS.map((s) => {
+                const selected = serverUrl.trim().replace(/\/+$/, "") === s.url;
+                return (
+                  <TouchableOpacity
+                    key={s.url}
+                    onPress={() => {
+                      setServerUrl(s.url);
+                      setError(null);
+                    }}
+                    activeOpacity={0.8}
+                    style={{
+                      flex: 1,
+                      alignItems: "center",
+                      padding: ct.md,
+                      borderRadius: ct.radius.full,
+                      borderWidth: 1,
+                      borderColor: selected
+                        ? colors.outline
+                        : colors.outlineVariant,
+                      backgroundColor: selected
+                        ? colors.primary
+                        : colors.surfaceContainerHighest,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: ct.fontSize.sm,
+                        fontFamily: ct.fontFamily.medium,
+                        color: selected
+                          ? colors.onPrimary
+                          : colors.onSurfaceVariant,
+                      }}
+                    >
+                      {s.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            <TextInput
+              style={{
+                fontSize: ct.fontSize.sm,
+                fontFamily: ct.fontFamily.regular,
+                color: colors.onSurfaceVariant,
+                paddingHorizontal: ct.layout.inputErrorPadding,
+              }}
+              value={serverUrl}
+              onChangeText={(v) => {
+                setServerUrl(v);
+                setError(null);
+              }}
+              placeholder={DEFAULT_BASE_URL}
+              placeholderTextColor={colors.onSurfaceVariant}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="url"
+            />
+          </View>
+
           {/* Key input */}
           <View
             style={{
@@ -98,7 +181,7 @@ export function SetupScreen() {
                 color: colors.onSurface,
                 height: "100%",
               }}
-              placeholder="waka_xxxxxxxxxxxxxxxx"
+              placeholder="xxxxxxxxxxxxxxxx"
               placeholderTextColor={colors.onSurfaceVariant}
               value={key}
               onChangeText={(v) => {
@@ -138,7 +221,6 @@ export function SetupScreen() {
             </Text>
           )}
 
-          {/* Connect button */}
           <TouchableOpacity
             onPress={handleSave}
             disabled={!canSubmit}
@@ -181,7 +263,9 @@ export function SetupScreen() {
         >
           Find your key at{" "}
           <Text style={{ color: colors.primary }}>
-            wakatime.com/settings/api-key
+            {isHackatime
+              ? "hackatime.hackclub.com"
+              : "wakatime.com/settings/api-key"}
           </Text>
         </Text>
       </View>

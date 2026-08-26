@@ -1,11 +1,10 @@
 import { Tabs } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import React from "react";
 import { Platform } from "react-native";
 import { SymbolView } from "expo-symbols";
 import { useColors } from "@/src/hooks/useColors";
 
-// No longer using tabs based navigation
 
 const isIOS = Platform.OS === "ios";
 
@@ -28,11 +27,19 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Overview",
-          tabBarIcon: ({ color }) =>
+          tabBarIcon: ({ color, focused }) =>
             isIOS ? (
-              <SymbolView name="chart.bar.fill" tintColor={color} size={22} />
+              <SymbolView
+                name={focused ? "chart.bar.fill" : "chart.bar"}
+                tintColor={color}
+                size={22}
+              />
             ) : (
-              <Feather name="activity" size={22} color={color} />
+              <MaterialCommunityIcons
+                name={focused ? "view-dashboard" : "view-dashboard-outline"}
+                size={22}
+                color={color}
+              />
             ),
         }}
       />
@@ -40,11 +47,23 @@ export default function TabLayout() {
         name="breakdown"
         options={{
           title: "Breakdown",
-          tabBarIcon: ({ color }) =>
+          tabBarIcon: ({ color, focused }) =>
             isIOS ? (
-              <SymbolView name="chart.pie.fill" tintColor={color} size={22} />
+              <SymbolView
+                name={focused ? "chart.pie.fill" : "chart.pie"}
+                tintColor={color}
+                size={22}
+              />
             ) : (
-              <Feather name="pie-chart" size={22} color={color} />
+              <MaterialIcons
+                name={
+                  focused
+                    ? "pie-chart-outline"
+                    : "pie-chart" 
+                }
+                size={22}
+                color={color}
+              />
             ),
         }}
       />
@@ -53,11 +72,19 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: "Settings",
-          tabBarIcon: ({ color }) =>
+          tabBarIcon: ({ color, focused }) =>
             isIOS ? (
-              <SymbolView name="gearshape.fill" tintColor={color} size={22} />
+              <SymbolView
+                name={focused ? "gearshape.fill" : "gearshape"}
+                tintColor={color}
+                size={22}
+              />
             ) : (
-              <Feather name="settings" size={22} color={color} />
+              <MaterialCommunityIcons
+                name={focused ? "cog" : "cog-outline"}
+                size={22}
+                color={color}
+              />
             ),
         }}
       />

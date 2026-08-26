@@ -21,16 +21,19 @@ export const wakaKeys = {
 function useWakaQueryScope() {
   // ts is important
   // ever query key ends with `...scope` so that if the auth generation changes, all queries will be invalidated and refetched
+  // baseUrl changes bump authGeneration too now (see WakaTimeContext), so switching
+  // servers busts the cache the same way rotating a key does
 
   const { authGeneration } = useWakaTime();
   return [authGeneration] as const;
 }
+
 export function useWakaUser() {
-  const { apiKey, isConfigured } = useWakaTime();
+  const { apiKey, baseUrl, isConfigured } = useWakaTime();
   const scope = useWakaQueryScope();
   return useQuery({
     queryKey: [...wakaKeys.user(), ...scope],
-    queryFn: () => wakatimeApi.getUser(apiKey!),
+    queryFn: () => wakatimeApi.getUser(apiKey!, baseUrl),
     enabled: isConfigured,
     staleTime: THIRTY_MIN,
     gcTime: THIRTY_MIN,
@@ -38,11 +41,11 @@ export function useWakaUser() {
   });
 }
 export function useTodaySummary() {
-  const { apiKey, isConfigured } = useWakaTime();
+  const { apiKey, baseUrl, isConfigured } = useWakaTime();
   const scope = useWakaQueryScope();
   return useQuery({
     queryKey: [...wakaKeys.today(), ...scope],
-    queryFn: () => wakatimeApi.getTodaySummary(apiKey!),
+    queryFn: () => wakatimeApi.getTodaySummary(apiKey!, baseUrl),
     enabled: isConfigured,
     staleTime: FIVE_MIN,
     gcTime: TEN_MIN,
@@ -51,11 +54,11 @@ export function useTodaySummary() {
 }
 
 export function useWeekSummaries() {
-  const { apiKey, isConfigured } = useWakaTime();
+  const { apiKey, baseUrl, isConfigured } = useWakaTime();
   const scope = useWakaQueryScope();
   return useQuery({
     queryKey: [...wakaKeys.week(), ...scope],
-    queryFn: () => wakatimeApi.getWeekSummaries(apiKey!),
+    queryFn: () => wakatimeApi.getWeekSummaries(apiKey!, baseUrl),
     enabled: isConfigured,
     staleTime: TEN_MIN,
     gcTime: THIRTY_MIN,
@@ -63,11 +66,11 @@ export function useWeekSummaries() {
   });
 }
 export function useAllTimeSinceToday() {
-  const { apiKey, isConfigured } = useWakaTime();
+  const { apiKey, baseUrl, isConfigured } = useWakaTime();
   const scope = useWakaQueryScope();
   return useQuery({
     queryKey: [...wakaKeys.all, "allTimeSinceToday", ...scope],
-    queryFn: () => wakatimeApi.getAllTimeSinceToday(apiKey!),
+    queryFn: () => wakatimeApi.getAllTimeSinceToday(apiKey!, baseUrl),
     enabled: isConfigured,
     staleTime: THIRTY_MIN,
     gcTime: THIRTY_MIN,
@@ -82,11 +85,11 @@ export function useWakaStats(
     | "last_year"
     | "all_time",
 ) {
-  const { apiKey, isConfigured } = useWakaTime();
+  const { apiKey, baseUrl, isConfigured } = useWakaTime();
   const scope = useWakaQueryScope();
   return useQuery({
     queryKey: [...wakaKeys.stats(range), ...scope],
-    queryFn: () => wakatimeApi.getStats(range, apiKey!),
+    queryFn: () => wakatimeApi.getStats(range, apiKey!, baseUrl),
     enabled: isConfigured,
     staleTime: TEN_MIN,
     gcTime: THIRTY_MIN,
