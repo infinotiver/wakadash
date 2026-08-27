@@ -68,20 +68,20 @@ export function SetupScreen() {
         backgroundColor: colors.background,
         paddingTop: Platform.OS === "web" ? 80 : insets.top + 32,
         paddingBottom: Platform.OS === "web" ? 40 : insets.bottom + 32,
-        paddingHorizontal: ct.xl + 4,
+        paddingHorizontal: ct.space["2xl"],
       }}
     >
       <View
         style={{ flex: 1, justifyContent: "center", gap: ct.padding["2xl"] }}
       >
-        <View style={{ gap: ct.sm }}>
+        <View style={{ gap: ct.space.sm }}>
           <Text
             style={{
-              fontSize: ct.fontSize["8xl"],
+              fontSize: ct.fontSize.display,
               fontFamily: ct.fontFamily.bold,
               color: colors.onSurface,
               textAlign: "center",
-              lineHeight: ct.fontSize["8xl"],
+              lineHeight: ct.lineHeight.md,
             }}
           >
             WakaDash
@@ -97,10 +97,10 @@ export function SetupScreen() {
           </Text>
         </View>
 
-        <View style={{ gap: ct.md }}>
+        <View style={{ gap: ct.space.md }}>
           {/* Server selector */}
-          <View style={{ gap: ct.xs }}>
-            <View style={{ flexDirection: "row", gap: ct.xs }}>
+          <View style={{ gap: ct.space.xs }}>
+            <View style={{ flexDirection: "row", gap: ct.space.xs }}>
               {SERVER_SUGGESTIONS.map((s) => {
                 const selected = serverUrl.trim().replace(/\/+$/, "") === s.url;
                 return (
@@ -114,7 +114,7 @@ export function SetupScreen() {
                     style={{
                       flex: 1,
                       alignItems: "center",
-                      padding: ct.md,
+                      padding: ct.space.md,
                       borderRadius: ct.radius.full,
                       borderWidth: 1,
                       borderColor: selected
@@ -145,7 +145,7 @@ export function SetupScreen() {
                 fontSize: ct.fontSize.sm,
                 fontFamily: ct.fontFamily.regular,
                 color: colors.onSurfaceVariant,
-                paddingHorizontal: ct.size.inputErrorPadding,
+                paddingHorizontal: ct.padding.sm,
               }}
               value={serverUrl}
               onChangeText={(v) => {
@@ -170,7 +170,7 @@ export function SetupScreen() {
               flexDirection: "row",
               alignItems: "center",
               height: 52,
-              paddingHorizontal: ct.lg,
+              paddingHorizontal: ct.space.lg,
             }}
           >
             <TextInput
@@ -213,7 +213,7 @@ export function SetupScreen() {
                 ct.text.caption,
                 {
                   color: colors.error,
-                  paddingHorizontal: ct.size.inputErrorPadding,
+                  paddingHorizontal: ct.space.sm,
                 },
               ]}
             >
