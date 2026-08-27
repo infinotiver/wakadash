@@ -5,7 +5,6 @@ import { Platform } from "react-native";
 import { SymbolView } from "expo-symbols";
 import { useColors } from "@/src/hooks/useColors";
 
-
 const isIOS = Platform.OS === "ios";
 
 export default function TabLayout() {
@@ -20,6 +19,7 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: colors.surfaceContainerLow,
           borderTopWidth: 0,
+          display: "none",
         },
       }}
     >
@@ -55,12 +55,8 @@ export default function TabLayout() {
                 size={22}
               />
             ) : (
-              <MaterialIcons
-                name={
-                  focused
-                    ? "pie-chart-outline"
-                    : "pie-chart" 
-                }
+              <MaterialCommunityIcons
+                name={focused ? "chart-pie" : "chart-pie-outline"}
                 size={22}
                 color={color}
               />

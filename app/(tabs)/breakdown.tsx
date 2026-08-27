@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -21,8 +21,10 @@ import {
 } from "@/src/hooks/useWakaTimeQueries";
 import { StatCard } from "@/src/components/StatCard";
 import { Feather } from "@expo/vector-icons";
-import { buildLanguageColorMap } from "@/src/utils/dashboard";
+import { buildLanguageColorMap, formatDuration } from "@/src/utils/dashboard";
+
 const styles = ct.styles.breakdown;
+
 type Range =
   | "last_7_days"
   | "last_30_days"
@@ -65,8 +67,8 @@ function SectionLabel({
         ct.text.label,
         {
           color: c.onSurfaceVariant,
-          marginBottom: ct.sm,
-          marginTop: ct.xs,
+          marginBottom: ct.space.sm,
+          marginTop: ct.space.xs,
         },
       ]}
     >
@@ -84,10 +86,27 @@ export default function BreakdownScreen() {
   const [category, setCategory] = useState<Category>("categories");
 
   const statsQ = useWakaStats(range);
+  const langMetaQ = useProgramLanguages();
+
+  const stats = statsQ.data;
+
+  // Not every category breakdown exists for every provider
+  const availableCategories = CATEGORIES.filter(
+    (cat) => stats?.[cat.value] !== undefined,
+  );
+
+  useEffect(() => {
+    if (!stats) return;
+    const stillAvailable = availableCategories.some(
+      (c) => c.value === category,
+    );
+    if (!stillAvailable && availableCategories.length > 0) {
+      setCategory(availableCategories[0].value);
+    }
+  }, [stats, availableCategories, category]);
 
   if (!isConfigured) return <SetupScreen />;
 
-  const stats = statsQ.data;
   const items = stats?.[category] ?? [];
   const visibleItems = items.filter((item) => (item?.percent ?? 0) >= 0.1);
   const showProError =
@@ -104,7 +123,6 @@ export default function BreakdownScreen() {
     c.accent.green.color,
   ];
 
-  const langMetaQ = useProgramLanguages();
   const langColorMap = buildLanguageColorMap(langMetaQ.data);
 
   const aiPromptEvents = stats?.ai_prompt_events_total ?? 0;
@@ -124,7 +142,7 @@ export default function BreakdownScreen() {
       contentContainerStyle={[
         styles.content,
         {
-          paddingBottom: insets.bottom + ct.lg,
+          paddingBottom: insets.bottom + ct.space.lg,
         },
       ]}
       refreshControl={
@@ -135,8 +153,16 @@ export default function BreakdownScreen() {
         />
       }
     >
-      <AppBar title="Breakdown" variant="center" />
-
+      {/* <AppBar title="Breakdown" variant="center" /> */}
+      <AppBar
+        title="Breakdown"
+        variant="small"
+        elevated={false}
+        leadingIcon="arrow-left"
+        leadingLabel="Go back"
+        onLeadingPress={() => router.back()}
+        actions={[]}
+      />
       <ButtonGroup items={RANGES} value={range} onChange={setRange} />
 
       {/* Pro upsell */}
@@ -159,12 +185,12 @@ export default function BreakdownScreen() {
       {statsQ.isLoading && (
         <ActivityIndicator
           color={c.primary}
-          style={{ marginTop: ct.layout.loading }}
+          style={{ marginTop: ct.size.loading }}
         />
       )}
 
       {statsQ.isError && !showProError && (
-        <Text style={[styles.error, { color: c.error }]}>
+        <Text style={[ct.styles.pill, { color: c.error }]}>
           {statsQ.error instanceof Error
             ? statsQ.error.message
             : "Failed to load"}
@@ -177,7 +203,7 @@ export default function BreakdownScreen() {
 
           <View style={styles.summaryRow}>
             <StatCard
-              value={stats.human_readable_total ?? "—"}
+              value={formatDuration(stats.total_seconds)}
               subtitle="Coding Time"
               icon={(color) => <Feather name="clock" size={20} color={color} />}
               iconBackgroundColor={c.accent.amber.colorContainer}
@@ -185,31 +211,8 @@ export default function BreakdownScreen() {
             />
 
             <StatCard
-              value={stats.human_readable_total_including_other_language ?? "—"}
-              subtitle="Total Time"
-              icon={(color) => <Feather name="clock" size={20} color={color} />}
-              iconBackgroundColor={c.accent.coral.colorContainer}
-              iconTintColor={c.accent.coral.onColorContainer}
-            />
-          </View>
-
-          <View style={styles.summaryRow}>
-            <StatCard
-              value={stats.human_readable_daily_average ?? "—"}
-              subtitle="Coding avg"
-              icon={(color) => (
-                <Feather name="activity" size={20} color={color} />
-              )}
-              iconBackgroundColor={c.accent.violet.colorContainer}
-              iconTintColor={c.accent.violet.onColorContainer}
-            />
-
-            <StatCard
-              value={
-                stats.human_readable_daily_average_including_other_language ??
-                "—"
-              }
-              subtitle="Total avg"
+              value={formatDuration(stats.daily_average)}
+              subtitle="Daily Avg"
               icon={(color) => (
                 <Feather name="activity" size={20} color={color} />
               )}
@@ -270,10 +273,10 @@ export default function BreakdownScreen() {
                 />
               </View>
 
-              <View style={[styles.summaryRow, { marginBottom: ct.lg }]}>
+              <View style={[styles.summaryRow, { marginBottom: ct.space.lg }]}>
                 <StatCard
                   value={`+${aiAdditions.toLocaleString("en-US", { notation: "compact" })} / -${aiDeletions.toLocaleString("en-US", { notation: "compact" })}`}
-                  subtitle="AI code changes"
+                  subtitle="AI changes"
                   icon={(color) => (
                     <Feather name="cpu" size={20} color={color} />
                   )}
@@ -283,7 +286,7 @@ export default function BreakdownScreen() {
 
                 <StatCard
                   value={`+${humanAdditions.toLocaleString("en-US", { notation: "compact" })} / -${humanDeletions.toLocaleString("en-US", { notation: "compact" })}`}
-                  subtitle="Human code changes"
+                  subtitle="Human changes"
                   icon={(color) => (
                     <Feather name="user" size={20} color={color} />
                   )}
@@ -297,7 +300,7 @@ export default function BreakdownScreen() {
           <SectionLabel title="Breakdown" c={c} />
 
           <ButtonGroup
-            items={CATEGORIES}
+            items={availableCategories}
             value={category}
             onChange={setCategory}
           />

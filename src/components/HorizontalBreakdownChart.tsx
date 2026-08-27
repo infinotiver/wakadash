@@ -34,7 +34,7 @@ export function HorizontalBreakdownChart({
   }
 
   return (
-    <View style={{ gap: ct.layout.listGap }}>
+    <View style={{ gap: ct.space.lg }}>
       <HorizontalStackedBar
         segments={visibleItems.map((item) => ({
           key: item.key ?? item.label,
@@ -46,11 +46,11 @@ export function HorizontalBreakdownChart({
         separatorColor={separatorColor ?? trackColor}
       />
 
-      <View style={{ gap: ct.sm }}>
+      <View style={{ gap: ct.space.md }}>
         {visibleItems.map((item) => (
           <View
             key={item.key ?? item.label}
-            style={[ct.styles.row, { alignItems: "flex-start", gap: ct.sm }]}
+            style={[ct.styles.row, { alignItems: "flex-start", gap: ct.space.md }]}
           >
             <View
               style={{
@@ -79,7 +79,7 @@ export function HorizontalBreakdownChart({
                 {
                   flexShrink: 0,
                   alignItems: "center",
-                  gap: ct.sm,
+                  gap: ct.space.md,
                 },
               ]}
             >

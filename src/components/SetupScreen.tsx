@@ -145,7 +145,7 @@ export function SetupScreen() {
                 fontSize: ct.fontSize.sm,
                 fontFamily: ct.fontFamily.regular,
                 color: colors.onSurfaceVariant,
-                paddingHorizontal: ct.layout.inputErrorPadding,
+                paddingHorizontal: ct.size.inputErrorPadding,
               }}
               value={serverUrl}
               onChangeText={(v) => {
@@ -213,7 +213,7 @@ export function SetupScreen() {
                 ct.text.caption,
                 {
                   color: colors.error,
-                  paddingHorizontal: ct.layout.inputErrorPadding,
+                  paddingHorizontal: ct.size.inputErrorPadding,
                 },
               ]}
             >

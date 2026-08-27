@@ -1,11 +1,11 @@
 import React from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useColors } from "@/src/hooks/useColors";
 import { ct } from "@/src/constants/styles.common";
 
-type IconName = keyof typeof Feather.glyphMap;
+type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
 
 interface AppBarAction {
   icon: IconName;
@@ -26,8 +26,8 @@ interface AppBarProps {
 }
 
 const BAR_HEIGHT = 64;
-const ICON_BUTTON_SIZE = 40;
-const ICON_SIZE = 24;
+const ICON_BUTTON_SIZE = 60;
+const ICON_SIZE = 28;
 
 export function AppBar({
   title,
@@ -49,7 +49,7 @@ export function AppBar({
         styles.bar,
         {
           backgroundColor: containerColor,
-          paddingTop: Platform.OS === "web" ? ct.sm : insets.top,
+          paddingTop: Platform.OS === "web" ? ct.space.sm : insets.top,
         },
       ]}
     >
@@ -67,7 +67,7 @@ export function AppBar({
               },
             ]}
           >
-            <Feather
+            <MaterialCommunityIcons
               name={leadingIcon}
               size={ICON_SIZE}
               color={colors.onSurface}
@@ -108,7 +108,7 @@ export function AppBar({
                   },
                 ]}
               >
-                <Feather
+                <MaterialCommunityIcons
                   name={action.icon}
                   size={ICON_SIZE}
                   color={colors.onSurface}
@@ -130,12 +130,12 @@ const styles = StyleSheet.create({
     height: BAR_HEIGHT,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 4,
+    padding: 4,
   },
   iconButton: {
     width: ICON_BUTTON_SIZE,
     height: ICON_BUTTON_SIZE,
-    borderRadius: ICON_BUTTON_SIZE / 2,
+    borderRadius: ICON_BUTTON_SIZE,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -145,5 +145,5 @@ const styles = StyleSheet.create({
     lineHeight: 28,
     marginHorizontal: 4,
   },
-  actions: { flexDirection: "row" },
+  actions: { flexDirection: "row", padding: 4 },
 });

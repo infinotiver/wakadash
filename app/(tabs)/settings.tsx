@@ -56,9 +56,9 @@ function FieldRow({
       </Text>
       <TouchableOpacity
         onPress={onEdit}
-        style={[styles.editBtn, { backgroundColor: colors.primary }]}
+        style={[styles.editBtn, { backgroundColor: colors.secondary }]}
       >
-        <MaterialIcons name="edit" size={16} color={colors.onPrimary} />
+        <MaterialIcons name="edit" size={16} color={colors.onSecondary} />
       </TouchableOpacity>
       {onDelete ? (
         <TouchableOpacity
@@ -159,18 +159,27 @@ export default function SettingsScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <AppBar title="Settings" variant="center" />
+      {/* <AppBar title="Settings" variant="center" /> */}
+      <AppBar
+        title="Settings"
+        variant="small"
+        elevated={false}
+        leadingIcon="arrow-left"
+        leadingLabel="Go back"
+        onLeadingPress={() => router.back()}
+        actions={[]}
+      />
       <ScrollView
         style={ct.styles.scroll}
         contentContainerStyle={[
           styles.content,
-          { paddingBottom: insets.bottom + ct.lg },
+          { paddingBottom: insets.bottom + ct.space.lg },
         ]}
       >
         {userQ.isLoading ? (
           <ActivityIndicator
             color={colors.primary}
-            style={{ marginTop: ct.layout.loadingCompact }}
+            style={{ marginTop: ct.size.loadingCompact }}
           />
         ) : user ? (
           <View
@@ -276,8 +285,8 @@ export default function SettingsScreen() {
                 style={{
                   flexDirection: "row",
                   flexWrap: "wrap",
-                  gap: ct.xs,
-                  marginTop: ct.sm,
+                  gap: ct.space.xs,
+                  marginTop: ct.space.sm,
                 }}
               >
                 {URL_SUGGESTIONS.map((s) => {
@@ -288,8 +297,8 @@ export default function SettingsScreen() {
                       onPress={() => setNewUrl(s.url)}
                       activeOpacity={0.8}
                       style={{
-                        paddingHorizontal: ct.padding.lg,
-                        paddingVertical: ct.xs,
+                        paddingVertical: ct.padding.sm,
+                        paddingHorizontal: ct.padding.md,
                         borderRadius: ct.radius.full,
                         borderWidth: 1,
                         borderColor: selected
@@ -341,7 +350,7 @@ export default function SettingsScreen() {
                   style={[
                     styles.saveBtn,
                     {
-                      backgroundColor: colors.primary,
+                      backgroundColor: colors.secondary,
                       opacity: savingUrl || !newUrl.trim() ? 0.5 : 1,
                     },
                   ]}
@@ -350,10 +359,13 @@ export default function SettingsScreen() {
                   activeOpacity={0.8}
                 >
                   {savingUrl ? (
-                    <ActivityIndicator color={colors.onPrimary} size="small" />
+                    <ActivityIndicator
+                      color={colors.onSecondary}
+                      size="small"
+                    />
                   ) : (
                     <Text
-                      style={[styles.saveText, { color: colors.onPrimary }]}
+                      style={[styles.saveText, { color: colors.onSecondary }]}
                     >
                       Save
                     </Text>
@@ -441,7 +453,7 @@ export default function SettingsScreen() {
                   style={[
                     styles.saveBtn,
                     {
-                      backgroundColor: colors.primary,
+                      backgroundColor: colors.secondary,
                       opacity: savingKey || !newKey.trim() ? 0.5 : 1,
                     },
                   ]}
@@ -450,10 +462,13 @@ export default function SettingsScreen() {
                   activeOpacity={0.8}
                 >
                   {savingKey ? (
-                    <ActivityIndicator color={colors.onPrimary} size="small" />
+                    <ActivityIndicator
+                      color={colors.onSecondary}
+                      size="small"
+                    />
                   ) : (
                     <Text
-                      style={[styles.saveText, { color: colors.onPrimary }]}
+                      style={[styles.saveText, { color: colors.onSecondary }]}
                     >
                       Save
                     </Text>
@@ -477,12 +492,12 @@ export default function SettingsScreen() {
           <Text
             style={[
               ct.text.body,
-              { color: colors.onSurfaceVariant, marginBottom: ct.md },
+              { color: colors.onSurfaceVariant, marginBottom: ct.space.md },
             ]}
           >
             made by infinotiver {"<3"}
           </Text>
-          <View style={{ flexDirection: "row", gap: ct.sm }}>
+          <View style={{ flexDirection: "row", gap: ct.space.sm }}>
             <TouchableOpacity
               onPress={() =>
                 Linking.openURL("https://github.com/infinotiver/wakadash")
@@ -493,7 +508,7 @@ export default function SettingsScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: ct.xs,
+                gap: ct.space.xs,
                 padding: ct.padding.lg,
                 borderRadius: ct.radius.full,
                 backgroundColor: colors.primary,
@@ -520,7 +535,7 @@ export default function SettingsScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: ct.xs,
+                gap: ct.space.xs,
                 padding: ct.padding.lg,
                 borderRadius: ct.radius.full,
                 backgroundColor: colors.secondaryContainer,

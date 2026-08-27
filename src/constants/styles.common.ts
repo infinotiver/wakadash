@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 
-const spacing = {
+const space = {
   xs: 4,
   sm: 8,
   md: 12,
@@ -11,25 +11,20 @@ const spacing = {
   "4xl": 40,
   full: 999,
 } as const;
-
-const padding = spacing;
-const radius = spacing;
+const padding = space;
+const radius = space;
 
 const fontSize = {
   xs: 10,
   sm: 11,
-  base: 12,
   md: 13,
   lg: 14,
   xl: 15,
   "2xl": 16,
   "3xl": 18,
-  "4xl": 20,
-  "5xl": 22,
-  "6xl": 24,
-  "7xl": 28,
-  "8xl": 32,
-  "9xl": 44,
+  title: 20,
+  display: 28,
+  hero: 44,
 } as const;
 
 const fontFamily = {
@@ -49,273 +44,378 @@ const lineHeight = {
 
 const size = {
   avatar: 60,
+  icon: 40,
   dot: 8,
   tinyDot: 3,
   marker: 5,
-  tooltipHeight: 32,
-  chartBottom: 20,
-} as const;
-
-const layout = {
-  listGap: 10,
+  tooltip: 32,
   loading: 40,
   loadingCompact: 20,
+  input: 54,
   webHeader: 67,
   webTabBar: 34,
   tabBarExtra: 80,
-  inputErrorPadding: 2,
-  emptyTop: 60,
 } as const;
 
 const text = StyleSheet.create({
   pageTitle: {
-    fontSize: fontSize["7xl"],
+    fontSize: fontSize.display,
     fontFamily: fontFamily.bold,
     letterSpacing: -0.8,
   },
-  pageSub: { fontSize: fontSize.lg, fontFamily: fontFamily.regular },
-  sectionTitle: { fontSize: fontSize.xl, fontFamily: fontFamily.semibold },
+
+  pageSub: {
+    fontSize: fontSize.lg,
+    fontFamily: fontFamily.regular,
+  },
+
+  sectionTitle: {
+    fontSize: fontSize.xl,
+    fontFamily: fontFamily.semibold,
+  },
+
   sectionLabel: {
     fontSize: fontSize.xs,
     fontFamily: fontFamily.semibold,
     letterSpacing: 0.6,
     textTransform: "uppercase",
   },
+
   label: {
     fontSize: fontSize.xs,
     fontFamily: fontFamily.medium,
     letterSpacing: 0.5,
     textTransform: "uppercase",
   },
-  labelSm: {
-    fontSize: fontSize.xs,
-    fontFamily: fontFamily.medium,
-    letterSpacing: 0.4,
-  },
+
   value: {
     fontSize: 22,
     letterSpacing: -0.5,
   },
-  valueSm: { fontSize: 16 },
-  valueLg: {
-    fontSize: 24,
-    letterSpacing: -0.5,
+
+  body: {
+    fontSize: fontSize.md,
+    fontFamily: fontFamily.regular,
   },
-  body: { fontSize: fontSize.md, fontFamily: fontFamily.regular },
-  bodyMedium: { fontSize: fontSize.md, fontFamily: fontFamily.medium },
-  bodySemibold: { fontSize: fontSize.md, fontFamily: fontFamily.semibold },
-  caption: { fontSize: fontSize.xs, fontFamily: fontFamily.regular },
-  captionMedium: { fontSize: fontSize.xs, fontFamily: fontFamily.medium },
+
+  bodyMedium: {
+    fontSize: fontSize.md,
+    fontFamily: fontFamily.medium,
+  },
+
+  bodySemibold: {
+    fontSize: fontSize.md,
+    fontFamily: fontFamily.semibold,
+  },
+
+  caption: {
+    fontSize: fontSize.xs,
+    fontFamily: fontFamily.regular,
+  },
+
+  captionMedium: {
+    fontSize: fontSize.xs,
+    fontFamily: fontFamily.medium,
+  },
+
   heroTime: {
-    fontSize: fontSize["9xl"],
+    fontSize: fontSize.hero,
     fontFamily: fontFamily.bold,
     letterSpacing: -1.5,
-    lineHeight: 52,
+    lineHeight: lineHeight.lg,
   },
+
   heroLabel: {
     fontSize: fontSize.sm,
     fontFamily: fontFamily.medium,
     textTransform: "uppercase",
     letterSpacing: 0.6,
   },
+
   heroSub: {
     fontSize: fontSize.lg,
     fontFamily: fontFamily.regular,
-    marginTop: padding.xs,
+    marginTop: space.xs,
   },
-  pillText: { fontSize: fontSize.md, fontFamily: fontFamily.medium },
-  tagText: { fontSize: fontSize.sm, fontFamily: fontFamily.medium },
-  buttonText: { fontSize: fontSize.lg, fontFamily: fontFamily.semibold },
+
+  pillText: {
+    fontSize: fontSize.md,
+    fontFamily: fontFamily.medium,
+  },
+
+  tagText: {
+    fontSize: fontSize.sm,
+    fontFamily: fontFamily.medium,
+  },
+
+  buttonText: {
+    fontSize: fontSize.lg,
+    fontFamily: fontFamily.semibold,
+  },
+
   cardLabel: {
     fontSize: fontSize.xs,
     fontFamily: fontFamily.medium,
     letterSpacing: 0.5,
     textTransform: "uppercase",
   },
-  cardValue: { fontSize: fontSize.xl, fontFamily: fontFamily.bold },
-  cardSub: { fontSize: fontSize.sm, fontFamily: fontFamily.regular },
-  tabLabel: { fontSize: fontSize.base, fontFamily: fontFamily.medium },
-  settingTitle: {
-    fontSize: fontSize.base,
-    fontFamily: fontFamily.semibold,
-    textTransform: "uppercase",
-    letterSpacing: 0.4,
+
+  cardValue: {
+    fontSize: fontSize.xl,
+    fontFamily: fontFamily.bold,
   },
-  settingValue: { fontSize: fontSize.md, fontFamily: fontFamily.semibold },
-  displayName: { fontSize: fontSize["2xl"], fontFamily: fontFamily.semibold },
+
+  cardSub: {
+    fontSize: fontSize.sm,
+    fontFamily: fontFamily.regular,
+  },
+
+  tabLabel: {
+    fontSize: fontSize.md,
+    fontFamily: fontFamily.medium,
+  },
+
+  settingValue: {
+    fontSize: fontSize.md,
+    fontFamily: fontFamily.semibold,
+  },
+
+  displayName: {
+    fontSize: fontSize["2xl"],
+    fontFamily: fontFamily.semibold,
+  },
 });
 
 const styles = {
   container: {
     flex: 1,
     justifyContent: "center",
-    paddingHorizontal: padding.lg,
+    paddingHorizontal: space.lg,
   },
-  flex: { flex: 1 },
-  row: { flexDirection: "row" },
+
+  flex: {
+    flex: 1,
+  },
+
+  row: {
+    flexDirection: "row",
+  },
+
   rowBetween: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  rowCenter: { flexDirection: "row", alignItems: "center" },
-  center: { justifyContent: "center", alignItems: "center" },
-  scroll: { flex: 1 },
-  screenContent: { paddingHorizontal: padding.lg, gap: padding.md },
-  card: { borderRadius: radius.lg, padding: padding.lg, borderWidth: 1 },
-  cardLg: {
-    borderRadius: radius.xl,
-    padding: padding.lg,
-    borderWidth: 1,
-    gap: padding.md,
+
+  rowCenter: {
+    flexDirection: "row",
+    alignItems: "center",
   },
+
+  center: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  scroll: {
+    flex: 1,
+  },
+
+  screenContent: {
+    paddingHorizontal: space.lg,
+    gap: space.md,
+  },
+
+  card: {
+    borderRadius: radius.xl,
+    padding: space.lg,
+    gap: space.md,
+  },
+
   section: {
     borderRadius: radius.xl,
-    padding: padding.xl - 6,
+    padding: space.lg,
     borderWidth: 1,
-    gap: padding.xs,
+    gap: space.xs,
   },
+
   heroCard: {
-    borderRadius: radius.xl + 2,
-    padding: padding.xl,
-    gap: padding.xs,
+    borderRadius: radius.xl,
+    padding: space.xl,
+    gap: space.xs,
   },
-  progressBar: { height: 4, borderRadius: radius.sm, overflow: "hidden" },
-  progressFill: { height: "100%", borderRadius: radius.sm },
-  divider: { height: StyleSheet.hairlineWidth },
+
+  progressBar: {
+    height: 4,
+    borderRadius: radius.sm,
+    overflow: "hidden",
+  },
+
+  progressFill: {
+    height: "100%",
+    borderRadius: radius.sm,
+  },
+
+  divider: {
+    height: StyleSheet.hairlineWidth,
+  },
+
   inputRow: {
     flexDirection: "row",
     alignItems: "center",
     borderRadius: radius.lg,
-    paddingHorizontal: padding.lg,
-    height: 54,
+    paddingHorizontal: space.lg,
+    height: size.input,
   },
-  inputRowSm: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: radius.lg,
-    paddingHorizontal: padding.lg,
-    height: 48,
+
+  input: {
+    flex: 1,
+    fontSize: fontSize.md,
+    height: "100%",
   },
-  input: { flex: 1, fontSize: fontSize.md, height: "100%" },
+
   button: {
-    paddingVertical: padding.md + 4,
-    borderRadius: radius.md,
-    paddingHorizontal: padding.xl,
+    paddingVertical: space.md,
+    paddingHorizontal: space.xl,
+    borderRadius: radius.full,
     alignItems: "center",
     justifyContent: "center",
   },
-  buttonSm: {
-    height: 44,
-    borderRadius: radius.lg,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+
   pill: {
-    paddingHorizontal: padding.md,
-    paddingVertical: padding.xs,
+    paddingHorizontal: space.md,
+    paddingVertical: space.xs,
     borderRadius: radius.full,
     borderWidth: 1,
   },
+
   tag: {
     flexDirection: "row",
     alignItems: "center",
-    gap: padding.xs,
-    paddingHorizontal: padding.md,
-    paddingVertical: padding.xs,
+    gap: space.xs,
+    paddingHorizontal: space.md,
+    paddingVertical: space.xs,
     borderRadius: radius.md,
   },
-  emptyWrap: {
-    alignItems: "center",
-    gap: padding.md,
-    marginTop: layout.emptyTop,
-  },
-  emptyText: { fontSize: fontSize.lg, textAlign: "center" },
+
   appBar: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: padding.lg,
-    paddingVertical: padding.lg,
-    marginVertical: padding.sm,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.lg,
+    marginVertical: space.sm,
   },
+
   appBarTitle: {
-    fontSize: fontSize["4xl"],
+    fontSize: fontSize.title,
     fontFamily: fontFamily.semibold,
-    paddingHorizontal: padding.md,
-    paddingVertical: padding.xs,
+    paddingHorizontal: space.md,
+    paddingVertical: space.xs,
     borderRadius: radius.md,
   },
+
   appBarIcon: {
-    width: 40,
-    height: 40,
+    width: size.icon,
+    height: size.icon,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: radius.full,
   },
+
   overview: {
-    content: { paddingHorizontal: padding.lg, gap: padding.md },
-    title: text.pageTitle,
-    row: { flexDirection: "row" },
-    section: {
-      borderRadius: radius.xl,
-      padding: padding.lg,
-      gap: padding.xs,
+    content: {
+      paddingHorizontal: space.lg,
+      gap: space.md,
     },
+
+    title: text.pageTitle,
     sectionTitle: text.sectionTitle,
     heroSub: text.heroSub,
     empty: text.body,
+    errorText: text.body,
+
+    row: {
+      flexDirection: "row",
+    },
+
+    section: {
+      borderRadius: radius.xl,
+      padding: space.lg,
+      gap: space.xs,
+    },
+
     errorCard: {
       borderRadius: radius.lg,
-      padding: padding.lg,
+      padding: space.lg,
       borderWidth: 1,
       alignItems: "center",
-      marginTop: padding.lg,
+      marginTop: space.lg,
     },
-    errorText: text.body,
-    breakdownGroup: {
-      borderRadius: 24,
-    },
+
     cardSpacing: {
-      marginHorizontal: padding.md,
-      marginBottom: padding.md,
+      marginHorizontal: space.md,
+      marginBottom: space.md,
     },
   },
+
   breakdown: {
-    content: { paddingHorizontal: padding.lg, gap: padding.md },
-    title: text.pageTitle,
-    pills: { flexDirection: "row", gap: padding.sm },
-    pill: {
-      paddingHorizontal: padding.lg,
-      paddingVertical: padding.md,
-      borderRadius: radius.full,
+    content: {
+      paddingHorizontal: space.lg,
+      gap: space.md,
     },
-    pillText: text.pillText,
-    summaryRow: { flexDirection: "row", gap: padding.lg },
-    catText: { fontSize: fontSize.md, fontFamily: fontFamily.medium },
+
+    title: text.pageTitle,
+
+    pills: {
+      flexDirection: "row",
+      gap: space.sm,
+    },
+
+    summaryRow: {
+      flexDirection: "row",
+      gap: space.lg,
+    },
+
+    catText: {
+      fontSize: fontSize.md,
+      fontFamily: fontFamily.medium,
+    },
+
     card: {
       borderRadius: radius.xl,
-      padding: padding.xl - 6,
+      padding: space.lg,
       borderWidth: 1,
-      gap: padding.xs,
+      gap: space.xs,
     },
+
     empty: text.body,
   },
+
   settings: {
-    content: { paddingHorizontal: padding.lg, gap: padding.md },
+    content: {
+      paddingHorizontal: space.lg,
+      gap: space.md,
+    },
+
     title: text.pageTitle,
+    displayName: text.displayName,
+    username: text.body,
+
     profileCard: {
       borderRadius: radius.xl,
-      padding: padding.lg,
+      padding: space.lg,
       flexDirection: "row",
       alignItems: "center",
-      gap: padding.lg - 2,
+      gap: space.lg,
     },
+
     avatar: {
       width: size.avatar,
       height: size.avatar,
       borderRadius: size.avatar / 2,
     },
+
     avatarFallback: {
       width: size.avatar,
       height: size.avatar,
@@ -323,79 +423,127 @@ const styles = {
       alignItems: "center",
       justifyContent: "center",
     },
-    profileInfo: { flex: 1, gap: padding.xs },
-    displayName: text.displayName,
-    username: text.body,
+
+    profileInfo: {
+      flex: 1,
+      gap: space.xs,
+    },
+
     locationRow: {
       flexDirection: "row",
       alignItems: "center",
-      gap: padding.xs,
-      marginTop: padding.xs,
+      gap: space.xs,
+      marginTop: space.xs,
     },
-    location: { fontSize: fontSize.sm, fontFamily: fontFamily.regular },
+
+    location: {
+      fontSize: fontSize.sm,
+      fontFamily: fontFamily.regular,
+    },
+
     section: {
       borderRadius: radius.xl,
-      padding: padding.lg,
-      gap: padding.md,
+      padding: space.lg,
+      gap: space.md,
     },
-    sectionTitle: text.settingTitle,
-    keyRow: { flexDirection: "row", alignItems: "center", gap: padding.sm },
-    keyText: { flex: 1, fontSize: fontSize.md, fontFamily: fontFamily.medium },
+
+    sectionTitle: text.sectionTitle,
+
+    keyRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: space.sm,
+    },
+
+    keyText: {
+      flex: 1,
+      fontSize: fontSize.md,
+      fontFamily: fontFamily.medium,
+    },
+
     inputRow: {
       flexDirection: "row",
       alignItems: "center",
       borderWidth: 1,
       borderRadius: radius.md,
-      paddingHorizontal: padding.lg,
+      paddingHorizontal: space.lg,
     },
-    input: { flex: 1, fontSize: fontSize.md },
-    btnRow: { flexDirection: "row", gap: padding.md },
+
+    input: {
+      flex: 1,
+      fontSize: fontSize.md,
+    },
+
+    btnRow: {
+      flexDirection: "row",
+      gap: space.md,
+    },
+
     cancelBtn: {
       flex: 1,
       borderRadius: radius.full,
       alignItems: "center",
       justifyContent: "center",
-      padding: padding.md,
+      padding: space.md,
     },
-    cancelText: { fontSize: fontSize.md, fontFamily: fontFamily.medium },
+
+    cancelText: {
+      fontSize: fontSize.md,
+      fontFamily: fontFamily.medium,
+    },
+
     saveBtn: {
       flex: 1,
       borderRadius: radius.full,
       alignItems: "center",
       justifyContent: "center",
-      padding: padding.md,
+      padding: space.md,
     },
-    saveText: { fontSize: fontSize.md, fontFamily: fontFamily.semibold },
+
+    saveText: {
+      fontSize: fontSize.md,
+      fontFamily: fontFamily.semibold,
+    },
+
     editBtn: {
-      display: "flex",
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      padding: padding.md,
+      padding: space.md,
       borderRadius: radius.full,
     },
-    editSection: { gap: padding.lg - 6 },
+
+    editSection: {
+      gap: space.lg,
+    },
   },
+
   weeklyChart: {
-    container: { width: "100%" },
+    container: {
+      width: "100%",
+    },
+
     bars: {
       flexDirection: "row",
       alignItems: "flex-end",
       height: 120,
-      gap: padding.xs,
+      gap: space.xs,
     },
+
     barCol: {
       flex: 1,
       alignItems: "center",
       height: "100%",
       justifyContent: "flex-end",
-      gap: padding.xs,
+      gap: space.xs,
     },
+
     tooltip: {
       fontSize: fontSize.xs,
       fontFamily: fontFamily.medium,
       textAlign: "center",
     },
+
     barTrack: {
       flex: 1,
       width: "75%",
@@ -403,7 +551,12 @@ const styles = {
       borderRadius: radius.sm,
       overflow: "hidden",
     },
-    barFill: { width: "100%", borderRadius: radius.sm },
+
+    barFill: {
+      width: "100%",
+      borderRadius: radius.sm,
+    },
+
     dayLabel: {
       fontSize: fontSize.xs,
       textAlign: "center",
@@ -413,14 +566,13 @@ const styles = {
 } as const;
 
 export const ct = {
-  ...padding,
-  padding,
+  space,
   radius,
   fontSize,
   fontFamily,
   lineHeight,
   size,
-  layout,
+  padding,
   text,
   styles,
 } as const;

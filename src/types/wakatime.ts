@@ -113,12 +113,36 @@ export interface CodingStats {
   projects: StatsEntry[];
   editors: StatsEntry[];
 
+  categories?: StatsEntry[];
+  operating_systems?: StatsEntry[];
+  machines?: StatsEntry[];
+  dependencies?: StatsEntry[];
+
+  ai_input_tokens?: number;
+  ai_output_tokens?: number;
+  ai_additions?: number;
+  ai_deletions?: number;
+  human_additions?: number;
+  human_deletions?: number;
+  ai_prompt_length_avg?: number;
+  ai_prompt_length_avg_per_session?: number;
+  ai_prompt_length_median_per_session?: number;
+  ai_prompt_length_sum?: number;
+  ai_prompt_events_total?: number;
+  ai_prompt_events_avg_per_session?: number;
+  ai_prompt_events_median_per_session?: number;
+  ai_sessions?: number;
+  ai_line_changes_total?: number;
+  ai_model_line_changes?: Record<string, number>;
+  ai_model_costs?: Record<string, number>;
+  ai_model_breakdown?: AiModelBreakdown[];
+  ai_model_total_cost?: number;
+
   streak?: number;
   best_day?: BestDay | null;
 }
 
 // Wakatime Specific
-
 
 export interface WakaEntry extends StatsEntry {
   machine_name_id?: string;
@@ -150,7 +174,7 @@ export interface WakaEntry extends StatsEntry {
   ai_model_total_cost?: number;
 }
 
-// Backward compatiblity 
+// Backward compatiblity
 export type WakaDuration = Duration;
 export type WakaRange = StatsRange;
 export type WakaBestDay = BestDay;
@@ -178,7 +202,6 @@ export interface WakaSummaryDay extends CodingSummaryDay {
   branches?: WakaEntry[];
   entities?: WakaEntry[];
 }
-
 
 export type WakaSummariesEnvelope = SummariesEnvelope<WakaSummaryDay>;
 
@@ -260,7 +283,6 @@ export interface WakaAllTime {
   range: WakaRange;
 }
 
-
 export interface WakaUser {
   id: string;
   username?: string;
@@ -279,7 +301,6 @@ export interface WakaUser {
   modified_at?: string;
   plan?: string;
 }
-
 
 export interface WakaProgramLanguage {
   id: string;

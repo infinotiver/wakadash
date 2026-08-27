@@ -4,6 +4,7 @@ import {
   RefreshControl,
   ScrollView,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
@@ -33,7 +34,6 @@ import {
   useTodaySummary,
   useWeekSummaries,
 } from "@/src/hooks/useWakaTimeQueries";
-
 const styles = ct.styles.overview;
 
 export default function OverviewScreen() {
@@ -102,12 +102,24 @@ export default function OverviewScreen() {
         },
       ]}
     >
-      <AppBar title="WakaDash" variant="center" />
-
+      {/* <AppBar title="WakaDash" variant="center" /> */}
+      <AppBar
+        title="WakaDash"
+        variant="center"
+        elevated={false}
+        actions={[
+          {
+            icon: "cog-outline",
+            label: "Settings",
+            onPress: () => router.push("/settings"),
+          },
+        ]}
+      />
       <ScrollView
         style={ct.styles.scroll}
         contentContainerStyle={{
-          paddingBottom: insets.bottom + ct.lg,
+          flexGrow: 1,
+          justifyContent: "flex-end",
         }}
         refreshControl={
           <RefreshControl
@@ -123,7 +135,7 @@ export default function OverviewScreen() {
           <ActivityIndicator
             color={colors.primary}
             style={{
-              marginTop: ct.layout.loading,
+              marginTop: ct.size.loading,
             }}
           />
         ) : failed ? (
@@ -223,14 +235,13 @@ export default function OverviewScreen() {
             {/* Breakdown group */}
             <View
               style={[
-                styles.breakdownGroup,
                 ct.styles.flex,
                 {
-                  padding: ct.padding.xl,
-                  marginTop: ct.padding.md,
+                  paddingVertical: ct.padding["2xl"],
+                  paddingHorizontal: ct.padding["xl"],
                   backgroundColor: colors.surfaceContainerLow,
-                  borderTopLeftRadius: ct.radius["4xl"],
-                  borderTopRightRadius: ct.radius["4xl"],
+                  borderTopLeftRadius: ct.radius["3xl"],
+                  borderTopRightRadius: ct.radius["3xl"],
                   gap: ct.padding.md,
                 },
               ]}
@@ -276,7 +287,49 @@ export default function OverviewScreen() {
                     trailingText: item.text ?? "",
                   }))}
               />
+              {/* Navigation Group */}
+              <View
+                style={[
+                  ct.styles.container,
+                  ct.styles.flex,
+                  {
+                    gap: ct.space.md,
+                    padding: ct.space.lg,
+                    borderRadius: ct.radius.xl,
+                    backgroundColor: colors.surfaceContainerHigh,
+                  },
+                ]}
+              >
+                <Text
+                  style={[ct.text.sectionTitle, { color: colors.onSurface }]}
+                >
+                  See more stats
+                </Text>
 
+                <Text
+                  style={[ct.text.body, { color: colors.onSurfaceVariant }]}
+                >
+                  View a detailed breakdown of your tracked activity by time
+                  range
+                </Text>
+
+                <TouchableOpacity
+                  style={[
+                    ct.styles.button,
+                    { backgroundColor: colors.surfaceContainerHighest },
+                  ]}
+                  onPress={() => router.push("/breakdown")}
+                >
+                  <Text
+                    style={[
+                      ct.text.buttonText,
+                      { color: colors.onSurfaceVariant },
+                    ]}
+                  >
+                    View Breakdown
+                  </Text>
+                </TouchableOpacity>
+              </View>
               {/* Last 7 Days */}
               <View
                 style={[
@@ -330,14 +383,14 @@ export default function OverviewScreen() {
                       styles.sectionTitle,
                       {
                         color: colors.onSurface,
-                        marginBottom: ct.md,
+                        marginBottom: ct.space.md,
                       },
                     ]}
                   >
                     All Time Stats
                   </Text>
 
-                  <View style={{ gap: ct.md }}>
+                  <View style={{ gap: ct.space.md }}>
                     <View
                       style={[
                         styles.row,
@@ -363,7 +416,7 @@ export default function OverviewScreen() {
                           styles.heroSub,
                           {
                             color: colors.onSurface,
-                            marginLeft: ct.lg,
+                            marginLeft: ct.space.lg,
                             textAlign: "right",
                           },
                         ]}
@@ -397,7 +450,7 @@ export default function OverviewScreen() {
                           styles.heroSub,
                           {
                             color: colors.onSurface,
-                            marginLeft: ct.lg,
+                            marginLeft: ct.space.lg,
                             textAlign: "right",
                           },
                         ]}
@@ -431,7 +484,7 @@ export default function OverviewScreen() {
                           styles.heroSub,
                           {
                             color: colors.onSurface,
-                            marginLeft: ct.lg,
+                            marginLeft: ct.space.lg,
                             textAlign: "right",
                           },
                         ]}

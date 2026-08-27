@@ -12,6 +12,13 @@ interface Props {
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+// Gridline overlay needs to stop above the day-label row rather than running
+// the full height of the chart. Derived from real tokens (label line-height +
+// the gap between bar and label in barCol) since there's no dedicated
+// "chartBottom" size token in the current stylesheet. Consider promoting this
+// to a named token (e.g. size.chartBottom) if it's needed elsewhere.
+const GRIDLINE_BOTTOM_INSET = ct.lineHeight.xs + ct.space.xs;
+
 function formatTime(totalSeconds: number): string {
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
@@ -54,8 +61,8 @@ export function WeeklyChart({ days }: Props) {
       {/* Selected-day details */}
       <View
         style={{
-          minHeight: ct.size.tooltipHeight,
-          marginBottom: ct.sm,
+          minHeight: ct.size.tooltip,
+          marginBottom: ct.space.sm,
           justifyContent: "center",
           alignItems: "center",
         }}
@@ -82,7 +89,7 @@ export function WeeklyChart({ days }: Props) {
               style={{
                 width: 4,
                 height: 4,
-                marginHorizontal: ct.sm,
+                marginHorizontal: ct.space.sm,
                 borderRadius: 2,
                 backgroundColor: colors.outline,
               }}
@@ -123,7 +130,7 @@ export function WeeklyChart({ days }: Props) {
               top: 0,
               left: 0,
               right: 0,
-              bottom: ct.size.chartBottom,
+              bottom: GRIDLINE_BOTTOM_INSET,
             }}
           >
             {[0, 0.5, 1].map((position) => (

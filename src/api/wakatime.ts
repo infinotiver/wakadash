@@ -1,13 +1,13 @@
 import type {
   WakaUser,
   WakaSummaryDay,
-  WakaStats,
   CodingAllTime,
   WakaProgramLanguage,
-  HackaTimeStats,
+  CodingStats,
 } from "@/src/types/wakatime";
 import {
   normalizeHackaTimeStats,
+  normalizeStats,
   normalizeWakaAllTime,
 } from "../utils/normalize";
 
@@ -36,7 +36,7 @@ function authHeader(apiKey: string, baseUrl: string): string {
     : `Basic ${btoa(`${apiKey}:`)}`;
 }
 
-// Thrown synchronously, before any request goes out, 
+// Thrown synchronously, before any request goes out,
 // API never returns 501, so this can't collide with a genuine server error.
 function unsupported(what: string): never {
   throw new WakaTimeApiError(`${what} isn't available on this server`, 501);
@@ -71,12 +71,35 @@ const fmt = (date: Date) => {
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
-// Hackatime's WakaTime-compatible endpoints live under /api/hackatime/v1 —
-// that's what `baseUrl` normally points at. This one specific endpoint
-// (native user stats, not WakaTime-shaped) lives under /api/v1 instead,
-// so it needs its own fixed base regardless of the configured baseUrl.
 
 const HACKATIME_NATIVE_BASE_URL = "https://hackatime.hackclub.com/api/v1";
+
+type StatsRange =
+  | "last_7_days"
+  | "last_30_days"
+  | "last_6_months"
+  | "last_year"
+  | "all_time";
+
+
+const HACKATIME_RANGE_DAYS: Record<Exclude<StatsRange, "all_time">, number> = {
+  last_7_days: 7,
+  last_30_days: 30,
+  last_6_months: 183,
+  last_year: 365,
+};
+
+function hackatimeDateRange(
+  range: StatsRange,
+): { start_date: string; end_date: string } | null {
+  if (range === "all_time") return null;
+
+  const end = new Date();
+  const start = new Date();
+  start.setDate(start.getDate() - (HACKATIME_RANGE_DAYS[range] - 1));
+
+  return { start_date: fmt(start), end_date: fmt(end) };
+}
 
 export const wakatimeApi = {
   verifyKey: (apiKey: string, baseUrl: string): Promise<WakaUser> =>
@@ -122,24 +145,25 @@ export const wakatimeApi = {
         ),
 
   getStats: (
-    range:
-      | "last_7_days"
-      | "last_30_days"
-      | "last_6_months"
-      | "last_year"
-      | "all_time",
+    range: StatsRange,
     apiKey: string,
     baseUrl: string,
-  ): Promise<WakaStats | HackaTimeStats> =>
-    isHackatime(baseUrl) && range !== "last_7_days"
-      ? unsupported(`${range.replace(/_/g, " ")} stats`)
-      : isHackatime(baseUrl)
-        ? wakFetch("/users/current/stats/last_7_days", apiKey, baseUrl).then(
-            (d) => d.data,
-          )
-        : wakFetch(`/users/current/stats/${range}`, apiKey, baseUrl).then(
-            (d) => d.data,
-          ),
+  ): Promise<CodingStats> =>
+    isHackatime(baseUrl)
+      ? (() => {
+          const dateRange = hackatimeDateRange(range);
+          const query = dateRange
+            ? `?start_date=${dateRange.start_date}&end_date=${dateRange.end_date}`
+            : "";
+          return wakFetch(
+            `/users/my/stats${query}`,
+            apiKey,
+            HACKATIME_NATIVE_BASE_URL,
+          ).then((d) => d);
+        })()
+      : wakFetch(`/users/current/stats/${range}`, apiKey, baseUrl).then((d) =>
+          normalizeStats(d.data),
+        ),
 
   getProgramLanguages: (): Promise<WakaProgramLanguage[]> =>
     wakFetchPublic("/program_languages").then((d) => d.data),
