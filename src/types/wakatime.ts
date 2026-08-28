@@ -109,6 +109,10 @@ export interface CodingStats {
   total_seconds: number;
   daily_average: number;
 
+  // WakaTime-only: total tracked time including non-coding activity.
+  total_seconds_including_other_language?: number;
+  daily_average_including_other_language?: number;
+
   languages: StatsEntry[];
   projects: StatsEntry[];
   editors: StatsEntry[];

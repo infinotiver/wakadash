@@ -199,6 +199,15 @@ export default function BreakdownScreen() {
 
       {stats && (
         <>
+          {stats.streak !== undefined && stats.streak > 0 && (
+            <StatCard
+              value={`${stats.streak} ${stats.streak === 1 ? "day" : "days"}`}
+              subtitle="Current Streak"
+              icon={(color) => <Feather name="zap" size={20} color={color} />}
+              iconBackgroundColor={c.accent.amber.colorContainer}
+              iconTintColor={c.accent.amber.onColorContainer}
+            />
+          )}
           <SectionLabel title="Summary" c={c} />
 
           <View style={styles.summaryRow}>
@@ -206,8 +215,8 @@ export default function BreakdownScreen() {
               value={formatDuration(stats.total_seconds)}
               subtitle="Coding Time"
               icon={(color) => <Feather name="clock" size={20} color={color} />}
-              iconBackgroundColor={c.accent.amber.colorContainer}
-              iconTintColor={c.accent.amber.onColorContainer}
+              iconBackgroundColor={c.accent.green.colorContainer}
+              iconTintColor={c.accent.green.onColorContainer}
             />
 
             <StatCard
@@ -220,6 +229,34 @@ export default function BreakdownScreen() {
               iconTintColor={c.accent.violet.onColorContainer}
             />
           </View>
+
+          {stats.total_seconds_including_other_language !== undefined && (
+            <View style={styles.summaryRow}>
+              <StatCard
+                value={formatDuration(
+                  stats.total_seconds_including_other_language,
+                )}
+                subtitle="Total Time"
+                icon={(color) => (
+                  <Feather name="clock" size={20} color={color} />
+                )}
+                iconBackgroundColor={c.accent.coral.colorContainer}
+                iconTintColor={c.accent.coral.onColorContainer}
+              />
+
+              <StatCard
+                value={formatDuration(
+                  stats.daily_average_including_other_language ?? 0,
+                )}
+                subtitle="Total Avg"
+                icon={(color) => (
+                  <Feather name="activity" size={20} color={color} />
+                )}
+                iconBackgroundColor={c.accent.coral.colorContainer}
+                iconTintColor={c.accent.coral.onColorContainer}
+              />
+            </View>
+          )}
 
           {hasAiData && (
             <>
@@ -319,22 +356,35 @@ export default function BreakdownScreen() {
               </Text>
             ) : (
               <HorizontalBreakdownChart
-                items={visibleItems.slice(0, 10).map((item, i) => ({
-                  key: item.name,
-                  label: item.name,
-                  percent: item.percent,
-                  secondaryText: item.text,
-                  trailingText: `${item.percent.toFixed(1)}%`,
-                  color:
-                    category === "languages"
-                      ? (langColorMap.get(item.name.toLowerCase()) ??
-                        chartColors[i % chartColors.length])
-                      : chartColors[i % chartColors.length],
-                }))}
+                items={(() => {
+                  let fallbackCursor = 0;
+
+                  return visibleItems.slice(0, 10).map((item) => {
+                    const mapped =
+                      category === "languages"
+                        ? langColorMap.get(item.name.toLowerCase())
+                        : undefined;
+
+                    const hasColor =
+                      typeof mapped === "string" && mapped.trim() !== "";
+
+                    const color = hasColor
+                      ? mapped
+                      : chartColors[fallbackCursor++ % chartColors.length];
+
+                    return {
+                      key: item.name,
+                      label: item.name,
+                      percent: item.percent,
+                      secondaryText: item.text,
+                      trailingText: `${item.percent.toFixed(1)}%`,
+                      color,
+                    };
+                  });
+                })()}
                 textColor={c.onSurface}
                 mutedTextColor={c.onSurfaceVariant}
                 trackColor={c.surfaceContainerHigh}
-                separatorColor={c.outlineVariant}
               />
             )}
           </View>

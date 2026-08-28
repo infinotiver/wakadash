@@ -73,7 +73,7 @@ npm run web
 
 ## Roadmap
 
-- [ ] Custom API support
+- [x] Custom API support
 - [ ] Shareable stat cards
 - [ ] Widget support
 - [ ] More customization options

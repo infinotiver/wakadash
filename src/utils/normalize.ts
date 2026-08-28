@@ -43,5 +43,9 @@ export function normalizeStats(raw: WakaStats | HackaTimeStats): CodingStats {
     languages: stats.languages ?? [],
     projects: stats.projects ?? [],
     editors: stats.editors ?? [],
+    total_seconds_including_other_language:
+      stats.total_seconds_including_other_language,
+    daily_average_including_other_language:
+      stats.daily_average_including_other_language,
   };
 }

@@ -77,7 +77,6 @@ export default function OverviewScreen() {
   const loading = todayQ.isLoading || weekQ.isLoading;
   const failed = todayQ.isError || weekQ.isError;
 
-  const langColorMap = buildLanguageColorMap(langMetaQ.data);
   const chartColors = [
     colors.accent.violet.color,
     colors.accent.amber.color,
@@ -85,6 +84,7 @@ export default function OverviewScreen() {
     colors.accent.coral.color,
     colors.accent.green.color,
   ];
+  const langColorMap = buildLanguageColorMap(langMetaQ.data);
   const languageColors = (today?.languages ?? [])
     .slice(0, 4)
     .map(
@@ -229,7 +229,9 @@ export default function OverviewScreen() {
                     )}
                   />
                 </View>
+                
               </View>
+              
             </View>
 
             {/* Breakdown group */}

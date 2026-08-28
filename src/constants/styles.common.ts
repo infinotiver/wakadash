@@ -277,7 +277,7 @@ const styles = {
   button: {
     paddingVertical: space.md,
     paddingHorizontal: space.xl,
-    borderRadius: radius.full,
+    borderRadius: radius.md,
     alignItems: "center",
     justifyContent: "center",
   },

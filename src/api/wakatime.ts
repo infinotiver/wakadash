@@ -2,6 +2,7 @@ import type {
   WakaUser,
   WakaSummaryDay,
   CodingAllTime,
+  HackaTimeStats,
   WakaProgramLanguage,
   CodingStats,
 } from "@/src/types/wakatime";
@@ -81,7 +82,6 @@ type StatsRange =
   | "last_year"
   | "all_time";
 
-
 const HACKATIME_RANGE_DAYS: Record<Exclude<StatsRange, "all_time">, number> = {
   last_7_days: 7,
   last_30_days: 30,
@@ -159,7 +159,7 @@ export const wakatimeApi = {
             `/users/my/stats${query}`,
             apiKey,
             HACKATIME_NATIVE_BASE_URL,
-          ).then((d) => d);
+          ).then((d: HackaTimeStats) => d.data);
         })()
       : wakFetch(`/users/current/stats/${range}`, apiKey, baseUrl).then((d) =>
           normalizeStats(d.data),
