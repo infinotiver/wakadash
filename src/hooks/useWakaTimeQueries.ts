@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { wakatimeApi } from "@/src/api/wakatime";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
+import { useEffect } from "react";
+import { syncTodayPill } from "@/src/widgets/syncTodayPill";
 
 // reusable math consts cuz I'll mess up them later
 
@@ -105,4 +107,14 @@ export function useProgramLanguages() {
     queryFn: () => wakatimeApi.getProgramLanguages(),
     gcTime: 1000 * 60 * 60 * 24 * 7,
   });
+}
+
+export function useSyncTodayPill() {
+  const todayQ = useTodaySummary();
+  const text = todayQ.data?.grand_total?.text;
+
+  useEffect(() => {
+    if (!text || todayQ.isError) return;
+    syncTodayPill(text);
+  }, [text, todayQ.isError]);
 }
