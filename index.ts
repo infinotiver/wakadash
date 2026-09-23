@@ -1,5 +1,10 @@
 import "expo-router/entry";
-import { registerWidgetTaskHandler } from "react-native-android-widget";
-import { widgetTaskHandler } from "./widget-task-handler";
+import {
+    registerWidgetConfigurationScreen,
+    registerWidgetTaskHandler,
+} from "react-native-android-widget";
+import { widgetTaskHandler } from "./src/widgets/widget-task-handler";
+import { WidgetConfigurationScreen } from "./src/widgets/WidgetConfigurationScreen";
 
 registerWidgetTaskHandler(widgetTaskHandler);
+registerWidgetConfigurationScreen(WidgetConfigurationScreen);

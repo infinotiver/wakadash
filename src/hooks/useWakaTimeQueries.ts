@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { wakatimeApi } from "@/src/api/wakatime";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
 import { useEffect } from "react";
-import { syncTodayPill } from "@/src/widgets/syncTodayPill";
+import { syncWidgets } from "@/src/widgets/syncWidgets";
 
 // reusable math consts cuz I'll mess up them later
 
@@ -111,10 +111,26 @@ export function useProgramLanguages() {
 
 export function useSyncTodayPill() {
   const todayQ = useTodaySummary();
-  const text = todayQ.data?.grand_total?.text;
+  const statsQ = useWakaStats("last_7_days");
+
+  const today = todayQ.data?.grand_total?.text;
+  const stats = statsQ.data;
 
   useEffect(() => {
-    if (!text || todayQ.isError) return;
-    syncTodayPill(text);
-  }, [text, todayQ.isError]);
+    if (!today || todayQ.isError) return;
+
+    syncWidgets({
+      today,
+      topLanguages: top(stats?.languages),
+      topProjects: top(stats?.projects),
+      topOS: top(stats?.operating_systems),
+    });
+  }, [today, stats, todayQ.isError]);
+}
+
+function top(xs: { name: string; percent: number }[] = [], n = 3) {
+  return xs.slice(0, n).map((x) => ({
+    name: String(x?.name ?? "?"),
+    percent: Number(x?.percent) || 0,
+  }));
 }

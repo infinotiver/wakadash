@@ -95,7 +95,7 @@ export function CategoryPieChart({
     <View onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}>
       {containerWidth > 0 && (
         <>
-          <View style={{ alignItems: "center", marginVertical: ct.md }}>
+          <View style={{ alignItems: "center", marginVertical: ct.space.md }}>
             <PieChart
               data={pieData}
               donut
@@ -131,7 +131,7 @@ export function CategoryPieChart({
                   <Text
                     style={[
                       ct.text.body,
-                      { color: colors.onSurfaceVariant, marginTop: ct.xs / 2 },
+                      { color: colors.onSurfaceVariant, marginTop: ct.space.md / 2 },
                     ]}
                   >
                     {centerSub}

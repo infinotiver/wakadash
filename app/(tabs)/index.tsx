@@ -229,9 +229,7 @@ export default function OverviewScreen() {
                     )}
                   />
                 </View>
-                
               </View>
-              
             </View>
 
             {/* Breakdown group */}
@@ -289,47 +287,47 @@ export default function OverviewScreen() {
                     trailingText: item.text ?? "",
                   }))}
               />
-              {/* Navigation Group */}
               <View
                 style={[
-                  ct.styles.container,
                   ct.styles.flex,
                   {
-                    gap: ct.space.md,
-                    padding: ct.space.lg,
-                    borderRadius: ct.radius.xl,
-                    backgroundColor: colors.surfaceContainerHigh,
+                    alignItems: "flex-start",
                   },
                 ]}
               >
-                <Text
-                  style={[ct.text.sectionTitle, { color: colors.onSurface }]}
-                >
-                  See more stats
-                </Text>
-
-                <Text
-                  style={[ct.text.body, { color: colors.onSurfaceVariant }]}
-                >
-                  View a detailed breakdown of your tracked activity by time
-                  range
-                </Text>
-
                 <TouchableOpacity
                   style={[
                     ct.styles.button,
-                    { backgroundColor: colors.surfaceContainerHighest },
+                    {
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: ct.space.sm,
+                      paddingVertical: ct.space.sm,
+                      paddingHorizontal: ct.space.lg,
+                      borderRadius: ct.radius.full,
+                      backgroundColor: colors.secondaryContainer,
+                    },
                   ]}
                   onPress={() => router.push("/breakdown")}
                 >
+                  <Feather
+                    name="bar-chart-2"
+                    size={16}
+                    color={colors.onSecondaryContainer}
+                  />
                   <Text
                     style={[
                       ct.text.buttonText,
-                      { color: colors.onSurfaceVariant },
+                      { color: colors.onSecondaryContainer },
                     ]}
                   >
                     View Breakdown
                   </Text>
+                  <Feather
+                    name="chevron-right"
+                    size={16}
+                    color={colors.onSecondaryContainer}
+                  />
                 </TouchableOpacity>
               </View>
               {/* Last 7 Days */}
