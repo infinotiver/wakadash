@@ -65,6 +65,10 @@ export default function OverviewScreen() {
   const allTime = allTimeQ.data;
 
   const weekAvg = averageSummarySeconds(week);
+  const weekTotal = week.reduce(
+    (total, day) => total + (day.grand_total?.total_seconds ?? 0),
+    0,
+  );
   const hasCategories = (today?.categories?.length ?? 0) > 0;
   const bestDay = week.reduce(
     (best, day) =>
@@ -332,24 +336,45 @@ export default function OverviewScreen() {
               </View>
               {/* Last 7 Days */}
               <View
-                style={[
-                  styles.section,
-                  {
-                    backgroundColor: colors.surfaceContainerHigh,
-                    borderColor: colors.outlineVariant,
-                  },
-                ]}
+                style={{
+                  backgroundColor: colors.surfaceContainerLow,
+                  borderRadius: ct.radius["3xl"],
+                  padding: ct.padding["2xl"],
+                  gap: ct.padding.md,
+                }}
               >
-                <Text
-                  style={[
-                    styles.sectionTitle,
-                    {
-                      color: colors.onSurface,
-                    },
-                  ]}
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "flex-end",
+                    gap: ct.space.md,
+                  }}
                 >
-                  Last 7 Days
-                </Text>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={[
+                        styles.sectionTitle,
+                        {
+                          color: colors.onSurface,
+                        },
+                      ]}
+                    >
+                      Last 7 Days
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: ct.fontSize.md,
+                        fontFamily: ct.fontFamily.medium,
+                        color: colors.onSurfaceVariant,
+                        marginTop: ct.space.xs,
+                      }}
+                    >
+                      {formatDuration(weekTotal)}
+                    </Text>
+                  </View>
+
+                </View>
 
                 {week.length ? (
                   <WeeklyChart days={week} />

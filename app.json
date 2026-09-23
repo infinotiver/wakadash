@@ -18,6 +18,18 @@
       "expo-secure-store",
       "expo-router",
       [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#232323",
+          "image": "./assets/icon-512.png",
+          "dark": {
+            "image": "./assets/icon-512.png",
+            "backgroundColor": "#000000"
+          },
+          "imageWidth": 200
+        }
+      ],
+      [
         "react-native-android-widget",
         {
           "widgets": [
@@ -44,7 +56,6 @@
               "targetCellHeight": 2,
               "resizeMode": "horizontal|vertical",
               "widgetFeatures": "reconfigurable",
-              
               "updatePeriodMillis": 1800000
             }
           ]
