@@ -102,14 +102,16 @@ export function SetupScreen() {
         <View style={{ gap: ct.space.md }}>
           {/* Server selector */}
           <View style={{ gap: ct.space.xs }}>
-            <SegmentedButtons
-              items={SERVER_SUGGESTIONS}
-              value={normalizedServerUrl}
-              onChange={(url) => {
-                setServerUrl(url);
-                setError(null);
-              }}
-            />
+            <View style={{ alignItems: "center" }}>
+              <SegmentedButtons
+                items={SERVER_SUGGESTIONS}
+                value={normalizedServerUrl}
+                onChange={(url) => {
+                  setServerUrl(url);
+                  setError(null);
+                }}
+              />
+            </View>
             <TextInput
               style={{
                 fontSize: ct.fontSize.sm,

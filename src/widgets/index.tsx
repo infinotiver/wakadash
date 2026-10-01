@@ -11,13 +11,13 @@ import { ct } from "@/src/constants/styles.common";
 const hex = (value: string): ColorProp => value as ColorProp;
 
 // Same roles the app uses on home: card = surfaceContainerHigh,
-// icon circle = secondary/onSecondary (StatCard), separators = outlineVariant.
+// separators = outlineVariant. Refresh button stays neutral (tonal, not accent).
 export const C = {
   bg: hex(colors.dark.surfaceContainerHigh),
   on: hex(colors.dark.onSurface),
   variant: hex(colors.dark.onSurfaceVariant),
-  secondary: hex(colors.dark.secondary),
-  onSecondary: hex(colors.dark.onSecondary),
+  refreshBg: hex(colors.dark.surfaceContainerHighest),
+  refreshIcon: hex(colors.dark.onSurfaceVariant),
   separator: hex(colors.dark.outlineVariant),
 
   // violet → amber → teal → coral → green (same order as the app charts)
@@ -65,8 +65,7 @@ const shell = {
   borderRadius: ct.radius["2xl"],
 } as const;
 
-// Same anatomy as StatCard: value + subtitle, with a secondary-tone circle.
-// The circle is the refresh action.
+// Same anatomy as StatCard: value + subtitle, plus a neutral refresh circle.
 function Header({ value, subtitle }: { value: string; subtitle: string }) {
   return (
     <FlexWidget
@@ -104,7 +103,7 @@ function Header({ value, subtitle }: { value: string; subtitle: string }) {
           borderRadius: ct.radius.full,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: C.secondary,
+          backgroundColor: C.refreshBg,
         }}
       >
         <TextWidget
@@ -112,7 +111,7 @@ function Header({ value, subtitle }: { value: string; subtitle: string }) {
           style={{
             fontSize: ct.fontSize["3xl"],
             fontFamily: ct.fontFamily.semibold,
-            color: C.onSecondary,
+            color: C.refreshIcon,
           }}
         />
       </FlexWidget>
@@ -120,14 +119,16 @@ function Header({ value, subtitle }: { value: string; subtitle: string }) {
   );
 }
 
+// Mirrors HorizontalStackedBar: height 20, pill, 1dp outlineVariant separators.
+// Segments use flex weights (the renderer ignores "%" widths) and no
+// React.Fragment (the renderer can't handle it): flat array of keyed widgets.
 function StackedBar({ slices }: { slices: Slice[] }) {
-  const total = slices.reduce((sum, s) => sum + s.percent, 0);
   const children = slices.flatMap((slice, index) => {
     const segment = (
       <FlexWidget
         key={`seg-${slice.name}`}
         style={{
-          width: (slice.percent / total) * 100,
+          flex: Math.max(1, Math.round(slice.percent * 10)),
           height: "match_parent",
           backgroundColor: C.series[index % C.series.length],
         }}
@@ -163,6 +164,7 @@ function StackedBar({ slices }: { slices: Slice[] }) {
     </FlexWidget>
   );
 }
+
 // Mirrors HorizontalBreakdownChart legend rows: dot, label, trailing %.
 function Legend({ slices }: { slices: Slice[] }) {
   return (
