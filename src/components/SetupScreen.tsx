@@ -13,12 +13,13 @@ import { useWakaTime } from "@/src/context/WakaTimeContext";
 import { useColors } from "@/src/hooks/useColors";
 import { wakatimeApi, DEFAULT_BASE_URL } from "@/src/api/wakatime";
 import { ct } from "@/src/constants/styles.common";
+import { SegmentedButtons } from "@/src/components/SegmentedButtons";
 
 const SERVER_SUGGESTIONS = [
-  { label: "WakaTime", url: DEFAULT_BASE_URL },
+  { label: "WakaTime", value: DEFAULT_BASE_URL },
   {
     label: "Hackatime",
-    url: "https://hackatime.hackclub.com/api/hackatime/v1",
+    value: "https://hackatime.hackclub.com/api/hackatime/v1",
   },
 ];
 
@@ -34,6 +35,7 @@ export function SetupScreen() {
   const [show, setShow] = useState(false);
 
   const isHackatime = serverUrl.includes("hackatime.hackclub.com");
+  const normalizedServerUrl = serverUrl.trim().replace(/\/+$/, "");
 
   async function handleSave() {
     const trimmedKey = key.trim();
@@ -100,46 +102,14 @@ export function SetupScreen() {
         <View style={{ gap: ct.space.md }}>
           {/* Server selector */}
           <View style={{ gap: ct.space.xs }}>
-            <View style={{ flexDirection: "row", gap: ct.space.xs }}>
-              {SERVER_SUGGESTIONS.map((s) => {
-                const selected = serverUrl.trim().replace(/\/+$/, "") === s.url;
-                return (
-                  <TouchableOpacity
-                    key={s.url}
-                    onPress={() => {
-                      setServerUrl(s.url);
-                      setError(null);
-                    }}
-                    activeOpacity={0.8}
-                    style={{
-                      flex: 1,
-                      alignItems: "center",
-                      padding: ct.space.md,
-                      borderRadius: ct.radius.full,
-                      borderWidth: 1,
-                      borderColor: selected
-                        ? colors.outline
-                        : colors.outlineVariant,
-                      backgroundColor: selected
-                        ? colors.primary
-                        : colors.surfaceContainerHighest,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: ct.fontSize.sm,
-                        fontFamily: ct.fontFamily.medium,
-                        color: selected
-                          ? colors.onPrimary
-                          : colors.onSurfaceVariant,
-                      }}
-                    >
-                      {s.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+            <SegmentedButtons
+              items={SERVER_SUGGESTIONS}
+              value={normalizedServerUrl}
+              onChange={(url) => {
+                setServerUrl(url);
+                setError(null);
+              }}
+            />
             <TextInput
               style={{
                 fontSize: ct.fontSize.sm,

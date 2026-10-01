@@ -9,7 +9,8 @@ import {
 import { ButtonGroup } from "@/src/components/ButtonGroup";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { HorizontalBreakdownChart } from "@/src/components/HorizontalBreakdownChart";
+import { CategoryPieChart } from "@/src/components/CategoryPieChart";
+import { CategoryBarChart } from "@/src/components/CategoryBarChart";
 import { SetupScreen } from "@/src/components/SetupScreen";
 import { AppBar } from "@/src/components/AppBar";
 import { ct } from "@/src/constants/styles.common";
@@ -22,6 +23,7 @@ import {
 import { StatCard } from "@/src/components/StatCard";
 import { Feather } from "@expo/vector-icons";
 import { buildLanguageColorMap, formatDuration } from "@/src/utils/dashboard";
+import { SegmentedButtons } from "@/src/components/SegmentedButtons";
 
 const styles = ct.styles.breakdown;
 
@@ -37,6 +39,7 @@ type Category =
   | "editors"
   | "operating_systems"
   | "projects";
+type ChartView = "pie" | "bar";
 
 const RANGES: { label: string; value: Range }[] = [
   { label: "Last Week", value: "last_7_days" },
@@ -46,6 +49,14 @@ const RANGES: { label: string; value: Range }[] = [
   { label: "All Time", value: "all_time" },
 ];
 
+const RANGE_LABEL: Record<Range, string> = {
+  last_7_days: "last week",
+  last_30_days: "last month",
+  last_6_months: "last 6 months",
+  last_year: "last year",
+  all_time: "all time",
+};
+
 const CATEGORIES: { label: string; value: Category }[] = [
   { label: "Categories", value: "categories" },
   { label: "Languages", value: "languages" },
@@ -53,6 +64,16 @@ const CATEGORIES: { label: string; value: Category }[] = [
   { label: "Projects", value: "projects" },
   { label: "OS", value: "operating_systems" },
 ];
+
+const CHART_VIEWS: { label: string; value: ChartView }[] = [
+  { label: "Pie", value: "pie" },
+  { label: "Bar", value: "bar" },
+];
+
+// Entries beyond this rank are summed into a single "Other" slice/bar so the
+// pie and bar views always show the same set and their percentages sum
+// honestly, instead of silently dropping the tail.
+const CHART_TOP_N = 6;
 
 function SectionLabel({
   title,
@@ -84,6 +105,7 @@ export default function BreakdownScreen() {
   const { isConfigured } = useWakaTime();
   const [range, setRange] = useState<Range>("last_7_days");
   const [category, setCategory] = useState<Category>("categories");
+  const [chartView, setChartView] = useState<ChartView>("pie");
 
   const statsQ = useWakaStats(range);
   const langMetaQ = useProgramLanguages();
@@ -334,7 +356,20 @@ export default function BreakdownScreen() {
             </>
           )}
 
-          <SectionLabel title="Breakdown" c={c} />
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <SectionLabel title="Breakdown" c={c} />
+            <SegmentedButtons
+              items={CHART_VIEWS}
+              value={chartView}
+              onChange={setChartView}
+            />
+          </View>
 
           <ButtonGroup
             items={availableCategories}
@@ -355,37 +390,74 @@ export default function BreakdownScreen() {
                 No data
               </Text>
             ) : (
-              <HorizontalBreakdownChart
-                items={(() => {
-                  let fallbackCursor = 0;
+              (() => {
+                let fallbackCursor = 0;
+                const mappedItems = visibleItems.map((item) => {
+                  const mapped =
+                    category === "languages"
+                      ? langColorMap.get(item.name.toLowerCase())
+                      : undefined;
+                  const hasColor =
+                    typeof mapped === "string" && mapped.trim() !== "";
+                  const color = hasColor
+                    ? mapped
+                    : chartColors[fallbackCursor++ % chartColors.length];
 
-                  return visibleItems.slice(0, 10).map((item) => {
-                    const mapped =
-                      category === "languages"
-                        ? langColorMap.get(item.name.toLowerCase())
-                        : undefined;
+                  return {
+                    name: item.name,
+                    percent: item.percent,
+                    total_seconds: item.total_seconds,
+                    text: item.text ?? "",
+                    color,
+                  };
+                });
 
-                    const hasColor =
-                      typeof mapped === "string" && mapped.trim() !== "";
+               
+                const topItems = mappedItems.slice(0, CHART_TOP_N);
+                const restItems = mappedItems.slice(CHART_TOP_N);
+                const otherSeconds = restItems.reduce(
+                  (sum, item) => sum + item.total_seconds,
+                  0,
+                );
+                const otherPercent = restItems.reduce(
+                  (sum, item) => sum + item.percent,
+                  0,
+                );
 
-                    const color = hasColor
-                      ? mapped
-                      : chartColors[fallbackCursor++ % chartColors.length];
+                const chartItems =
+                  restItems.length > 0
+                    ? [
+                        ...topItems,
+                        {
+                          name: "Other",
+                          percent: otherPercent,
+                          total_seconds: otherSeconds,
+                          text: formatDuration(otherSeconds),
+                          color: c.outline,
+                        },
+                      ]
+                    : topItems;
 
-                    return {
-                      key: item.name,
-                      label: item.name,
-                      percent: item.percent,
-                      secondaryText: item.text,
-                      trailingText: `${item.percent.toFixed(1)}%`,
-                      color,
-                    };
-                  });
-                })()}
-                textColor={c.onSurface}
-                mutedTextColor={c.onSurfaceVariant}
-                trackColor={c.surfaceContainerHigh}
-              />
+                return (
+                  <View style={{ gap: ct.space.md }}>
+                    {chartView === "pie" ? (
+                      <CategoryPieChart
+                        items={chartItems}
+                        seriesColors={chartItems.map((i) => i.color)}
+                        backgroundColor={c.surfaceContainerHigh}
+                        totalLabel={RANGE_LABEL[range]}
+                        radiusRatio={0.55}
+                      />
+                    ) : (
+                      <CategoryBarChart
+                        key={`${range}-${category}}`}
+                        items={chartItems}
+                        colors={chartItems.map((i) => i.color)}
+                      />
+                    )}
+                  </View>
+                );
+              })()
             )}
           </View>
         </>

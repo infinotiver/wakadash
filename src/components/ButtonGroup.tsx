@@ -13,20 +13,30 @@ interface ButtonGroupProps<T extends string> {
   items: ButtonGroupItem<T>[];
   value: T;
   onChange: (value: T) => void;
+  /** "sm" shrinks padding/font for use alongside other controls (e.g. a section header). Defaults to "md". */
+  size?: "sm" | "md";
+  /** Pushes the pills to the right when they don't fill the available width. Defaults to "left". */
+  align?: "left" | "right";
 }
 
 export function ButtonGroup<T extends string>({
   items,
   value,
   onChange,
+  size = "md",
+  align = "left",
 }: ButtonGroupProps<T>) {
   const c = useColors();
+  const isSmall = size === "sm";
 
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.container}
+      contentContainerStyle={[
+        styles.container,
+        align === "right" && styles.containerRight,
+      ]}
     >
       {items.map((item) => {
         const selected = item.value === value;
@@ -37,19 +47,20 @@ export function ButtonGroup<T extends string>({
             onPress={() => onChange(item.value)}
             style={({ pressed }) => [
               styles.button,
+              isSmall && styles.buttonSmall,
               {
                 backgroundColor: selected
                   ? c.secondary
                   : c.surfaceContainerHigh,
                 borderRadius: selected ? ct.radius.lg : ct.radius.full,
-                paddingHorizontal: selected ? 20 : 16,
+                paddingHorizontal: isSmall ? 14 : selected ? 20 : 16,
                 opacity: pressed ? 0.8 : 1,
               },
             ]}
           >
             <Text
               style={[
-                ct.text.buttonText,
+                isSmall ? ct.text.captionMedium : ct.text.buttonText,
                 {
                   color: selected ? c.onPrimary : c.onSurfaceVariant,
                 },
@@ -71,9 +82,18 @@ const styles = StyleSheet.create({
     gap: ct.padding.xs,
   },
 
+  containerRight: {
+    flexGrow: 1,
+    justifyContent: "flex-end",
+  },
+
   button: {
     alignItems: "center",
     padding: ct.padding.lg,
     justifyContent: "center",
+  },
+
+  buttonSmall: {
+    paddingVertical: ct.padding.sm,
   },
 });

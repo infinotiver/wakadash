@@ -250,47 +250,6 @@ export default function OverviewScreen() {
                 },
               ]}
             >
-              <DashboardBreakdownSection
-                title="Languages"
-                chartColors={languageColors}
-                items={(today?.languages ?? []).slice(0, 4).map((item) => ({
-                  name: item.name,
-                  percent: item.percent,
-                  trailingText: item.text ?? "",
-                }))}
-              />
-
-              <DashboardBreakdownSection
-                title="Editors"
-                chartColors={chartColors}
-                items={(today?.editors ?? []).slice(0, 4).map((item) => ({
-                  name: item.name,
-                  percent: item.percent,
-                  trailingText: item.text ?? "",
-                }))}
-              />
-
-              <DashboardBreakdownSection
-                title="Projects"
-                chartColors={chartColors}
-                items={(today?.projects ?? []).slice(0, 4).map((item) => ({
-                  name: item.name,
-                  percent: item.percent,
-                  trailingText: item.text ?? "",
-                }))}
-              />
-
-              <DashboardBreakdownSection
-                title="Operating Systems"
-                chartColors={chartColors}
-                items={(today?.operating_systems ?? [])
-                  .slice(0, 4)
-                  .map((item) => ({
-                    name: item.name,
-                    percent: item.percent,
-                    trailingText: item.text ?? "",
-                  }))}
-              />
               <View
                 style={[
                   ct.styles.flex,
@@ -334,12 +293,49 @@ export default function OverviewScreen() {
                   />
                 </TouchableOpacity>
               </View>
+              <DashboardBreakdownSection
+                title="Languages"
+                chartColors={languageColors}
+                items={(today?.languages ?? []).slice(0, 4).map((item) => ({
+                  name: item.name,
+                  percent: item.percent,
+                  trailingText: item.text ?? "",
+                }))}
+              />
+              <DashboardBreakdownSection
+                title="Editors"
+                chartColors={chartColors}
+                items={(today?.editors ?? []).slice(0, 4).map((item) => ({
+                  name: item.name,
+                  percent: item.percent,
+                  trailingText: item.text ?? "",
+                }))}
+              />
+              <DashboardBreakdownSection
+                title="Projects"
+                chartColors={chartColors}
+                items={(today?.projects ?? []).slice(0, 4).map((item) => ({
+                  name: item.name,
+                  percent: item.percent,
+                  trailingText: item.text ?? "",
+                }))}
+              />
+              <DashboardBreakdownSection
+                title="Operating Systems"
+                chartColors={chartColors}
+                items={(today?.operating_systems ?? [])
+                  .slice(0, 4)
+                  .map((item) => ({
+                    name: item.name,
+                    percent: item.percent,
+                    trailingText: item.text ?? "",
+                  }))}
+              />
               {/* Last 7 Days */}
               <View
                 style={{
                   backgroundColor: colors.surfaceContainerLow,
-                  borderRadius: ct.radius["3xl"],
-                  padding: ct.padding["2xl"],
+                  padding: ct.padding["md"],
                   gap: ct.padding.md,
                 }}
               >
@@ -373,7 +369,6 @@ export default function OverviewScreen() {
                       {formatDuration(weekTotal)}
                     </Text>
                   </View>
-
                 </View>
 
                 {week.length ? (
@@ -391,7 +386,6 @@ export default function OverviewScreen() {
                   </Text>
                 )}
               </View>
-
               {/* All Time */}
               {allTime ? (
                 <View

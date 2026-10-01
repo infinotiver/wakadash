@@ -66,7 +66,13 @@ export function StatCard({
         ) : null}
 
         {subtitle ? (
-          <Text style={{ color: colors.onSurfaceVariant }}>{subtitle}</Text>
+          <Text
+            style={{ color: colors.onSurfaceVariant }}
+            adjustsFontSizeToFit
+            numberOfLines={1}
+          >
+            {subtitle}
+          </Text>
         ) : null}
       </View>
     </View>

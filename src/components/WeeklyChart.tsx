@@ -26,7 +26,6 @@ function formatTime(totalSeconds: number): string {
 
 function formatDateLabel(date: string): string {
   return new Date(`${date}T12:00:00`).toLocaleDateString(undefined, {
-    weekday: "long",
     month: "short",
     day: "numeric",
   });
@@ -34,7 +33,9 @@ function formatDateLabel(date: string): string {
 
 export function WeeklyChart({ days }: Props) {
   const colors = useColors();
-  const [activeIndex, setActiveIndex] = useState<number | null>(days.length - 1);
+  const [activeIndex, setActiveIndex] = useState<number | null>(
+    days.length - 1,
+  );
 
   const maxSeconds = useMemo(
     () =>
@@ -42,7 +43,8 @@ export function WeeklyChart({ days }: Props) {
     [days],
   );
 
-  const activeDay = activeIndex !== null ? days[activeIndex] : days[days.length - 1];
+  const activeDay =
+    activeIndex !== null ? days[activeIndex] : days[days.length - 1];
   const activeSeconds = activeDay?.grand_total?.total_seconds ?? 0;
   const activeDateLabel = activeDay?.range?.date
     ? formatDateLabel(activeDay.range.date)
@@ -58,20 +60,32 @@ export function WeeklyChart({ days }: Props) {
       ? `${deltaSeconds >= 0 ? "+" : "-"}${Math.abs(deltaPercent)}% vs avg`
       : "New";
   const averageLineTop =
-    maxSeconds > 0 ? `${((1 - avgSeconds / maxSeconds) * 100).toFixed(2)}%` : "0%";
+    maxSeconds > 0
+      ? `${((1 - avgSeconds / maxSeconds) * 100).toFixed(2)}%`
+      : "0%";
 
   return (
     <View style={{ gap: ct.space.md }}>
-      {activeIndex !== null && activeDateLabel ? (
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            paddingHorizontal: ct.space.sm,
-          }}
-        >
-          <View style={{ flexDirection: "row", alignItems: "center", gap: ct.space.sm }}>
+      {activeDateLabel ? (
+        <View style={{ alignItems: "center", gap: ct.space.xs / 2 }}>
+          <Text
+            style={{
+              fontSize: ct.fontSize["2xl"],
+              lineHeight: ct.lineHeight.md,
+              fontFamily: ct.fontFamily.bold,
+              color: colors.onSurface,
+            }}
+          >
+            {formatTime(activeSeconds)}
+          </Text>
+
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: ct.space.sm,
+            }}
+          >
             <Text
               style={{
                 fontSize: ct.fontSize.sm,
@@ -83,28 +97,27 @@ export function WeeklyChart({ days }: Props) {
               {activeDateLabel}
             </Text>
 
+            <View
+              style={{
+                width: 3,
+                height: 3,
+                borderRadius: 1.5,
+                backgroundColor: colors.outline,
+              }}
+            />
+
             <Text
               style={{
                 fontSize: ct.fontSize.xs,
                 lineHeight: ct.lineHeight.xs,
                 fontFamily: ct.fontFamily.semibold,
-                color: deltaSeconds >= 0 ? colors.primary : colors.onSurfaceVariant,
+                color:
+                  deltaSeconds >= 0 ? colors.primary : colors.onSurfaceVariant,
               }}
             >
               {deltaText}
             </Text>
           </View>
-
-          <Text
-            style={{
-              fontSize: ct.fontSize.md,
-              lineHeight: ct.lineHeight.md,
-              fontFamily: ct.fontFamily.semibold,
-              color: colors.onSurface,
-            }}
-          >
-            {formatTime(activeSeconds)}
-          </Text>
         </View>
       ) : null}
 

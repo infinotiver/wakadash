@@ -10,11 +10,17 @@ import { ct } from "@/src/constants/styles.common";
 
 const hex = (value: string): ColorProp => value as ColorProp;
 
+// Same roles the app uses on home: card = surfaceContainerHigh,
+// icon circle = secondary/onSecondary (StatCard), separators = outlineVariant.
 export const C = {
   bg: hex(colors.dark.surfaceContainerHigh),
   on: hex(colors.dark.onSurface),
   variant: hex(colors.dark.onSurfaceVariant),
-  primary: hex(colors.dark.primary),
+  secondary: hex(colors.dark.secondary),
+  onSecondary: hex(colors.dark.onSecondary),
+  separator: hex(colors.dark.outlineVariant),
+
+  // violet → amber → teal → coral → green (same order as the app charts)
   series: [
     hex(colors.dark.accent.violet.color),
     hex(colors.dark.accent.amber.color),
@@ -24,7 +30,10 @@ export const C = {
   ],
 } as const;
 
-export type Slice = { name: string; percent: number };
+export type Slice = {
+  name: string;
+  percent: number;
+};
 
 export type StatKey = "languages" | "projects" | "system";
 
@@ -48,6 +57,7 @@ export const EMPTY: WidgetData = {
   topOS: [],
 };
 
+// Both widgets share this shell. Radius matches StatCard (2xl).
 const shell = {
   height: "match_parent",
   width: "match_parent",
@@ -55,101 +65,167 @@ const shell = {
   borderRadius: ct.radius["2xl"],
 } as const;
 
-function RefreshDot() {
+// Same anatomy as StatCard: value + subtitle, with a secondary-tone circle.
+// The circle is the refresh action.
+function Header({ value, subtitle }: { value: string; subtitle: string }) {
   return (
     <FlexWidget
-      clickAction="REFRESH"
       style={{
-        width: ct.size.icon,
-        height: ct.size.icon,
-        borderRadius: ct.radius.full,
-        justifyContent: "center",
+        width: "match_parent",
+        flexDirection: "row",
         alignItems: "center",
+        justifyContent: "space-between",
       }}
     >
-      <TextWidget
-        text="↻"
-        style={{ fontSize: ct.fontSize["2xl"], color: C.primary }}
-      />
+      <FlexWidget style={{ flexDirection: "column" }}>
+        <TextWidget
+          text={value}
+          style={{
+            fontSize: ct.fontSize.title,
+            fontFamily: ct.fontFamily.semibold,
+            color: C.on,
+          }}
+        />
+        <TextWidget
+          text={subtitle}
+          style={{
+            fontSize: ct.fontSize.lg,
+            fontFamily: ct.fontFamily.regular,
+            color: C.variant,
+          }}
+        />
+      </FlexWidget>
+
+      <FlexWidget
+        clickAction="REFRESH"
+        style={{
+          width: ct.size.icon,
+          height: ct.size.icon,
+          borderRadius: ct.radius.full,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: C.secondary,
+        }}
+      >
+        <TextWidget
+          text="↻"
+          style={{
+            fontSize: ct.fontSize["3xl"],
+            fontFamily: ct.fontFamily.semibold,
+            color: C.onSecondary,
+          }}
+        />
+      </FlexWidget>
     </FlexWidget>
   );
 }
 
-function StatRow({ slice, index }: { slice: Slice; index: number }) {
-  return (
-    <FlexWidget
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        width: "match_parent",
-      }}
-    >
+function StackedBar({ slices }: { slices: Slice[] }) {
+  const total = slices.reduce((sum, s) => sum + s.percent, 0);
+  const children = slices.flatMap((slice, index) => {
+    const segment = (
       <FlexWidget
+        key={`seg-${slice.name}`}
         style={{
-          width: ct.size.dot,
-          height: ct.size.dot,
-          borderRadius: ct.radius.full,
+          width: (slice.percent / total) * 100,
+          height: "match_parent",
           backgroundColor: C.series[index % C.series.length],
         }}
       />
-      <TextWidget
-        text={slice.name}
-        maxLines={1}
+    );
+
+    if (index === slices.length - 1) return [segment];
+
+    return [
+      segment,
+      <FlexWidget
+        key={`sep-${slice.name}`}
         style={{
-          fontSize: ct.fontSize.sm,
-          fontFamily: ct.fontFamily.regular,
-          color: C.on,
+          width: 1,
+          height: "match_parent",
+          backgroundColor: C.separator,
         }}
-      />
-      <TextWidget
-        text={`${Math.round(slice.percent)}%`}
-        style={{
-          fontSize: ct.fontSize.sm,
-          fontFamily: ct.fontFamily.semibold,
-          color: C.variant,
-        }}
-      />
+      />,
+    ];
+  });
+
+  return (
+    <FlexWidget
+      style={{
+        width: "match_parent",
+        height: 20,
+        flexDirection: "row",
+        borderRadius: ct.radius.full,
+        overflow: "hidden",
+      }}
+    >
+      {children}
+    </FlexWidget>
+  );
+}
+// Mirrors HorizontalBreakdownChart legend rows: dot, label, trailing %.
+function Legend({ slices }: { slices: Slice[] }) {
+  return (
+    <FlexWidget style={{ width: "match_parent", flexDirection: "column" }}>
+      {slices.map((slice, index) => (
+        <FlexWidget
+          key={slice.name}
+          style={{
+            width: "match_parent",
+            height: 22,
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
+          <FlexWidget
+            style={{
+              width: ct.size.dot,
+              height: ct.size.dot,
+              borderRadius: ct.radius.full,
+              backgroundColor: C.series[index % C.series.length],
+              marginRight: ct.space.md,
+            }}
+          />
+          <FlexWidget style={{ flex: 1 }}>
+            <TextWidget
+              text={slice.name}
+              maxLines={1}
+              style={{
+                fontSize: ct.fontSize.md,
+                fontFamily: ct.fontFamily.regular,
+                color: C.on,
+              }}
+            />
+          </FlexWidget>
+          <TextWidget
+            text={`${Math.round(slice.percent)}%`}
+            style={{
+              fontSize: ct.fontSize.md,
+              fontFamily: ct.fontFamily.regular,
+              color: C.variant,
+            }}
+          />
+        </FlexWidget>
+      ))}
     </FlexWidget>
   );
 }
 
-// 2x1 — today's total with an inline refresh tap target
 export function TodayPillWidget({ data }: { data: WidgetData }) {
   return (
     <FlexWidget
       clickAction="OPEN_APP"
       style={{
         ...shell,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
+        justifyContent: "center",
         paddingHorizontal: ct.space.lg,
       }}
     >
-      <FlexWidget style={{ flexDirection: "column" }}>
-        <TextWidget
-          text={data.today}
-          style={{
-            fontSize: ct.fontSize.title,
-            fontFamily: ct.fontFamily.bold,
-            color: C.on,
-          }}
-        />
-        <TextWidget
-          text="TODAY"
-          style={{
-            fontSize: ct.fontSize.xs,
-            fontFamily: ct.fontFamily.semibold,
-            color: C.variant,
-          }}
-        />
-      </FlexWidget>
-      <RefreshDot />
+      <Header value={data.today} subtitle="today" />
     </FlexWidget>
   );
 }
 
-// 4x2 — shows a single configured stat as a flat list
 export function TopBreakdownWidget({
   data,
   stat = "languages",
@@ -162,56 +238,55 @@ export function TopBreakdownWidget({
     projects: data.topProjects,
     system: data.topOS,
   };
-  const slices = sliceMap[stat];
+
+  const slices = sliceMap[stat]
+    .filter((s) => s.percent > 0)
+    .slice(0, 4)
+    .map((s) => ({ ...s, percent: Math.min(100, s.percent) }));
 
   return (
     <FlexWidget
       clickAction="OPEN_APP"
-      style={{ ...shell, flexDirection: "column", padding: ct.space.md }}
+      style={{
+        ...shell,
+        flexDirection: "column",
+        padding: ct.space.lg,
+      }}
     >
-      <FlexWidget
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          width: "match_parent",
-        }}
-      >
-        <TextWidget
-          text={data.today}
+      <Header value={data.today} subtitle={`${STAT_LABELS[stat]} today`} />
+
+      {slices.length > 0 ? (
+        <FlexWidget
           style={{
-            fontSize: ct.fontSize["2xl"],
-            fontFamily: ct.fontFamily.bold,
-            color: C.on,
+            width: "match_parent",
+            flexDirection: "column",
+            marginTop: ct.space.lg,
           }}
-        />
-        <RefreshDot />
-      </FlexWidget>
-
-      <TextWidget
-        text={STAT_LABELS[stat].toUpperCase()}
-        style={{
-          fontSize: ct.fontSize.xs,
-          fontFamily: ct.fontFamily.semibold,
-          color: C.variant,
-        }}
-      />
-
-      {slices.length ? (
-        slices
-          .slice(0, 5)
-          .map((s, i) => <StatRow key={s.name} slice={s} index={i} />)
+        >
+          <StackedBar slices={slices} />
+          <FlexWidget style={{ width: "match_parent", marginTop: ct.space.md }}>
+            <Legend slices={slices} />
+          </FlexWidget>
+        </FlexWidget>
       ) : (
-        <TextWidget
-          text="No data"
+        <FlexWidget
           style={{
-            fontSize: ct.fontSize.sm,
-            fontFamily: ct.fontFamily.regular,
-            color: C.variant,
+            flex: 1,
+            width: "match_parent",
+            alignItems: "center",
+            justifyContent: "center",
           }}
-        />
+        >
+          <TextWidget
+            text="No data"
+            style={{
+              fontSize: ct.fontSize.md,
+              fontFamily: ct.fontFamily.regular,
+              color: C.variant,
+            }}
+          />
+        </FlexWidget>
       )}
     </FlexWidget>
   );
 }
-

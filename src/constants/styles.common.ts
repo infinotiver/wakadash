@@ -362,7 +362,7 @@ const styles = {
   breakdown: {
     content: {
       paddingHorizontal: space.lg,
-      gap: space.md,
+      gap: space.sm,
     },
 
     title: text.pageTitle,
@@ -374,7 +374,7 @@ const styles = {
 
     summaryRow: {
       flexDirection: "row",
-      gap: space.lg,
+      gap: space.sm,
     },
 
     catText: {

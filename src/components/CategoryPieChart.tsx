@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Animated, Pressable, Text, View } from "react-native";
+import { Animated, Text, View } from "react-native";
 import { PieChart } from "react-native-gifted-charts";
 import { useColors } from "@/src/hooks/useColors";
 import { ct } from "@/src/constants/styles.common";
@@ -15,6 +15,14 @@ interface Props {
   items: CategoryItem[];
   primaryColor?: string;
   backgroundColor?: string;
+  seriesColors?: string[];
+  totalLabel?: string;
+  /**
+   * Fraction of the container width the donut's outer diameter should take
+   * up. Default (0.8) matches the dashboard's hero usage; pass something
+   * smaller (e.g. 0.55) for a compact variant sitting alongside other charts.
+   */
+  radiusRatio?: number;
 }
 
 function formatTime(seconds: number): string {
@@ -29,6 +37,9 @@ export function CategoryPieChart({
   items,
   primaryColor,
   backgroundColor,
+  seriesColors,
+  totalLabel = "total today",
+  radiusRatio = 0.8,
 }: Props) {
   const colors = useColors();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -39,18 +50,23 @@ export function CategoryPieChart({
 
   const cardBg = backgroundColor ?? colors.surfaceContainerHigh;
 
-  const chartColors = [
+  const defaultChartColors = [
     colors.accent.violet.color,
     colors.accent.amber.color,
     colors.accent.teal.color,
     colors.accent.coral.color,
     colors.accent.green.color,
   ];
+  const chartColors = seriesColors ?? defaultChartColors;
 
   const radius =
-    containerWidth > 0 ? Math.floor((containerWidth * 0.8) / 2) : 120;
+    containerWidth > 0 ? Math.floor((containerWidth * radiusRatio) / 2) : 120;
 
   const innerRadius = Math.floor(radius * 0.7);
+
+  // A shrunk donut needs a smaller center label or the text overruns it.
+  const centerValueSize = radius < 90 ? ct.fontSize["2xl"] : ct.fontSize["3xl"];
+  const centerSubSize = radius < 90 ? ct.fontSize.xs : ct.fontSize.md;
 
   const pieData = items.map((item, i) => ({
     value: item.percent,
@@ -63,7 +79,7 @@ export function CategoryPieChart({
   const centerLabel = activeItem
     ? `${formatTime(activeItem.total_seconds)}`
     : formatTime(totalSeconds);
-  const centerSub = activeItem ? activeItem.name : "total today";
+  const centerSub = activeItem ? activeItem.name : totalLabel;
 
   const animateLabel = (next: () => void) => {
     Animated.sequence([
@@ -120,7 +136,7 @@ export function CategoryPieChart({
                         color: foreground,
                         fontFamily: ct.fontFamily.semibold,
                         textAlign: "center",
-                        fontSize: ct.fontSize["3xl"],
+                        fontSize: centerValueSize,
                       },
                     ]}
                     numberOfLines={2}
@@ -131,8 +147,14 @@ export function CategoryPieChart({
                   <Text
                     style={[
                       ct.text.body,
-                      { color: colors.onSurfaceVariant, marginTop: ct.space.md / 2 },
+                      {
+                        color: colors.onSurfaceVariant,
+                        marginTop: ct.space.md / 2,
+                        fontSize: centerSubSize,
+                      },
                     ]}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
                   >
                     {centerSub}
                   </Text>
