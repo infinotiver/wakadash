@@ -18,6 +18,8 @@ export const wakaKeys = {
   week: () => [...wakaKeys.all, "week"] as const,
   stats: (range: string) => [...wakaKeys.all, "stats", range] as const,
   allTime: () => [...wakaKeys.all, "allTime"] as const,
+  goals: () => [...wakaKeys.all, "goals"] as const,
+  goal: (id: string) => [...wakaKeys.all, "goal", id] as const,
 };
 
 function useWakaQueryScope() {
@@ -141,6 +143,31 @@ export function useSyncTodayPill() {
   }, [today, stats, todayQ.isError]);
 }
 
+export function useGoals() {
+  const { apiKey, baseUrl, isConfigured } = useWakaTime();
+  const scope = useWakaQueryScope();
+  return useQuery({
+    queryKey: [...wakaKeys.goals(), ...scope],
+    queryFn: () => wakatimeApi.getGoals(apiKey!, baseUrl),
+    enabled: isConfigured,
+    staleTime: TEN_MIN,
+    gcTime: THIRTY_MIN,
+    retry: 1,
+  });
+}
+
+export function useGoal(id: string) {
+  const { apiKey, baseUrl, isConfigured } = useWakaTime();
+  const scope = useWakaQueryScope();
+  return useQuery({
+    queryKey: [...wakaKeys.goal(id), ...scope],
+    queryFn: () => wakatimeApi.getGoal(id, apiKey!, baseUrl),
+    enabled: isConfigured,
+    staleTime: TEN_MIN,
+    gcTime: THIRTY_MIN,
+    retry: 1,
+  });
+}
 function top(xs: { name: string; percent: number }[] = [], n = 3) {
   return xs.slice(0, n).map((x) => ({
     name: String(x?.name ?? "?"),

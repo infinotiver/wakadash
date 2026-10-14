@@ -442,7 +442,7 @@ const styles = {
     },
 
     section: {
-      borderRadius: radius.xl,
+      borderRadius: radius["2xl"],
       padding: space.lg,
       gap: space.md,
     },

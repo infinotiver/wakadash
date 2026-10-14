@@ -362,3 +362,48 @@ export interface CodingAllTime {
 
   trust_factor?: HackaTimeTrustFactor;
 }
+
+// Goals
+export type GoalStatus = "success" | "fail" | "pending" | "ignored";
+
+export interface WakaGoalChartPoint {
+  actual_seconds: number;
+  actual_seconds_text: string;
+  goal_seconds: number;
+  goal_seconds_text: string;
+  range: StatsRange;
+  range_status: GoalStatus;
+  range_status_reason?: string;
+}
+
+export interface WakaGoal {
+  id: string;
+  title: string;
+  custom_title?: string | null;
+  type: string;
+  delta: "day" | "week";
+  seconds: number;
+  status: GoalStatus;
+  average_status: "success" | "fail";
+  cumulative_status: "success" | "fail" | "ignored";
+  is_enabled: boolean;
+  is_inverse: boolean;
+  is_snoozed: boolean;
+  ignore_zero_days: boolean;
+  ignore_days: string[];
+  improve_by_percent: number;
+  languages: string[];
+  editors: string[];
+  projects: string[];
+  range_text: string;
+  chart_data: WakaGoalChartPoint[];
+  created_at: string;
+  modified_at?: string;
+  is_current_user_owner: boolean;
+  snooze_until?: string | null;
+  status_percent_calculated?: number;
+}
+export interface WakaGoalResult {
+  goal: WakaGoal;
+  cachedAt?: string;
+}

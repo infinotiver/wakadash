@@ -5,6 +5,7 @@ import {
   RefreshControl,
   ScrollView,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -14,6 +15,7 @@ import { useColors } from "@/src/hooks/useColors";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
 import {
   useAllTimeSinceToday,
+  useGoals,
   useSummaryRange,
   useTodaySummary,
   useWakaStats,
@@ -32,7 +34,8 @@ import {
   sumSummarySeconds,
   weeklyTotals,
 } from "@/src/utils/dashboard";
-import { Button } from "@/src/components/Button";
+import { GoalCard } from "@/src/components/GoalCard";
+import { isGoalActive } from "@/src/utils/goals";
 const HEATMAP_DAYS = 3 * 30;
 
 export default function OverviewScreen() {
@@ -46,6 +49,10 @@ export default function OverviewScreen() {
   const statsQ = useWakaStats("all_time");
   const heatQ = useSummaryRange(HEATMAP_DAYS);
 
+  const goalsQ = useGoals();
+  const allGoals = goalsQ.data ?? [];
+  const topGoals = allGoals.filter(isGoalActive).slice(0, 3);
+
   const refetch = useCallback(async () => {
     await Promise.allSettled([
       todayQ.refetch(),
@@ -53,8 +60,9 @@ export default function OverviewScreen() {
       allTimeQ.refetch(),
       statsQ.refetch(),
       heatQ.refetch(),
+      goalsQ.refetch(),
     ]);
-  }, [todayQ, weekQ, allTimeQ, statsQ, heatQ]);
+  }, [todayQ, weekQ, allTimeQ, statsQ, heatQ, goalsQ]);
 
   if (!isConfigured) return <SetupScreen />;
 
@@ -160,11 +168,6 @@ export default function OverviewScreen() {
                 >
                   {formatDuration(todaySeconds)}
                 </Text>
-                <Text
-                  style={[ct.text.caption, { color: colors.onSurfaceVariant }]}
-                >
-                  of daily average
-                </Text>
               </DashboardWidget>
               {stats?.streak !== undefined ? (
                 <DashboardWidget icon="zap" title="Streak" half>
@@ -199,7 +202,12 @@ export default function OverviewScreen() {
             </DashboardWidget>
 
             <View style={{ flexDirection: "row", gap: ct.space.md }}>
-              <DashboardWidget icon="activity" title="Daily average" half>
+              <DashboardWidget
+                icon="activity"
+                title="Daily average"
+                variant="secondary"
+                half
+              >
                 <Text
                   style={{
                     color: colors.onSurface,
@@ -211,7 +219,12 @@ export default function OverviewScreen() {
                 </Text>
                 <MiniBars values={dailyValues} />
               </DashboardWidget>
-              <DashboardWidget icon="bar-chart-2" title="This week" half>
+              <DashboardWidget
+                icon="bar-chart-2"
+                title="This week"
+                half
+                variant="tertiary"
+              >
                 <Text
                   style={{
                     color: colors.onSurface,
@@ -293,7 +306,37 @@ export default function OverviewScreen() {
                 ) : null}
               </View>
             ) : null}
-
+            {allGoals.length > 0 && (
+              <DashboardWidget
+                icon="award"
+                title="Goals"
+                onPress={() => router.push("/goals")}
+              >
+                <View style={ct.styles.rowBetween}></View>
+                <View style={{ gap: ct.space.lg, marginTop: ct.space.md }}>
+                  {topGoals.length === 0 ? (
+                    <Text
+                      style={[ct.text.body, { color: colors.onSurfaceVariant }]}
+                    >
+                      No active goals
+                    </Text>
+                  ) : (
+                    topGoals.map((g) => (
+                      <GoalCard
+                        key={g.id}
+                        goal={g}
+                        onPress={() =>
+                          router.push({
+                            pathname: "/goals/[id]",
+                            params: { id: g.id },
+                          })
+                        }
+                      />
+                    ))
+                  )}
+                </View>
+              </DashboardWidget>
+            )}
             {aiTotal > 0 ? (
               <DashboardWidget
                 icon="cpu"
@@ -317,7 +360,7 @@ export default function OverviewScreen() {
                 <Text
                   style={[ct.text.caption, { color: colors.onSurfaceVariant }]}
                 >
-                  AI Addiitons: {" "}
+                  AI Addiitons:{" "}
                   {new Intl.NumberFormat("en-US", {
                     notation: "compact",
                     compactDisplay: "short",

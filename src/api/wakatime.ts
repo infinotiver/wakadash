@@ -5,6 +5,8 @@ import type {
   HackaTimeStats,
   WakaProgramLanguage,
   CodingStats,
+  WakaGoal,
+  WakaGoalResult,
 } from "@/src/types/wakatime";
 import {
   normalizeHackaTimeStats,
@@ -178,7 +180,28 @@ export const wakatimeApi = {
       : wakFetch(`/users/current/stats/${range}`, apiKey, baseUrl).then((d) =>
           normalizeStats(d.data),
         ),
+  getGoals: (apiKey: string, baseUrl: string): Promise<WakaGoal[]> =>
+    isHackatime(baseUrl)
+      ? unsupported("Goals")
+      : wakFetch("/users/current/goals", apiKey, baseUrl).then(
+          (d) => d.data ?? [],
+        ),
 
+  getGoal: (
+    id: string,
+    apiKey: string,
+    baseUrl: string,
+  ): Promise<WakaGoalResult | null> =>
+    isHackatime(baseUrl)
+      ? unsupported("Goals")
+      : wakFetch(`/users/current/goals/${id}`, apiKey, baseUrl).then((d) =>
+          d.data?.chart_data?.length
+            ? {
+                goal: d.data as WakaGoal,
+                cachedAt: d.cached_at as string | undefined,
+              }
+            : null,
+        ),
   getProgramLanguages: (): Promise<WakaProgramLanguage[]> =>
     wakFetchPublic("/program_languages").then((d) => d.data),
 };

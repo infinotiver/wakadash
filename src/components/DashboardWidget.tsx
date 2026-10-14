@@ -6,11 +6,18 @@ import { useColors } from "@/src/hooks/useColors";
 import { ct } from "@/src/constants/styles.common";
 
 export type DashboardFeatherName = React.ComponentProps<typeof Feather>["name"];
+export type DashboardWidgetVariant =
+  | "surface"
+  | "primary"
+  | "secondary"
+  | "tertiary";
 
 interface DashboardWidgetProps {
   icon: DashboardFeatherName;
   title: string;
   onPress?: () => void;
+  variant?: DashboardWidgetVariant;
+  /** Backward-compatible alias for variant="primary". */
   hero?: boolean;
   half?: boolean;
   children?: React.ReactNode;
@@ -20,14 +27,32 @@ export function DashboardWidget({
   icon,
   title,
   onPress,
+  variant = "surface",
   hero = false,
   half = false,
   children,
 }: DashboardWidgetProps) {
   const colors = useColors();
-  const headerColor = hero
-    ? colors.onPrimaryContainer
-    : colors.onSurfaceVariant;
+  const resolvedVariant = hero ? "primary" : variant;
+  const variantStyles = {
+    surface: {
+      backgroundColor: colors.surfaceContainerHigh,
+      color: colors.onSurfaceVariant,
+    },
+    primary: {
+      backgroundColor: colors.primaryContainer,
+      color: colors.onPrimaryContainer,
+    },
+    secondary: {
+      backgroundColor: colors.secondaryContainer,
+      color: colors.onSecondaryContainer,
+    },
+    tertiary: {
+      backgroundColor: colors.tertiaryContainer,
+      color: colors.onTertiaryContainer,
+    },
+  }[resolvedVariant];
+  const headerColor = variantStyles.color;
 
   return (
     <Pressable
@@ -40,9 +65,7 @@ export function DashboardWidget({
         padding: ct.space.lg,
         borderRadius: ct.radius["2xl"],
         gap: ct.space.md,
-        backgroundColor: hero
-          ? colors.primaryContainer
-          : colors.surfaceContainerHigh,
+        backgroundColor: variantStyles.backgroundColor,
         opacity: pressed ? 0.85 : 1,
       })}
     >
