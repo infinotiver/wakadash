@@ -111,7 +111,7 @@ export default function OverviewScreen() {
         contentContainerStyle={{
           paddingHorizontal: ct.space.lg,
           paddingBottom: insets.bottom + 64 + ct.space.xl,
-          gap: ct.space.md,
+          gap: ct.space.sm,
         }}
         refreshControl={
           <RefreshControl
@@ -142,7 +142,7 @@ export default function OverviewScreen() {
           </Pressable>
         ) : (
           <>
-            <View style={{ flexDirection: "row", gap: ct.space.md }}>
+            <View style={{ flexDirection: "row", gap: ct.space.sm }}>
               <DashboardWidget
                 icon="trending-up"
                 title="All time"
@@ -183,8 +183,10 @@ export default function OverviewScreen() {
                   style={{
                     color: colors.onSurface,
                     fontFamily: ct.fontFamily.semibold,
-                    fontSize: ct.fontSize.display,
+                    fontSize: ct.fontSize.hero,
                   }}
+                  // numberOfLines={1}
+                  adjustsFontSizeToFit
                 >
                   {formatDuration(todaySeconds)}
                 </Text>
@@ -194,7 +196,7 @@ export default function OverviewScreen() {
             <View
               style={{
                 flexDirection: "row",
-                gap: ct.space.md,
+                gap: ct.space.sm,
               }}
             >
               {stats?.streak !== undefined ? (
@@ -245,7 +247,7 @@ export default function OverviewScreen() {
               </Text>
             </DashboardWidget>
 
-            <View style={{ flexDirection: "row", gap: ct.space.md }}>
+            <View style={{ flexDirection: "row", gap: ct.space.sm }}>
               <DashboardWidget
                 icon="activity"
                 title="Daily average"
@@ -283,7 +285,7 @@ export default function OverviewScreen() {
             </View>
 
             {topProject || topLanguage ? (
-              <View style={{ flexDirection: "row", gap: ct.space.md }}>
+              <View style={{ flexDirection: "row", gap: ct.space.sm }}>
                 {topProject ? (
                   <DashboardWidget
                     icon="folder"

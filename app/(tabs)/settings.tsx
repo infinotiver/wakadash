@@ -12,7 +12,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
 import { useColors } from "@/src/hooks/useColors";
@@ -67,7 +67,11 @@ function FieldRow({
       <Button
         label="Edit"
         icon={
-          <MaterialIcons name="edit" size={18} color={c.onSecondaryContainer} />
+          <MaterialCommunityIcons
+            color={c.onSecondaryContainer}
+            name="pencil-outline"
+            size={18}
+          />
         }
         variant="tonal"
         onPress={onEdit}
@@ -86,7 +90,11 @@ function FieldRow({
             backgroundColor: c.errorContainer,
           }}
         >
-          <MaterialIcons name="delete" size={18} color={c.error} />
+          <MaterialCommunityIcons
+            color={c.error}
+            name="trash-can-outline"
+            size={18}
+          />
         </TouchableOpacity>
       )}
     </View>
@@ -272,10 +280,10 @@ export default function SettingsScreen() {
               <View
                 style={[styles.avatarFallback, { backgroundColor: c.primary }]}
               >
-                <MaterialIcons
-                  name="account-circle"
-                  size={28}
+                <MaterialCommunityIcons
                   color={c.onPrimary}
+                  name="account-circle-outline"
+                  size={28}
                 />
               </View>
             )}
@@ -291,10 +299,10 @@ export default function SettingsScreen() {
 
               {user.location && (
                 <View style={styles.locationRow}>
-                  <MaterialIcons
-                    name="location-pin"
+                  <MaterialCommunityIcons
+                    color="{c.onSurfaceVariant}"
+                    name="map-marker-outline"
                     size={12}
-                    color={c.onSurfaceVariant}
                   />
                   <Text
                     style={[styles.location, { color: c.onSurfaceVariant }]}
@@ -455,7 +463,7 @@ export default function SettingsScreen() {
                   style={{ padding: ct.padding.sm }}
                 >
                   <MaterialCommunityIcons
-                    name={show ? "eye-off" : "eye"}
+                    name={show ? "eye-off-outline" : "eye-outline"}
                     size={18}
                     color={c.onSurfaceVariant}
                   />
@@ -519,7 +527,7 @@ export default function SettingsScreen() {
               label="Report Issue"
               icon={
                 <MaterialCommunityIcons
-                  name="alert-circle"
+                  name="alert-circle-outline"
                   size={18}
                   color={c.onSecondaryContainer}
                 />
@@ -560,7 +568,7 @@ export default function SettingsScreen() {
             paddingVertical: ct.space.md,
           }}
         >
-          <Text style={[ct.text.caption, { color: c.onSurfaceVariant }]}>
+          <Text style={[ct.text.bodyMedium, { color: c.onSurfaceVariant }]}>
             WakaDash v{appVersion}
           </Text>
           <Text style={[ct.text.caption, { color: c.onSurfaceVariant }]}>
