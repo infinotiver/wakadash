@@ -155,7 +155,7 @@ export function WeeklyChart({ days }: Props) {
               const date = day.range?.date
                 ? new Date(`${day.range.date}T12:00:00`)
                 : null;
-              const label = date ? DAY_LABELS[date.getDay()] : "—";
+              const label = date ? DAY_LABELS[date.getDay()] : "-";
 
               return (
                 <Pressable

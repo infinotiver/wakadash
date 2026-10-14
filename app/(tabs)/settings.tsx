@@ -246,7 +246,7 @@ export default function SettingsScreen() {
         style={ct.styles.scroll}
         contentContainerStyle={[
           styles.content,
-          { paddingBottom: insets.bottom + ct.space.lg },
+          { paddingBottom: insets.bottom + 64 + ct.space.lg },
         ]}
       >
         {userQ.isLoading ? (

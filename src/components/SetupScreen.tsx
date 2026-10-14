@@ -36,6 +36,17 @@ export function SetupScreen() {
 
   const isHackatime = serverUrl.includes("hackatime.hackclub.com");
   const normalizedServerUrl = serverUrl.trim().replace(/\/+$/, "");
+  const fieldStyle = {
+    borderWidth: 1,
+    borderColor: colors.outline,
+    borderRadius: ct.radius.lg,
+    backgroundColor: colors.surfaceContainerHighest,
+    height: 52,
+    paddingHorizontal: ct.space.lg,
+    fontSize: ct.fontSize.md,
+    fontFamily: ct.fontFamily.regular,
+    color: colors.onSurface,
+  } as const;
 
   async function handleSave() {
     const trimmedKey = key.trim();
@@ -74,51 +85,52 @@ export function SetupScreen() {
       }}
     >
       <View
-        style={{ flex: 1, justifyContent: "center", gap: ct.padding["2xl"] }}
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          gap: ct.padding["2xl"],
+          maxWidth: 480,
+          width: "100%",
+          alignSelf: "center",
+        }}
       >
-        <View style={{ gap: ct.space.sm }}>
+        <View style={{ gap: ct.space.md }}>
           <Text
             style={{
               fontSize: ct.fontSize.display,
               fontFamily: ct.fontFamily.bold,
               color: colors.onSurface,
               textAlign: "center",
-              lineHeight: ct.lineHeight.md,
+              lineHeight: ct.lineHeight.xl,
             }}
           >
             WakaDash
           </Text>
-          <Text
-            style={[
-              ct.text.body,
-              { color: colors.onSurfaceVariant, textAlign: "center" },
-            ]}
-          >
-            Paste your API key & choose your provider (You can change them
-            later).
-          </Text>
         </View>
 
-        <View style={{ gap: ct.space.md }}>
+        <View style={{ gap: ct.space.xl }}>
           {/* Server selector */}
-          <View style={{ gap: ct.space.xs }}>
-            <View style={{ alignItems: "center" }}>
-              <SegmentedButtons
-                items={SERVER_SUGGESTIONS}
-                value={normalizedServerUrl}
-                onChange={(url) => {
-                  setServerUrl(url);
-                  setError(null);
-                }}
-              />
-            </View>
-            <TextInput
+          <View style={{ gap: ct.space.md }}>
+            <Text
               style={{
-                fontSize: ct.fontSize.sm,
-                fontFamily: ct.fontFamily.regular,
-                color: colors.onSurfaceVariant,
-                paddingHorizontal: ct.padding.sm,
+                color: colors.onSurface,
+                fontFamily: ct.fontFamily.semibold,
+                fontSize: ct.fontSize.md,
+                textAlign: "center",
               }}
+            >
+              Choose your provider
+            </Text>
+            <SegmentedButtons
+              items={SERVER_SUGGESTIONS}
+              value={normalizedServerUrl}
+              onChange={(url) => {
+                setServerUrl(url);
+                setError(null);
+              }}
+            />
+            <TextInput
+              style={fieldStyle}
               value={serverUrl}
               onChangeText={(v) => {
                 setServerUrl(v);
@@ -130,28 +142,45 @@ export function SetupScreen() {
               autoCorrect={false}
               keyboardType="url"
             />
+            <Text
+              style={{
+                color: colors.onSurfaceVariant,
+                fontFamily: ct.fontFamily.regular,
+                fontSize: ct.fontSize.xs,
+                paddingHorizontal: ct.space.xs,
+              }}
+            >
+              Or enter a compatible server URL.
+            </Text>
           </View>
 
           {/* Key input */}
+          <Text
+            style={{
+              color: colors.onSurface,
+              fontFamily: ct.fontFamily.semibold,
+              fontSize: ct.fontSize.md,
+              marginBottom: -ct.space.xs,
+            }}
+          >
+            API key
+          </Text>
           <View
             style={{
-              borderWidth: 1,
-              borderColor: error ? colors.error : colors.outline,
-              borderRadius: ct.radius.lg,
-              backgroundColor: colors.surfaceContainerHighest,
               flexDirection: "row",
               alignItems: "center",
-              height: 52,
-              paddingHorizontal: ct.space.lg,
+              ...fieldStyle,
+              borderColor: error ? colors.error : colors.outline,
             }}
           >
             <TextInput
               style={{
                 flex: 1,
-                fontSize: ct.fontSize.md,
-                fontFamily: ct.fontFamily.regular,
-                color: colors.onSurface,
                 height: "100%",
+                paddingVertical: 0,
+                fontSize: fieldStyle.fontSize,
+                fontFamily: fieldStyle.fontFamily,
+                color: fieldStyle.color,
               }}
               placeholder="xxxxxxxxxxxxxxxx"
               placeholderTextColor={colors.onSurfaceVariant}
@@ -169,6 +198,8 @@ export function SetupScreen() {
             <TouchableOpacity
               onPress={() => setShow((s) => !s)}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityRole="button"
+              accessibilityLabel={show ? "Hide API key" : "Show API key"}
             >
               <Feather
                 name={show ? "eye-off" : "eye"}
@@ -197,8 +228,11 @@ export function SetupScreen() {
             onPress={handleSave}
             disabled={!canSubmit}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Connect WakaDash"
             style={{
-              padding: ct.padding.md,
+              minHeight: 52,
+              paddingHorizontal: ct.padding.lg,
               borderRadius: ct.radius.full,
               backgroundColor: colors.primary,
               alignItems: "center",
@@ -216,7 +250,7 @@ export function SetupScreen() {
                   color: colors.onPrimary,
                 }}
               >
-                Connect
+                Connect WakaDash
               </Text>
             )}
           </TouchableOpacity>

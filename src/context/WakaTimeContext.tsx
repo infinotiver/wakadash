@@ -1,9 +1,11 @@
 import * as SecureStore from "expo-secure-store";
+import { useQueryClient } from "@tanstack/react-query";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { DEFAULT_BASE_URL } from "../api/wakatime";
 
 const STORAGE_KEY = "wakatime_api_key";
 const BASE_URL_STORAGE_KEY = "wakatime_base_url";
+const WAKATIME_QUERY_KEY = ["wakatime"] as const;
 
 interface WakaTimeContextValue {
   apiKey: string | null;
@@ -19,6 +21,7 @@ const WakaTimeContext = createContext<WakaTimeContextValue | null>(null);
 
 // context provider for wakatime api key and auth
 export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
+  const queryClient = useQueryClient();
   // state for apiKey, baseUrl, authGeneration, and loaded
   const [baseUrl, setBaseUrlState] = useState<string>(DEFAULT_BASE_URL);
   const [apiKey, setApiKeyState] = useState<string | null>(null);
@@ -52,6 +55,8 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
   const setApiKey = async (key: string) => {
     const trimmed = key.trim();
     await SecureStore.setItemAsync(STORAGE_KEY, trimmed);
+    await queryClient.cancelQueries({ queryKey: WAKATIME_QUERY_KEY });
+    queryClient.removeQueries({ queryKey: WAKATIME_QUERY_KEY });
     setApiKeyState(trimmed);
 
     // increment authGeneration counter bust cached queries that depend on the apiKey
@@ -64,6 +69,8 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
     // falling back to the default if the trimmed result is empty
     const trimmed = url.trim().replace(/\/+$/, "") || DEFAULT_BASE_URL;
     await SecureStore.setItemAsync(BASE_URL_STORAGE_KEY, trimmed);
+    await queryClient.cancelQueries({ queryKey: WAKATIME_QUERY_KEY });
+    queryClient.removeQueries({ queryKey: WAKATIME_QUERY_KEY });
     setBaseUrlState(trimmed);
 
     // baseUrl changes the server queries hit, so it busts the cache the same way apiKey does
@@ -73,6 +80,8 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
 
   const clearApiKey = async () => {
     await SecureStore.deleteItemAsync(STORAGE_KEY);
+    await queryClient.cancelQueries({ queryKey: WAKATIME_QUERY_KEY });
+    queryClient.removeQueries({ queryKey: WAKATIME_QUERY_KEY });
     setApiKeyState(null);
     setAuthGeneration((generation) => generation + 1);
   };

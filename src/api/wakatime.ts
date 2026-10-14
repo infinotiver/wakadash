@@ -131,6 +131,20 @@ export const wakatimeApi = {
       baseUrl,
     ).then((d) => d.data ?? []);
   },
+  getSummaryRange: (
+    days: number,
+    apiKey: string,
+    baseUrl: string,
+  ): Promise<WakaSummaryDay[]> => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - (days - 1));
+    return wakFetch(
+      `/users/current/summaries?start=${fmt(start)}&end=${fmt(end)}`,
+      apiKey,
+      baseUrl,
+    ).then((d) => d.data ?? []);
+  },
 
   getAllTimeSinceToday: (
     apiKey: string,

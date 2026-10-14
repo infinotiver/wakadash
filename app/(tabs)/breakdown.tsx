@@ -164,7 +164,7 @@ export default function BreakdownScreen() {
       contentContainerStyle={[
         styles.content,
         {
-          paddingBottom: insets.bottom + ct.space.lg,
+          paddingBottom: insets.bottom + 64 + ct.space.lg,
         },
       ]}
       refreshControl={
@@ -178,11 +178,11 @@ export default function BreakdownScreen() {
       {/* <AppBar title="Breakdown" variant="center" /> */}
       <AppBar
         title="Breakdown"
-        variant="small"
+        variant="center"
         elevated={false}
-        leadingIcon="arrow-left"
-        leadingLabel="Go back"
-        onLeadingPress={() => router.back()}
+        // leadingIcon="arrow-left"
+        // leadingLabel="Go back"
+        // onLeadingPress={() => router.back()}
         actions={[]}
       />
       <ButtonGroup items={RANGES} value={range} onChange={setRange} />
@@ -412,7 +412,6 @@ export default function BreakdownScreen() {
                   };
                 });
 
-               
                 const topItems = mappedItems.slice(0, CHART_TOP_N);
                 const restItems = mappedItems.slice(CHART_TOP_N);
                 const otherSeconds = restItems.reduce(

@@ -95,8 +95,7 @@ export function SegmentedButtons<T extends string>({
 const styles = StyleSheet.create({
   track: {
     flexDirection: "row",
-
-    alignSelf: "flex-start",
+    alignSelf: "center",
     borderWidth: 1,
     overflow: "hidden",
   },

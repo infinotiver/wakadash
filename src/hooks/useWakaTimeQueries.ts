@@ -67,6 +67,19 @@ export function useWeekSummaries() {
     retry: 1,
   });
 }
+
+export function useSummaryRange(days: number) {
+  const { apiKey, baseUrl, isConfigured } = useWakaTime();
+  const scope = useWakaQueryScope();
+  return useQuery({
+    queryKey: [...wakaKeys.week(), "range", days, ...scope],
+    queryFn: () => wakatimeApi.getSummaryRange(days, apiKey!, baseUrl),
+    enabled: isConfigured,
+    staleTime: TEN_MIN,
+    gcTime: THIRTY_MIN,
+    retry: 1,
+  });
+}
 export function useAllTimeSinceToday() {
   const { apiKey, baseUrl, isConfigured } = useWakaTime();
   const scope = useWakaQueryScope();
