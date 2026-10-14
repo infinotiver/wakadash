@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Animated, Keyboard, Platform, Pressable, View } from "react-native";
 import { SymbolView } from "expo-symbols";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { usePathname } from "expo-router";
 
 import { useColors } from "@/src/hooks/useColors";
 
@@ -87,6 +88,7 @@ function TabIcon({
 function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const pathname = usePathname();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   // Hide the bar while the keyboard is open (custom bars don't get this for free lmao).
@@ -103,7 +105,7 @@ function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) {
     };
   }, []);
 
-  if (keyboardVisible) return null;
+  if (keyboardVisible || pathname.startsWith("/settings")) return null;
 
   return (
     // box-none: the empty space around the pill stays touchable for the screen below.

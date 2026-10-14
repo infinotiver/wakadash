@@ -121,6 +121,27 @@ export function WeeklyChart({ days }: Props) {
         </View>
       ) : null}
 
+      <View style={{ alignItems: "flex-end", marginBottom: -ct.space.sm }}>
+        <View
+          style={{
+            paddingHorizontal: ct.space.sm,
+            paddingVertical: ct.space.xs,
+            borderRadius: ct.radius.full,
+            backgroundColor: colors.surfaceContainerHigh,
+          }}
+        >
+          <Text
+            style={{
+              color: colors.onSurfaceVariant,
+              fontFamily: ct.fontFamily.medium,
+              fontSize: ct.fontSize.xs,
+            }}
+          >
+            Avg: {formatTime(avgSeconds)}
+          </Text>
+        </View>
+      </View>
+
       <View style={{ flexDirection: "row" }}>
         <View style={{ flex: 1 }}>
           <View

@@ -52,7 +52,7 @@ export function ButtonGroup<T extends string>({
                 backgroundColor: selected
                   ? c.secondary
                   : c.surfaceContainerHigh,
-                borderRadius: selected ? ct.radius.lg : ct.radius.full,
+                borderRadius: selected ? ct.radius.full : ct.radius.lg,
                 paddingHorizontal: isSmall ? 14 : selected ? 20 : 16,
                 opacity: pressed ? 0.8 : 1,
               },
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
 
   button: {
     alignItems: "center",
-    padding: ct.padding.lg,
+    padding: ct.padding.md,
     justifyContent: "center",
   },
 

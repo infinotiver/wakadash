@@ -9,6 +9,7 @@ import {
 import { ButtonGroup } from "@/src/components/ButtonGroup";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { CategoryPieChart } from "@/src/components/CategoryPieChart";
 import { CategoryBarChart } from "@/src/components/CategoryBarChart";
 import { SetupScreen } from "@/src/components/SetupScreen";
@@ -24,7 +25,7 @@ import { StatCard } from "@/src/components/StatCard";
 import { Feather } from "@expo/vector-icons";
 import { buildLanguageColorMap, formatDuration } from "@/src/utils/dashboard";
 import { SegmentedButtons } from "@/src/components/SegmentedButtons";
-
+import { AiChangesChart } from "@/src/components/AiChangesChart";
 const styles = ct.styles.breakdown;
 
 type Range =
@@ -42,10 +43,10 @@ type Category =
 type ChartView = "pie" | "bar";
 
 const RANGES: { label: string; value: Range }[] = [
-  { label: "Last Week", value: "last_7_days" },
-  { label: "Last Month", value: "last_30_days" },
-  { label: "Last 6 Months", value: "last_6_months" },
-  { label: "Last Year", value: "last_year" },
+  { label: "7D", value: "last_7_days" },
+  { label: "1M", value: "last_30_days" },
+  { label: "6M", value: "last_6_months" },
+  { label: "1Y", value: "last_year" },
   { label: "All Time", value: "all_time" },
 ];
 
@@ -102,9 +103,14 @@ export default function BreakdownScreen() {
   const c = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const params = useLocalSearchParams<{ category?: string }>();
   const { isConfigured } = useWakaTime();
   const [range, setRange] = useState<Range>("last_7_days");
-  const [category, setCategory] = useState<Category>("categories");
+  const [category, setCategory] = useState<Category>(() =>
+    CATEGORIES.some((item) => item.value === params.category)
+      ? (params.category as Category)
+      : "categories",
+  );
   const [chartView, setChartView] = useState<ChartView>("pie");
 
   const statsQ = useWakaStats(range);
@@ -118,6 +124,10 @@ export default function BreakdownScreen() {
   );
 
   useEffect(() => {
+    if (CATEGORIES.some((item) => item.value === params.category)) {
+      setCategory(params.category as Category);
+      return;
+    }
     if (!stats) return;
     const stillAvailable = availableCategories.some(
       (c) => c.value === category,
@@ -125,7 +135,7 @@ export default function BreakdownScreen() {
     if (!stillAvailable && availableCategories.length > 0) {
       setCategory(availableCategories[0].value);
     }
-  }, [stats, availableCategories, category]);
+  }, [stats, availableCategories, category, params.category]);
 
   if (!isConfigured) return <SetupScreen />;
 
@@ -159,23 +169,7 @@ export default function BreakdownScreen() {
   const hasAiData = aiPromptEvents > 0 || aiAdditions > 0;
 
   return (
-    <ScrollView
-      style={[ct.styles.scroll, { backgroundColor: c.background }]}
-      contentContainerStyle={[
-        styles.content,
-        {
-          paddingBottom: insets.bottom + 64 + ct.space.lg,
-        },
-      ]}
-      refreshControl={
-        <RefreshControl
-          refreshing={statsQ.isFetching}
-          onRefresh={() => statsQ.refetch()}
-          tintColor={c.primary}
-        />
-      }
-    >
-      {/* <AppBar title="Breakdown" variant="center" /> */}
+    <>
       <AppBar
         title="Breakdown"
         variant="center"
@@ -188,282 +182,286 @@ export default function BreakdownScreen() {
           },
         ]}
       />
-      <ButtonGroup items={RANGES} value={range} onChange={setRange} />
+      <ScrollView
+        style={[ct.styles.scroll, { backgroundColor: c.background }]}
+        contentContainerStyle={[
+          styles.content,
+          {
+            paddingBottom: insets.bottom + 64 + ct.space.lg,
+          },
+        ]}
+        refreshControl={
+          <RefreshControl
+            refreshing={statsQ.isFetching}
+            onRefresh={() => statsQ.refetch()}
+            tintColor={c.primary}
+          />
+        }
+      >
+        <ButtonGroup items={RANGES} value={range} onChange={setRange} />
 
-      {/* Pro upsell */}
-      {showProError && (
-        <View
-          style={[
-            ct.styles.card,
-            {
-              backgroundColor: c.surfaceContainerHigh,
-              borderColor: c.outline,
-            },
-          ]}
-        >
-          <Text style={[{ color: c.onSurface }]}>
-            30-day stats require a WakaTime Pro account.
-          </Text>
-        </View>
-      )}
-
-      {statsQ.isLoading && (
-        <ActivityIndicator
-          color={c.primary}
-          style={{ marginTop: ct.size.loading }}
-        />
-      )}
-
-      {statsQ.isError && !showProError && (
-        <Text style={[ct.styles.pill, { color: c.error }]}>
-          {statsQ.error instanceof Error
-            ? statsQ.error.message
-            : "Failed to load"}
-        </Text>
-      )}
-
-      {stats && (
-        <>
-          {stats.streak !== undefined && stats.streak > 0 && (
-            <StatCard
-              value={`${stats.streak} ${stats.streak === 1 ? "day" : "days"}`}
-              subtitle="Current Streak"
-              icon={(color) => <Feather name="zap" size={20} color={color} />}
-              iconBackgroundColor={c.accent.amber.colorContainer}
-              iconTintColor={c.accent.amber.onColorContainer}
-            />
-          )}
-          <SectionLabel title="Summary" c={c} />
-
-          <View style={styles.summaryRow}>
-            <StatCard
-              value={formatDuration(stats.total_seconds)}
-              subtitle="Coding Time"
-              icon={(color) => <Feather name="clock" size={20} color={color} />}
-              iconBackgroundColor={c.accent.green.colorContainer}
-              iconTintColor={c.accent.green.onColorContainer}
-            />
-
-            <StatCard
-              value={formatDuration(stats.daily_average)}
-              subtitle="Daily Avg"
-              icon={(color) => (
-                <Feather name="activity" size={20} color={color} />
-              )}
-              iconBackgroundColor={c.accent.violet.colorContainer}
-              iconTintColor={c.accent.violet.onColorContainer}
-            />
+        {/* Pro upsell */}
+        {showProError && (
+          <View
+            style={[
+              ct.styles.card,
+              {
+                backgroundColor: c.surfaceContainerHigh,
+                borderColor: c.outline,
+              },
+            ]}
+          >
+            <Text style={[{ color: c.onSurface }]}>
+              30-day stats require a WakaTime Pro account.
+            </Text>
           </View>
+        )}
 
-          {stats.total_seconds_including_other_language !== undefined && (
+        {statsQ.isLoading && (
+          <ActivityIndicator
+            color={c.primary}
+            style={{ marginTop: ct.size.loading }}
+          />
+        )}
+
+        {statsQ.isError && !showProError && (
+          <Text style={[ct.styles.pill, { color: c.error }]}>
+            {statsQ.error instanceof Error
+              ? statsQ.error.message
+              : "Failed to load"}
+          </Text>
+        )}
+
+        {stats && (
+          <>
+            <SectionLabel title="Summary" c={c} />
+
             <View style={styles.summaryRow}>
               <StatCard
-                value={formatDuration(
-                  stats.total_seconds_including_other_language,
-                )}
-                subtitle="Total Time"
+                value={formatDuration(stats.total_seconds)}
+                subtitle="Coding Total"
                 icon={(color) => (
-                  <Feather name="clock" size={20} color={color} />
+                  <Feather name="code" size={20} color={color} />
                 )}
-                iconBackgroundColor={c.accent.coral.colorContainer}
-                iconTintColor={c.accent.coral.onColorContainer}
+                iconBackgroundColor={c.accent.green.colorContainer}
+                iconTintColor={c.accent.green.onColorContainer}
               />
 
               <StatCard
-                value={formatDuration(
-                  stats.daily_average_including_other_language ?? 0,
-                )}
-                subtitle="Total Avg"
+                value={formatDuration(stats.daily_average)}
+                subtitle="Coding Avg"
                 icon={(color) => (
                   <Feather name="activity" size={20} color={color} />
                 )}
-                iconBackgroundColor={c.accent.coral.colorContainer}
-                iconTintColor={c.accent.coral.onColorContainer}
+                iconBackgroundColor={c.accent.violet.colorContainer}
+                iconTintColor={c.accent.violet.onColorContainer}
               />
             </View>
-          )}
 
-          {hasAiData && (
-            <>
-              <SectionLabel title="AI Activity" c={c} />
-
+            {stats.total_seconds_including_other_language !== undefined && (
               <View style={styles.summaryRow}>
                 <StatCard
-                  value={String(aiPromptEvents)}
-                  subtitle="Prompts sent"
-                  icon={(color) => (
-                    <Feather name="message-square" size={20} color={color} />
+                  value={formatDuration(
+                    stats.total_seconds_including_other_language,
                   )}
-                  iconBackgroundColor={c.accent.teal.colorContainer}
-                  iconTintColor={c.accent.teal.onColorContainer}
-                />
-
-                <StatCard
-                  value={`${aiPromptLengthAvg} chars`}
-                  subtitle="Avg prompt length"
+                  subtitle="Total Time"
                   icon={(color) => (
-                    <Feather name="type" size={20} color={color} />
-                  )}
-                  iconBackgroundColor={c.accent.teal.colorContainer}
-                  iconTintColor={c.accent.teal.onColorContainer}
-                />
-              </View>
-
-              <View style={styles.summaryRow}>
-                <StatCard
-                  value={aiInputTokens.toLocaleString("en-US", {
-                    notation: "compact",
-                  })}
-                  subtitle="Input tokens"
-                  icon={(color) => (
-                    <Feather name="log-in" size={20} color={color} />
-                  )}
-                  iconBackgroundColor={c.accent.green.colorContainer}
-                  iconTintColor={c.accent.green.onColorContainer}
-                />
-
-                <StatCard
-                  value={aiOutputTokens.toLocaleString("en-US", {
-                    notation: "compact",
-                  })}
-                  subtitle="Output tokens"
-                  icon={(color) => (
-                    <Feather name="log-out" size={20} color={color} />
-                  )}
-                  iconBackgroundColor={c.accent.green.colorContainer}
-                  iconTintColor={c.accent.green.onColorContainer}
-                />
-              </View>
-
-              <View style={[styles.summaryRow, { marginBottom: ct.space.lg }]}>
-                <StatCard
-                  value={`+${aiAdditions.toLocaleString("en-US", { notation: "compact" })} / -${aiDeletions.toLocaleString("en-US", { notation: "compact" })}`}
-                  subtitle="AI changes"
-                  icon={(color) => (
-                    <Feather name="cpu" size={20} color={color} />
+                    <Feather name="clock" size={20} color={color} />
                   )}
                   iconBackgroundColor={c.accent.coral.colorContainer}
                   iconTintColor={c.accent.coral.onColorContainer}
                 />
 
                 <StatCard
-                  value={`+${humanAdditions.toLocaleString("en-US", { notation: "compact" })} / -${humanDeletions.toLocaleString("en-US", { notation: "compact" })}`}
-                  subtitle="Human changes"
-                  icon={(color) => (
-                    <Feather name="user" size={20} color={color} />
+                  value={formatDuration(
+                    stats.daily_average_including_other_language ?? 0,
                   )}
-                  iconBackgroundColor={c.accent.violet.colorContainer}
-                  iconTintColor={c.accent.violet.onColorContainer}
+                  subtitle="Total Avg"
+                  icon={(color) => (
+                    <Feather name="activity" size={20} color={color} />
+                  )}
+                  iconBackgroundColor={c.accent.coral.colorContainer}
+                  iconTintColor={c.accent.coral.onColorContainer}
                 />
               </View>
-            </>
-          )}
-
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <SectionLabel title="Breakdown" c={c} />
-            <SegmentedButtons
-              items={CHART_VIEWS}
-              value={chartView}
-              onChange={setChartView}
-            />
-          </View>
-
-          <ButtonGroup
-            items={availableCategories}
-            value={category}
-            onChange={setCategory}
-          />
-
-          <View
-            style={[
-              ct.styles.overview.section,
-              {
-                backgroundColor: c.surfaceContainerHigh,
-              },
-            ]}
-          >
-            {visibleItems.length === 0 ? (
-              <Text style={[styles.empty, { color: c.onSurfaceVariant }]}>
-                No data
-              </Text>
-            ) : (
-              (() => {
-                let fallbackCursor = 0;
-                const mappedItems = visibleItems.map((item) => {
-                  const mapped =
-                    category === "languages"
-                      ? langColorMap.get(item.name.toLowerCase())
-                      : undefined;
-                  const hasColor =
-                    typeof mapped === "string" && mapped.trim() !== "";
-                  const color = hasColor
-                    ? mapped
-                    : chartColors[fallbackCursor++ % chartColors.length];
-
-                  return {
-                    name: item.name,
-                    percent: item.percent,
-                    total_seconds: item.total_seconds,
-                    text: item.text ?? "",
-                    color,
-                  };
-                });
-
-                const topItems = mappedItems.slice(0, CHART_TOP_N);
-                const restItems = mappedItems.slice(CHART_TOP_N);
-                const otherSeconds = restItems.reduce(
-                  (sum, item) => sum + item.total_seconds,
-                  0,
-                );
-                const otherPercent = restItems.reduce(
-                  (sum, item) => sum + item.percent,
-                  0,
-                );
-
-                const chartItems =
-                  restItems.length > 0
-                    ? [
-                        ...topItems,
-                        {
-                          name: "Other",
-                          percent: otherPercent,
-                          total_seconds: otherSeconds,
-                          text: formatDuration(otherSeconds),
-                          color: c.outline,
-                        },
-                      ]
-                    : topItems;
-
-                return (
-                  <View style={{ gap: ct.space.md }}>
-                    {chartView === "pie" ? (
-                      <CategoryPieChart
-                        items={chartItems}
-                        seriesColors={chartItems.map((i) => i.color)}
-                        backgroundColor={c.surfaceContainerHigh}
-                        totalLabel={RANGE_LABEL[range]}
-                        radiusRatio={0.55}
-                      />
-                    ) : (
-                      <CategoryBarChart
-                        key={`${range}-${category}}`}
-                        items={chartItems}
-                        colors={chartItems.map((i) => i.color)}
-                      />
-                    )}
-                  </View>
-                );
-              })()
             )}
-          </View>
-        </>
-      )}
-    </ScrollView>
+
+            {hasAiData && (
+              <>
+                <SectionLabel title="AI Activity" c={c} />
+
+                <View style={styles.summaryRow}>
+                  <StatCard
+                    value={String(aiPromptEvents)}
+                    subtitle="Prompts sent"
+                    icon={(color) => (
+                      <Feather name="message-square" size={20} color={color} />
+                    )}
+                    iconBackgroundColor={c.accent.teal.colorContainer}
+                    iconTintColor={c.accent.teal.onColorContainer}
+                  />
+
+                  <StatCard
+                    value={`${aiPromptLengthAvg} chars`}
+                    subtitle="Avg prompt length"
+                    icon={(color) => (
+                      <Feather name="type" size={20} color={color} />
+                    )}
+                    iconBackgroundColor={c.accent.teal.colorContainer}
+                    iconTintColor={c.accent.teal.onColorContainer}
+                  />
+                </View>
+
+                <View style={styles.summaryRow}>
+                  <StatCard
+                    value={aiInputTokens.toLocaleString("en-US", {
+                      notation: "compact",
+                    })}
+                    subtitle="Input tokens"
+                    icon={(color) => (
+                      <Feather name="log-in" size={20} color={color} />
+                    )}
+                    iconBackgroundColor={c.accent.green.colorContainer}
+                    iconTintColor={c.accent.green.onColorContainer}
+                  />
+
+                  <StatCard
+                    value={aiOutputTokens.toLocaleString("en-US", {
+                      notation: "compact",
+                    })}
+                    subtitle="Output tokens"
+                    icon={(color) => (
+                      <Feather name="log-out" size={20} color={color} />
+                    )}
+                    iconBackgroundColor={c.accent.green.colorContainer}
+                    iconTintColor={c.accent.green.onColorContainer}
+                  />
+                </View>
+              </>
+            )}
+            <View
+              style={[
+                ct.styles.section,
+                {
+                  marginBottom: ct.space.lg,
+                  backgroundColor: c.surfaceContainerHigh,
+                },
+              ]}
+            >
+              <AiChangesChart
+                aiAdditions={aiAdditions}
+                aiDeletions={aiDeletions}
+                humanAdditions={humanAdditions}
+                humanDeletions={humanDeletions}
+              />
+            </View>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <SectionLabel title="Breakdown" c={c} />
+              <SegmentedButtons
+                items={CHART_VIEWS}
+                value={chartView}
+                onChange={setChartView}
+              />
+            </View>
+
+            <ButtonGroup
+              items={availableCategories}
+              value={category}
+              onChange={setCategory}
+              size="md"
+            />
+
+            <View
+              style={[
+                ct.styles.overview.section,
+                {
+                  backgroundColor: c.surfaceContainerHigh,
+                },
+              ]}
+            >
+              {visibleItems.length === 0 ? (
+                <Text style={[styles.empty, { color: c.onSurfaceVariant }]}>
+                  No data
+                </Text>
+              ) : (
+                (() => {
+                  let fallbackCursor = 0;
+                  const mappedItems = visibleItems.map((item) => {
+                    const mapped =
+                      category === "languages"
+                        ? langColorMap.get(item.name.toLowerCase())
+                        : undefined;
+                    const hasColor =
+                      typeof mapped === "string" && mapped.trim() !== "";
+                    const color = hasColor
+                      ? mapped
+                      : chartColors[fallbackCursor++ % chartColors.length];
+
+                    return {
+                      name: item.name,
+                      percent: item.percent,
+                      total_seconds: item.total_seconds,
+                      text: item.text ?? "",
+                      color,
+                    };
+                  });
+
+                  const topItems = mappedItems.slice(0, CHART_TOP_N);
+                  const restItems = mappedItems.slice(CHART_TOP_N);
+                  const otherSeconds = restItems.reduce(
+                    (sum, item) => sum + item.total_seconds,
+                    0,
+                  );
+                  const otherPercent = restItems.reduce(
+                    (sum, item) => sum + item.percent,
+                    0,
+                  );
+
+                  const chartItems =
+                    restItems.length > 0
+                      ? [
+                          ...topItems,
+                          {
+                            name: "Other",
+                            percent: otherPercent,
+                            total_seconds: otherSeconds,
+                            text: formatDuration(otherSeconds),
+                            color: c.outline,
+                          },
+                        ]
+                      : topItems;
+
+                  return (
+                    <View style={{ gap: ct.space.md }}>
+                      {chartView === "pie" ? (
+                        <CategoryPieChart
+                          items={chartItems}
+                          seriesColors={chartItems.map((i) => i.color)}
+                          backgroundColor={c.surfaceContainerHigh}
+                          totalLabel={RANGE_LABEL[range]}
+                          radiusRatio={0.55}
+                        />
+                      ) : (
+                        <CategoryBarChart
+                          key={`${range}-${category}}`}
+                          items={chartItems}
+                          colors={chartItems.map((i) => i.color)}
+                        />
+                      )}
+                    </View>
+                  );
+                })()
+              )}
+            </View>
+          </>
+        )}
+      </ScrollView>
+    </>
   );
 }

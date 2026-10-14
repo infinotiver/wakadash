@@ -36,6 +36,8 @@ import {
 } from "@/src/utils/dashboard";
 import { GoalCard } from "@/src/components/GoalCard";
 import { isGoalActive } from "@/src/utils/goals";
+import { AiChangesChart } from "@/src/components/AiChangesChart";
+
 const HEATMAP_DAYS = 3 * 30;
 
 export default function OverviewScreen() {
@@ -71,10 +73,20 @@ export default function OverviewScreen() {
   const stats = statsQ.data;
   const todaySeconds = todayQ.data?.grand_total.total_seconds ?? 0;
   const dailyAverage = allTime?.daily_average ?? averageSummarySeconds(week);
+  const activeDays = week.filter(
+    (day) => (day.grand_total?.total_seconds ?? 0) > 0,
+  ).length;
   const dailyValues = week.map((day) => day.grand_total?.total_seconds ?? 0);
   const weeklyValues = weeklyTotals(heatQ.data ?? []);
-  const aiTotal = (stats?.ai_additions ?? 0) + (stats?.human_additions ?? 0);
-  const aiPercent = aiTotal ? ((stats?.ai_additions ?? 0) / aiTotal) * 100 : 0;
+  const aiAdditions = stats?.ai_additions ?? 0;
+  const aiDeletions = stats?.ai_deletions ?? 0;
+  const humanAdditions = stats?.human_additions ?? 0;
+  const humanDeletions = stats?.human_deletions ?? 0;
+  const aiTotal = aiAdditions + humanAdditions;
+  const hasChangeData = aiTotal + aiDeletions + humanDeletions > 0;
+  const aiPercent = aiTotal ? (aiAdditions / aiTotal) * 100 : 0;
+  const compact = (n: number) =>
+    new Intl.NumberFormat("en-US", { notation: "compact" }).format(n);
   const loading = todayQ.isLoading || allTimeQ.isLoading;
   const failed = todayQ.isError || allTimeQ.isError;
   const topProject = stats?.projects?.[0];
@@ -130,29 +142,37 @@ export default function OverviewScreen() {
           </Pressable>
         ) : (
           <>
-            <DashboardWidget icon="trending-up" title="All time" hero>
-              <Text
-                style={{
-                  color: colors.onPrimaryContainer,
-                  fontFamily: ct.fontFamily.semibold,
-                  fontSize: ct.fontSize.hero,
-                }}
-                numberOfLines={1}
-                adjustsFontSizeToFit
-              >
-                {formatDuration(allTime?.total_seconds ?? 0)}
-              </Text>
-              <Text
-                style={[ct.text.caption, { color: colors.onPrimaryContainer }]}
-              >
-                {allTime?.range?.start_text
-                  ? `Since ${allTime.range.start_text} · `
-                  : ""}
-                {formatDuration(dailyAverage)} daily average
-              </Text>
-            </DashboardWidget>
-
             <View style={{ flexDirection: "row", gap: ct.space.md }}>
+              <DashboardWidget
+                icon="trending-up"
+                title="All time"
+                hero
+                flex={1.8}
+              >
+                <Text
+                  style={{
+                    color: colors.onPrimaryContainer,
+                    fontFamily: ct.fontFamily.semibold,
+                    fontSize: ct.fontSize.hero,
+                  }}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                >
+                  {formatDuration(allTime?.total_seconds ?? 0)}
+                </Text>
+                <Text
+                  style={[
+                    ct.text.caption,
+                    { color: colors.onPrimaryContainer },
+                  ]}
+                >
+                  {allTime?.range?.start_text
+                    ? `Since ${allTime.range.start_text} · `
+                    : ""}
+                  {formatDuration(dailyAverage)} all-time avg
+                </Text>
+              </DashboardWidget>
+
               <DashboardWidget
                 icon="clock"
                 title="Today"
@@ -163,12 +183,20 @@ export default function OverviewScreen() {
                   style={{
                     color: colors.onSurface,
                     fontFamily: ct.fontFamily.semibold,
-                    fontSize: ct.fontSize["3xl"],
+                    fontSize: ct.fontSize.display,
                   }}
                 >
                   {formatDuration(todaySeconds)}
                 </Text>
               </DashboardWidget>
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                gap: ct.space.md,
+              }}
+            >
               {stats?.streak !== undefined ? (
                 <DashboardWidget icon="zap" title="Streak" half>
                   <Text
@@ -182,6 +210,22 @@ export default function OverviewScreen() {
                   </Text>
                 </DashboardWidget>
               ) : null}
+              <DashboardWidget icon="calendar" title="Active days" half>
+                <Text
+                  style={{
+                    color: colors.onSurface,
+                    fontFamily: ct.fontFamily.semibold,
+                    fontSize: ct.fontSize.display,
+                  }}
+                >
+                  {activeDays}/7
+                </Text>
+                <Text
+                  style={[ct.text.caption, { color: colors.onSurfaceVariant }]}
+                >
+                  Last 7 days
+                </Text>
+              </DashboardWidget>
             </View>
 
             <DashboardWidget icon="calendar" title="Activity">
@@ -245,7 +289,12 @@ export default function OverviewScreen() {
                     icon="folder"
                     title="Top project"
                     half
-                    onPress={() => router.push("/breakdown")}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/breakdown",
+                        params: { category: "projects" },
+                      })
+                    }
                   >
                     <Text
                       style={[
@@ -277,7 +326,12 @@ export default function OverviewScreen() {
                     icon="code"
                     title="Top language"
                     half
-                    onPress={() => router.push("/breakdown")}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/breakdown",
+                        params: { category: "languages" },
+                      })
+                    }
                   >
                     <Text
                       style={[
@@ -313,7 +367,7 @@ export default function OverviewScreen() {
                 onPress={() => router.push("/goals")}
               >
                 <View style={ct.styles.rowBetween}></View>
-                <View style={{ gap: ct.space.lg, marginTop: ct.space.md }}>
+                <View style={{ gap: ct.space.sm }}>
                   {topGoals.length === 0 ? (
                     <Text
                       style={[ct.text.body, { color: colors.onSurfaceVariant }]}
@@ -340,31 +394,24 @@ export default function OverviewScreen() {
             {aiTotal > 0 ? (
               <DashboardWidget
                 icon="cpu"
-                title="Lines added"
-                onPress={() => router.push("/breakdown")}
+                title="AI vs Human"
+                onPress={() =>
+                  router.push({
+                    pathname: "/breakdown",
+                    params: { category: "categories" },
+                  })
+                }
               >
-                <ShareBar
-                  percent={aiPercent}
-                  color={colors.accent.green.color}
+                <AiChangesChart
+                  aiAdditions={aiAdditions}
+                  aiDeletions={aiDeletions}
+                  humanAdditions={humanAdditions}
+                  humanDeletions={humanDeletions}
                 />
-                <View style={ct.styles.rowBetween}>
-                  <Text style={[ct.text.body, { color: colors.onSurface }]}>
-                    AI {aiPercent.toFixed(0)}%
-                  </Text>
-                  <Text
-                    style={[ct.text.body, { color: colors.onSurfaceVariant }]}
-                  >
-                    Human {(100 - aiPercent).toFixed(0)}%
-                  </Text>
-                </View>
                 <Text
                   style={[ct.text.caption, { color: colors.onSurfaceVariant }]}
                 >
-                  AI Addiitons:{" "}
-                  {new Intl.NumberFormat("en-US", {
-                    notation: "compact",
-                    compactDisplay: "short",
-                  }).format(aiTotal)}
+                  all time
                 </Text>
               </DashboardWidget>
             ) : null}

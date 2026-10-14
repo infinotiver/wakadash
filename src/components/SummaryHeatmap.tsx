@@ -14,6 +14,7 @@ const CELL = 20;
 const GAP = 4;
 const CELL_RADIUS = 5;
 const LEGEND_CELL = 14;
+const WEEKDAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
 // Intensity thresholds as a fraction of the busiest day in the range.
 // Used by both the grid and the legend so they can't disagree.
@@ -88,6 +89,15 @@ export function SummaryHeatmap({ days }: Props) {
 
   const legendCaption = `Relative to your busiest day (${formatDuration(maxSeconds)})`;
 
+  const monthLabels = weeks.map((week) => {
+    const firstDay = week.find((slot) => slot)?.day;
+    if (!firstDay?.range?.date) return "";
+    return new Date(`${firstDay.range.date}T12:00:00`).toLocaleDateString(
+      undefined,
+      { month: "short" },
+    );
+  });
+
   return (
     <View style={{ gap: ct.space.md }}>
       <View style={{ alignItems: "center", gap: ct.space.xs }}>
@@ -125,44 +135,82 @@ export function SummaryHeatmap({ days }: Props) {
           gap: GAP,
         }}
       >
-        {weeks.map((week, weekIndex) => (
-          <View key={weekIndex} style={{ gap: GAP }}>
-            {week.map((slot, dayIndex) => {
-              if (!slot) {
+        <View style={{ flexDirection: "row", gap: GAP }}>
+          <View style={{ width: CELL, gap: GAP }}>
+            <View style={{ height: 20 }} />
+            {WEEKDAY_LABELS.map((label, index) => (
+              <View
+                key={`${label}-${index}`}
+                style={{ width: CELL, height: CELL, justifyContent: "center" }}
+              >
+                {index === 1 || index === 3 || index === 5 ? (
+                  <Text
+                    style={{
+                      color: colors.onSurfaceVariant,
+                      fontSize: ct.fontSize.xs,
+                      fontFamily: ct.fontFamily.semibold,
+                      textAlign: "center",
+                    }}
+                  >
+                    {label}
+                  </Text>
+                ) : null}
+              </View>
+            ))}
+          </View>
+          {weeks.map((week, weekIndex) => (
+            <View key={weekIndex} style={{ gap: GAP }}>
+              <View style={{ height: 20, justifyContent: "center" }}>
+                {weekIndex === 0 ||
+                monthLabels[weekIndex] !== monthLabels[weekIndex - 1] ? (
+                  <Text
+                    style={{
+                      color: colors.onSurface,
+                      fontSize: ct.fontSize.xs,
+                      fontFamily: ct.fontFamily.semibold,
+                    }}
+                  >
+                    {monthLabels[weekIndex]}
+                  </Text>
+                ) : null}
+              </View>
+              {week.map((slot, dayIndex) => {
+                if (!slot) {
+                  return (
+                    <View
+                      key={`empty-${weekIndex}-${dayIndex}`}
+                      style={{ width: CELL, height: CELL }}
+                    />
+                  );
+                }
+
+                const { day, index } = slot;
+                const seconds = day.grand_total?.total_seconds ?? 0;
+                const selected = index === selectedIndex;
+                const backgroundColor =
+                  levelColors[levelFor(seconds, maxSeconds)];
+
                 return (
-                  <View
-                    key={`empty-${weekIndex}-${dayIndex}`}
-                    style={{ width: CELL, height: CELL }}
+                  <Pressable
+                    key={day.range?.date ?? index}
+                    onPress={() => setSelectedIndex(index)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${dateLabel(day.range?.date)}, ${formatDuration(seconds)}`}
+                    accessibilityState={{ selected }}
+                    style={{
+                      width: CELL,
+                      height: CELL,
+                      borderRadius: CELL_RADIUS,
+                      backgroundColor,
+                      borderWidth: selected ? 2 : 0,
+                      borderColor: colors.onSurface,
+                    }}
                   />
                 );
-              }
-
-              const { day, index } = slot;
-              const seconds = day.grand_total?.total_seconds ?? 0;
-              const selected = index === selectedIndex;
-              const backgroundColor =
-                levelColors[levelFor(seconds, maxSeconds)];
-
-              return (
-                <Pressable
-                  key={day.range?.date ?? index}
-                  onPress={() => setSelectedIndex(index)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${dateLabel(day.range?.date)}, ${formatDuration(seconds)}`}
-                  accessibilityState={{ selected }}
-                  style={{
-                    width: CELL,
-                    height: CELL,
-                    borderRadius: CELL_RADIUS,
-                    backgroundColor,
-                    borderWidth: selected ? 2 : 0,
-                    borderColor: colors.onSurface,
-                  }}
-                />
-              );
-            })}
-          </View>
-        ))}
+              })}
+            </View>
+          ))}
+        </View>
       </ScrollView>
 
       {/* Key */}

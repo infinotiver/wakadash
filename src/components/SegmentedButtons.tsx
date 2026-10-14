@@ -16,18 +16,9 @@ interface SegmentedButtonsProps<T extends string> {
   onChange: (value: T) => void;
 }
 
-// M3 spec sizing: https://m3.material.io/components/segmented-buttons/overview
-// 40dp track height, 18dp check icon, 1dp outline for both the container
-// border and the divider between segments.
 const HEIGHT = 40;
 const ICON_SIZE = 18;
 
-// A single outlined track whose width hugs its content — each segment sizes
-// to its own label/icon rather than flex-dividing the track, since the track
-// itself isn't stretched to fill its parent. For a small, fixed set of
-// mutually exclusive choices (2-4 items). Use ButtonGroup instead for longer
-// or variable-length lists (ranges, categories) where pills scrolling
-// horizontally makes sense.
 export function SegmentedButtons<T extends string>({
   items,
   value,

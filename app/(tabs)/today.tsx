@@ -4,7 +4,6 @@ import {
   RefreshControl,
   ScrollView,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
@@ -45,16 +44,16 @@ export default function OverviewScreen() {
 
   const todayQ = useTodaySummary();
   const weekQ = useWeekSummaries();
-  const allTimeQ = useAllTimeSinceToday();
+  // const allTimeQ = useAllTimeSinceToday();
   const langMetaQ = useProgramLanguages();
 
   const refetch = useCallback(async () => {
     await Promise.allSettled([
       todayQ.refetch(),
       weekQ.refetch(),
-      allTimeQ.refetch(),
+      // allTimeQ.refetch(),
     ]);
-  }, [todayQ, weekQ, allTimeQ]);
+  }, [todayQ, weekQ]);
 
   if (!isConfigured) {
     return <SetupScreen />;
@@ -62,7 +61,6 @@ export default function OverviewScreen() {
 
   const today = todayQ.data;
   const week = weekQ.data ?? [];
-  const allTime = allTimeQ.data;
 
   const weekAvg = averageSummarySeconds(week);
   const weekTotal = week.reduce(
@@ -128,9 +126,7 @@ export default function OverviewScreen() {
         }}
         refreshControl={
           <RefreshControl
-            refreshing={
-              todayQ.isFetching || weekQ.isFetching || allTimeQ.isFetching
-            }
+            refreshing={todayQ.isFetching || weekQ.isFetching}
             onRefresh={refetch}
             tintColor={colors.primary}
           />
@@ -214,7 +210,7 @@ export default function OverviewScreen() {
                 <View style={{ flex: 1 }}>
                   <StatCard
                     value={formatDuration(weekAvg)}
-                    subtitle="daily avg"
+                    subtitle="7-Day Avg"
                     icon={(tint) => (
                       <Feather name="bar-chart" size={20} color={tint} />
                     )}
@@ -252,52 +248,15 @@ export default function OverviewScreen() {
                 },
               ]}
             >
-              <View
-                style={[
-                  ct.styles.flex,
-                  {
-                    alignItems: "flex-start",
-                  },
-                ]}
-              >
-                <TouchableOpacity
-                  style={[
-                    ct.styles.button,
-                    {
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: ct.space.sm,
-                      paddingVertical: ct.space.sm,
-                      paddingHorizontal: ct.space.lg,
-                      borderRadius: ct.radius.full,
-                      backgroundColor: colors.secondaryContainer,
-                    },
-                  ]}
-                  onPress={() => router.push("/breakdown")}
-                >
-                  <Feather
-                    name="bar-chart-2"
-                    size={16}
-                    color={colors.onSecondaryContainer}
-                  />
-                  <Text
-                    style={[
-                      ct.text.buttonText,
-                      { color: colors.onSecondaryContainer },
-                    ]}
-                  >
-                    View Breakdown
-                  </Text>
-                  <Feather
-                    name="chevron-right"
-                    size={16}
-                    color={colors.onSecondaryContainer}
-                  />
-                </TouchableOpacity>
-              </View>
               <DashboardBreakdownSection
                 title="Languages"
                 chartColors={languageColors}
+                onPress={() =>
+                  router.push({
+                    pathname: "/breakdown",
+                    params: { category: "languages" },
+                  })
+                }
                 items={(today?.languages ?? []).slice(0, 4).map((item) => ({
                   name: item.name,
                   percent: item.percent,
@@ -307,6 +266,12 @@ export default function OverviewScreen() {
               <DashboardBreakdownSection
                 title="Editors"
                 chartColors={chartColors}
+                onPress={() =>
+                  router.push({
+                    pathname: "/breakdown",
+                    params: { category: "editors" },
+                  })
+                }
                 items={(today?.editors ?? []).slice(0, 4).map((item) => ({
                   name: item.name,
                   percent: item.percent,
@@ -316,6 +281,12 @@ export default function OverviewScreen() {
               <DashboardBreakdownSection
                 title="Projects"
                 chartColors={chartColors}
+                onPress={() =>
+                  router.push({
+                    pathname: "/breakdown",
+                    params: { category: "projects" },
+                  })
+                }
                 items={(today?.projects ?? []).slice(0, 4).map((item) => ({
                   name: item.name,
                   percent: item.percent,
@@ -388,134 +359,6 @@ export default function OverviewScreen() {
                   </Text>
                 )}
               </View>
-              {/* All Time */}
-              {allTime ? (
-                <View
-                  style={[
-                    styles.section,
-                    {
-                      backgroundColor: colors.surfaceContainerHigh,
-                      borderColor: colors.outlineVariant,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.sectionTitle,
-                      {
-                        color: colors.onSurface,
-                        marginBottom: ct.space.md,
-                      },
-                    ]}
-                  >
-                    All Time Stats
-                  </Text>
-
-                  <View style={{ gap: ct.space.md }}>
-                    <View
-                      style={[
-                        styles.row,
-                        {
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.heroSub,
-                          {
-                            color: colors.onSurfaceVariant,
-                          },
-                        ]}
-                      >
-                        Total Time
-                      </Text>
-
-                      <Text
-                        style={[
-                          styles.heroSub,
-                          {
-                            color: colors.onSurface,
-                            marginLeft: ct.space.lg,
-                            textAlign: "right",
-                          },
-                        ]}
-                      >
-                        {allTime.text ?? "-"}
-                      </Text>
-                    </View>
-
-                    <View
-                      style={[
-                        styles.row,
-                        {
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.heroSub,
-                          {
-                            color: colors.onSurfaceVariant,
-                          },
-                        ]}
-                      >
-                        Daily Avg
-                      </Text>
-
-                      <Text
-                        style={[
-                          styles.heroSub,
-                          {
-                            color: colors.onSurface,
-                            marginLeft: ct.space.lg,
-                            textAlign: "right",
-                          },
-                        ]}
-                      >
-                        {formatDuration(allTime.daily_average)}
-                      </Text>
-                    </View>
-
-                    <View
-                      style={[
-                        styles.row,
-                        {
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.heroSub,
-                          {
-                            color: colors.onSurfaceVariant,
-                          },
-                        ]}
-                      >
-                        Data Since
-                      </Text>
-
-                      <Text
-                        style={[
-                          styles.heroSub,
-                          {
-                            color: colors.onSurface,
-                            marginLeft: ct.space.lg,
-                            textAlign: "right",
-                          },
-                        ]}
-                      >
-                        {allTime.range?.start_text ?? "-"}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              ) : null}
             </View>
           </>
         )}

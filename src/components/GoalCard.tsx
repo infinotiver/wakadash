@@ -19,7 +19,15 @@ export function GoalCard({ goal, onPress }: Props) {
   const pct = target > 0 ? Math.min(100, (actual / target) * 100) : 0;
 
   const met = goal.is_inverse ? actual <= target : actual >= target;
-  const fill = met ? c.primary : c.tertiary;
+  const ignored = goal.status === "ignored";
+  const inverseExceeded = goal.is_inverse && actual > target;
+  const fill = ignored
+    ? c.outline
+    : inverseExceeded
+      ? c.error
+      : met
+        ? c.primary
+        : c.tertiary;
 
   const { streak } = computeGoalStats(goal.chart_data, goal.is_inverse);
   const paused = !goal.is_enabled || goal.is_snoozed;
@@ -37,8 +45,13 @@ export function GoalCard({ goal, onPress }: Props) {
       <View style={{ gap: ct.space.xs }}>
         <View style={[ct.styles.rowBetween, { gap: ct.space.md }]}>
           <Text
-            style={[ct.text.bodySemibold, { color: c.onSurface, flex: 1 }]}
-            numberOfLines={1}
+            style={[
+              ct.text.bodySemibold,
+              {
+                color: ignored ? c.onSurfaceVariant : c.onSurface,
+                flex: 1,
+              },
+            ]}
           >
             {goalTitle(goal)}
           </Text>
@@ -46,7 +59,11 @@ export function GoalCard({ goal, onPress }: Props) {
         </View>
         <Text
           style={{
-            color: c.onSurface,
+            color: ignored
+              ? c.onSurfaceVariant
+              : inverseExceeded
+                ? c.error
+                : c.onSurface,
             fontFamily: ct.fontFamily.semibold,
             fontSize: ct.fontSize.lg,
           }}
@@ -87,7 +104,12 @@ export function GoalCard({ goal, onPress }: Props) {
         </Text>
         <View style={{ alignItems: "flex-end", gap: ct.space.xs }}>
           {goal.is_inverse ? (
-            <Text style={[ct.text.captionMedium, { color: c.tertiary }]}>
+            <Text
+              style={[
+                ct.text.captionMedium,
+                { color: inverseExceeded ? c.error : c.tertiary },
+              ]}
+            >
               Stay under
             </Text>
           ) : null}

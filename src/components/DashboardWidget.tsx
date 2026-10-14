@@ -20,6 +20,7 @@ interface DashboardWidgetProps {
   /** Backward-compatible alias for variant="primary". */
   hero?: boolean;
   half?: boolean;
+  flex?: number;
   children?: React.ReactNode;
 }
 
@@ -30,6 +31,7 @@ export function DashboardWidget({
   variant = "surface",
   hero = false,
   half = false,
+  flex,
   children,
 }: DashboardWidgetProps) {
   const colors = useColors();
@@ -53,7 +55,7 @@ export function DashboardWidget({
     },
   }[resolvedVariant];
   const headerColor = variantStyles.color;
-
+  const resolvedFlex = flex ?? (half ? 1 : undefined);
   return (
     <Pressable
       disabled={!onPress}
@@ -61,7 +63,8 @@ export function DashboardWidget({
       accessibilityRole={onPress ? "button" : undefined}
       accessibilityLabel={title}
       style={({ pressed }) => ({
-        flex: half ? 1 : undefined,
+        flex: resolvedFlex,
+        minWidth: resolvedFlex !== undefined ? 0 : undefined,
         padding: ct.space.lg,
         borderRadius: ct.radius["2xl"],
         gap: ct.space.md,
