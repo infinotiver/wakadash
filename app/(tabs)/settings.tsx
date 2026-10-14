@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Constants from "expo-constants";
 import {
   ActivityIndicator,
   Alert,
@@ -24,6 +25,10 @@ import { AppBar } from "@/src/components/AppBar";
 import { Button } from "@/src/components/Button";
 
 const styles = ct.styles.settings;
+const appVersion = Constants.expoConfig?.version ?? "unknown";
+const gitCommit =
+  (Constants.expoConfig?.extra?.gitCommit as string | undefined) ??
+  "development";
 
 const URL_SUGGESTIONS = [
   { label: "WakaTime", url: DEFAULT_BASE_URL },
@@ -528,6 +533,39 @@ export default function SettingsScreen() {
               variant="tonal"
             />
           </View>
+
+          <Button
+            label="View Releases"
+            icon={
+              <MaterialCommunityIcons
+                name="tag-multiple-outline"
+                size={18}
+                color={c.onSecondaryContainer}
+              />
+            }
+            onPress={() =>
+              Linking.openURL(
+                "https://github.com/infinotiver/wakadash/releases",
+              )
+            }
+            variant="tonal"
+            width="100%"
+          />
+        </View>
+
+        <View
+          style={{
+            alignItems: "center",
+            gap: ct.space.xs,
+            paddingVertical: ct.space.md,
+          }}
+        >
+          <Text style={[ct.text.caption, { color: c.onSurfaceVariant }]}>
+            WakaDash v{appVersion}
+          </Text>
+          <Text style={[ct.text.caption, { color: c.onSurfaceVariant }]}>
+            Commit {gitCommit}
+          </Text>
         </View>
       </ScrollView>
     </View>

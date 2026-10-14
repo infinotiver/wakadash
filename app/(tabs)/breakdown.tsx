@@ -180,10 +180,13 @@ export default function BreakdownScreen() {
         title="Breakdown"
         variant="center"
         elevated={false}
-        // leadingIcon="arrow-left"
-        // leadingLabel="Go back"
-        // onLeadingPress={() => router.back()}
-        actions={[]}
+        actions={[
+          {
+            icon: "cog-outline",
+            label: "Settings",
+            onPress: () => router.push("/settings"),
+          },
+        ]}
       />
       <ButtonGroup items={RANGES} value={range} onChange={setRange} />
 

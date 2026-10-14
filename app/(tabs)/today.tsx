@@ -108,7 +108,7 @@ export default function OverviewScreen() {
     >
       {/* <AppBar title="WakaDash" variant="center" /> */}
       <AppBar
-        title="WakaDash"
+        title="Today"
         variant="center"
         elevated={false}
         actions={[
