@@ -4,7 +4,15 @@
     "slug": "wakatime-dashboard",
     "version": "1.3.2",
     "orientation": "portrait",
-    "icon": "assets/icon.png",
+    "icon": "./assets/icon.png",
+    "android": {
+      "package": "com.infinotiver.wakadash",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon-foreground.png",
+        "monochromeImage": "./assets/adaptive-icon-monochrome.png",
+        "backgroundColor": "#004f58"
+      }
+    },
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true
@@ -13,7 +21,6 @@
       "bundler": "metro",
       "output": "single"
     },
-    "newArchEnabled": false,
     "plugins": [
       "expo-secure-store",
       "expo-router",
@@ -21,9 +28,9 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#232323",
-          "image": "./assets/icon-512.png",
+          "image": "./assets/icon-round.png",
           "dark": {
-            "image": "./assets/icon-512.png",
+            "image": "./assets/icon-round.png",
             "backgroundColor": "#000000"
           },
           "imageWidth": 200
@@ -60,7 +67,8 @@
             }
           ]
         }
-      ]
+      ],
+      "expo-font"
     ],
     "scheme": "wakatime-dashboard",
     "extra": {
@@ -68,9 +76,6 @@
       "eas": {
         "projectId": "7edf8f0b-70e2-4344-bc42-38378e220123"
       }
-    },
-    "android": {
-      "package": "com.infinotiver.wakadash"
     },
     "runtimeVersion": {
       "policy": "appVersion"
