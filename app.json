@@ -10,7 +10,7 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon-foreground.png",
         "monochromeImage": "./assets/adaptive-icon-monochrome.png",
-        "backgroundColor": "#004f58"
+        "backgroundColor": "#1b1b1b"
       }
     },
     "userInterfaceStyle": "automatic",
@@ -28,9 +28,9 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#232323",
-          "image": "./assets/icon-round.png",
+          "image": "./assets/icon.png",
           "dark": {
-            "image": "./assets/icon-round.png",
+            "image": "./assets/icon.png",
             "backgroundColor": "#000000"
           },
           "imageWidth": 200
@@ -70,7 +70,7 @@
       ],
       "expo-font"
     ],
-    "scheme": "wakatime-dashboard",
+    "scheme": "wakadash",
     "extra": {
       "router": {},
       "eas": {

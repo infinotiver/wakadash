@@ -18,6 +18,7 @@ import { wakatimeApi, DEFAULT_BASE_URL } from "@/src/api/wakatime";
 import { ct } from "@/src/constants/styles.common";
 import { SegmentedButtons } from "@/src/components/SegmentedButtons";
 import { Button } from "./Button";
+import { useWakaTimeOAuth } from "../api/wakatimeOAuth";
 
 const HACKATIME_URL = "https://hackatime.hackclub.com/api/hackatime/v1";
 
@@ -66,10 +67,10 @@ export function SetupScreen() {
 
   const keyPortalUrl = isHackatime
     ? "https://hackatime.hackclub.com"
-    : "https://wakatime.com/settings/api-key";
+    : "https://wakatime.com/oauth";
   const keyPortalLabel = isHackatime
     ? "hackatime.hackclub.com"
-    : "wakatime.com/settings/api-key";
+    : "wakatime.com/oauth";
 
   const fieldStyle = {
     borderWidth: 1,
@@ -83,22 +84,13 @@ export function SetupScreen() {
     color: colors.onSurface,
   } as const;
 
-  async function handleSave() {
-    const trimmedKey = key.trim();
-    const trimmedUrl = activeServerUrl;
-    if (!trimmedKey) return;
-
-    if (!/^https?:\/\/.+/.test(trimmedUrl)) {
-      setError("Enter a valid URL starting with http:// or https://");
-      return;
-    }
-
+  async function connect(credential: string, url: string) {
     setLoading(true);
     setError(null);
     try {
-      await wakatimeApi.verifyKey(trimmedKey, trimmedUrl);
-      await setBaseUrl(trimmedUrl);
-      await setApiKey(trimmedKey);
+      await wakatimeApi.verifyKey(credential, url);
+      await setBaseUrl(url);
+      await setApiKey(credential);
     } catch (e: unknown) {
       if (e instanceof Error && e.message === "Invalid API key") {
         setError("Invalid API key. Check your credentials and try again.");
@@ -111,6 +103,22 @@ export function SetupScreen() {
       setLoading(false);
     }
   }
+
+  async function handleSave() {
+    const trimmedKey = key.trim();
+    const trimmedUrl = activeServerUrl;
+    if (!trimmedKey) return;
+
+    if (!/^https?:\/\/.+/.test(trimmedUrl)) {
+      setError("Enter a valid URL starting with http:// or https://");
+      return;
+    }
+
+    await connect(trimmedKey, trimmedUrl);
+  }
+  const { signIn, ready } = useWakaTimeOAuth((token) =>
+    connect(token, DEFAULT_BASE_URL),
+  );
 
   const hasValidProvider =
     providerMode !== "custom" || customUrl.trim().length > 0;
@@ -274,7 +282,9 @@ export function SetupScreen() {
                 fontFamily: fieldStyle.fontFamily,
                 color: fieldStyle.color,
               }}
-              placeholder="waka_..."
+              placeholder={
+                providerMode === "wakatime" ? "waka_tok_..." : "waka_..."
+              }
               placeholderTextColor={colors.onSurfaceVariant}
               value={key}
               onChangeText={(v) => {
@@ -300,7 +310,23 @@ export function SetupScreen() {
               />
             </TouchableOpacity>
           </View>
-
+          {providerMode === "wakatime" && (
+            <>
+              <Button
+                onPress={signIn}
+                disabled={!ready || loading}
+                label="Sign in with WakaTime"
+              />
+              <Text
+                style={[
+                  ct.text.caption,
+                  { color: colors.onSurfaceVariant, textAlign: "center" },
+                ]}
+              >
+                or paste an API key / token
+              </Text>
+            </>
+          )}
           {/* Clickable External Link to grab API Key */}
           {providerMode !== "custom" && (
             <TouchableOpacity
@@ -311,7 +337,7 @@ export function SetupScreen() {
               <Text
                 style={[ct.text.caption, { color: colors.onSurfaceVariant }]}
               >
-                Get your key from{" "}
+                Get your key or token from{" "}
                 <Text
                   style={{
                     color: colors.primary,
