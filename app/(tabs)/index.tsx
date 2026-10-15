@@ -162,9 +162,10 @@ export default function OverviewScreen() {
                 </Text>
                 <Text
                   style={[
-                    ct.text.caption,
+                    // ct.text.caption,
                     { color: colors.onPrimaryContainer },
                   ]}
+                  adjustsFontSizeToFit
                 >
                   {allTime?.range?.start_text
                     ? `Since ${allTime.range.start_text} · `

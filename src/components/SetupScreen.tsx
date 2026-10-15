@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Linking,
   Platform,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -14,35 +17,67 @@ import { useColors } from "@/src/hooks/useColors";
 import { wakatimeApi, DEFAULT_BASE_URL } from "@/src/api/wakatime";
 import { ct } from "@/src/constants/styles.common";
 import { SegmentedButtons } from "@/src/components/SegmentedButtons";
+import { Button } from "./Button";
 
-const SERVER_SUGGESTIONS = [
-  { label: "WakaTime", value: DEFAULT_BASE_URL },
-  {
-    label: "Hackatime",
-    value: "https://hackatime.hackclub.com/api/hackatime/v1",
-  },
+const HACKATIME_URL = "https://hackatime.hackclub.com/api/hackatime/v1";
+
+type ProviderMode = "wakatime" | "hackatime" | "custom";
+
+const PROVIDER_OPTIONS: { label: string; value: ProviderMode }[] = [
+  { label: "WakaTime", value: "wakatime" },
+  { label: "Hackatime", value: "hackatime" },
+  { label: "Custom", value: "custom" },
 ];
+
+function getInitialMode(url: string): ProviderMode {
+  const clean = url.trim().replace(/\/+$/, "");
+  if (!clean || clean === DEFAULT_BASE_URL) return "wakatime";
+  if (clean === HACKATIME_URL) return "hackatime";
+  return "custom";
+}
 
 export function SetupScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { setApiKey, baseUrl: savedBaseUrl, setBaseUrl } = useWakaTime();
 
+  const initialUrl = savedBaseUrl || DEFAULT_BASE_URL;
+  const [providerMode, setProviderMode] = useState<ProviderMode>(() =>
+    getInitialMode(initialUrl),
+  );
+  const [customUrl, setCustomUrl] = useState(() =>
+    getInitialMode(initialUrl) === "custom" ? initialUrl : "",
+  );
   const [key, setKey] = useState("");
-  const [serverUrl, setServerUrl] = useState(savedBaseUrl);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [show, setShow] = useState(false);
 
-  const isHackatime = serverUrl.includes("hackatime.hackclub.com");
-  const normalizedServerUrl = serverUrl.trim().replace(/\/+$/, "");
+  const activeServerUrl =
+    providerMode === "wakatime"
+      ? DEFAULT_BASE_URL
+      : providerMode === "hackatime"
+        ? HACKATIME_URL
+        : customUrl.trim().replace(/\/+$/, "");
+
+  const isHackatime =
+    providerMode === "hackatime" ||
+    activeServerUrl.includes("hackatime.hackclub.com");
+
+  const keyPortalUrl = isHackatime
+    ? "https://hackatime.hackclub.com"
+    : "https://wakatime.com/settings/api-key";
+  const keyPortalLabel = isHackatime
+    ? "hackatime.hackclub.com"
+    : "wakatime.com/settings/api-key";
+
   const fieldStyle = {
     borderWidth: 1,
     borderColor: colors.outline,
     borderRadius: ct.radius.lg,
     backgroundColor: colors.surfaceContainerHighest,
-    height: 52,
-    paddingHorizontal: ct.space.lg,
+    height: 48,
+    paddingHorizontal: ct.space.md,
     fontSize: ct.fontSize.md,
     fontFamily: ct.fontFamily.regular,
     color: colors.onSurface,
@@ -50,8 +85,13 @@ export function SetupScreen() {
 
   async function handleSave() {
     const trimmedKey = key.trim();
-    const trimmedUrl = serverUrl.trim().replace(/\/+$/, "") || DEFAULT_BASE_URL;
+    const trimmedUrl = activeServerUrl;
     if (!trimmedKey) return;
+
+    if (!/^https?:\/\/.+/.test(trimmedUrl)) {
+      setError("Enter a valid URL starting with http:// or https://");
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -61,115 +101,167 @@ export function SetupScreen() {
       await setApiKey(trimmedKey);
     } catch (e: unknown) {
       if (e instanceof Error && e.message === "Invalid API key") {
-        setError("Invalid key — check it and try again.");
+        setError("Invalid API key. Check your credentials and try again.");
       } else if (e instanceof Error) {
         setError(e.message);
       } else {
-        setError("Something went wrong.");
+        setError("Could not connect to server. Check your URL and network.");
       }
     } finally {
       setLoading(false);
     }
   }
 
-  const canSubmit = key.trim().length > 0 && !loading;
+  const hasValidProvider =
+    providerMode !== "custom" || customUrl.trim().length > 0;
+  const canSubmit = key.trim().length > 0 && hasValidProvider && !loading;
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: colors.background,
-        paddingTop: Platform.OS === "web" ? 80 : insets.top + 32,
-        paddingBottom: Platform.OS === "web" ? 40 : insets.bottom + 32,
-        paddingHorizontal: ct.space["2xl"],
-      }}
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          gap: ct.padding["2xl"],
+      <ScrollView
+        style={ct.styles.scroll}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{
+          paddingTop: Platform.OS === "web" ? 48 : insets.top + ct.space.xl,
+          paddingBottom: insets.bottom + ct.space["2xl"],
+          paddingHorizontal: ct.space.lg,
+          gap: ct.space.lg,
           maxWidth: 480,
           width: "100%",
           alignSelf: "center",
         }}
       >
-        <View style={{ gap: ct.space.md }}>
+        {/* Top Header */}
+        <View style={{ gap: ct.space.xs, paddingHorizontal: ct.space.xs }}>
           <Text
             style={{
               fontSize: ct.fontSize.display,
               fontFamily: ct.fontFamily.bold,
               color: colors.onSurface,
-              textAlign: "center",
-              lineHeight: ct.lineHeight.xl,
             }}
           >
             WakaDash
           </Text>
+          <Text style={[ct.text.body, { color: colors.onSurfaceVariant }]}>
+            Connect your WakaTime or compatible server to view your coding
+            analytics.
+          </Text>
         </View>
 
-        <View style={{ gap: ct.space.xl }}>
-          {/* Server selector */}
-          <View style={{ gap: ct.space.md }}>
+        {/* Step 1: Server Provider Card */}
+        <View
+          style={{
+            backgroundColor: colors.surfaceContainerHigh,
+            borderRadius: ct.radius["2xl"],
+            padding: ct.space.lg,
+            gap: ct.space.md,
+          }}
+        >
+          <View style={[ct.styles.rowCenter, { gap: ct.space.sm }]}>
+            <Feather name="server" size={16} color={colors.primary} />
             <Text
-              style={{
-                color: colors.onSurface,
-                fontFamily: ct.fontFamily.semibold,
-                fontSize: ct.fontSize.md,
-                textAlign: "center",
-              }}
+              style={[ct.text.bodyMedium, { color: colors.onSurface, flex: 1 }]}
             >
-              Choose your provider
-            </Text>
-            <SegmentedButtons
-              items={SERVER_SUGGESTIONS}
-              value={normalizedServerUrl}
-              onChange={(url) => {
-                setServerUrl(url);
-                setError(null);
-              }}
-            />
-            <TextInput
-              style={fieldStyle}
-              value={serverUrl}
-              onChangeText={(v) => {
-                setServerUrl(v);
-                setError(null);
-              }}
-              placeholder={DEFAULT_BASE_URL}
-              placeholderTextColor={colors.onSurfaceVariant}
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="url"
-            />
-            <Text
-              style={{
-                color: colors.onSurfaceVariant,
-                fontFamily: ct.fontFamily.regular,
-                fontSize: ct.fontSize.xs,
-                paddingHorizontal: ct.space.xs,
-              }}
-            >
-              Or enter a compatible server URL.
+              Provider
             </Text>
           </View>
 
-          {/* Key input */}
-          <Text
-            style={{
-              color: colors.onSurface,
-              fontFamily: ct.fontFamily.semibold,
-              fontSize: ct.fontSize.md,
-              marginBottom: -ct.space.xs,
+          <SegmentedButtons
+            items={PROVIDER_OPTIONS}
+            value={providerMode}
+            onChange={(mode) => {
+              setProviderMode(mode as ProviderMode);
+              setError(null);
             }}
-          >
-            API key
-          </Text>
+          />
+
+          {providerMode === "custom" && (
+            <>
+              <View
+                style={{
+                  ...fieldStyle,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: ct.space.sm,
+                }}
+              >
+                <Feather
+                  name="globe"
+                  size={16}
+                  color={colors.onSurfaceVariant}
+                />
+                <TextInput
+                  style={{
+                    flex: 1,
+                    height: "100%",
+                    paddingVertical: 0,
+                    fontSize: fieldStyle.fontSize,
+                    fontFamily: fieldStyle.fontFamily,
+                    color: fieldStyle.color,
+                  }}
+                  value={customUrl}
+                  onChangeText={(v) => {
+                    setCustomUrl(v);
+                    setError(null);
+                  }}
+                  placeholder="https://wakapi.dev/api/compat/wakatime/v1"
+                  placeholderTextColor={colors.onSurfaceVariant}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="url"
+                />
+                {customUrl.length > 0 && (
+                  <TouchableOpacity
+                    onPress={() => setCustomUrl("")}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Clear custom URL"
+                  >
+                    <Feather
+                      name="x"
+                      size={15}
+                      color={colors.onSurfaceVariant}
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              <Text
+                style={[ct.text.caption, { color: colors.onSurfaceVariant }]}
+              >
+                Enter a WakaTime-compatible API endpoint (e.g. Wakapi).
+              </Text>
+            </>
+          )}
+        </View>
+
+        {/* Step 2: API Key Card */}
+        <View
+          style={{
+            backgroundColor: colors.surfaceContainerHigh,
+            borderRadius: ct.radius["2xl"],
+            padding: ct.space.lg,
+            gap: ct.space.md,
+          }}
+        >
+          <View style={[ct.styles.rowCenter, { gap: ct.space.sm }]}>
+            <Feather name="key" size={16} color={colors.primary} />
+            <Text
+              style={[ct.text.bodyMedium, { color: colors.onSurface, flex: 1 }]}
+            >
+              API Key
+            </Text>
+          </View>
+
           <View
             style={{
+              ...fieldStyle,
               flexDirection: "row",
               alignItems: "center",
-              ...fieldStyle,
+              gap: ct.space.sm,
               borderColor: error ? colors.error : colors.outline,
             }}
           >
@@ -182,7 +274,7 @@ export function SetupScreen() {
                 fontFamily: fieldStyle.fontFamily,
                 color: fieldStyle.color,
               }}
-              placeholder="xxxxxxxxxxxxxxxx"
+              placeholder="waka_..."
               placeholderTextColor={colors.onSurfaceVariant}
               value={key}
               onChangeText={(v) => {
@@ -209,72 +301,66 @@ export function SetupScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Error */}
-          {error && (
+          {/* Clickable External Link to grab API Key */}
+          {providerMode !== "custom" && (
+            <TouchableOpacity
+              onPress={() => Linking.openURL(keyPortalUrl)}
+              activeOpacity={0.7}
+              style={[ct.styles.rowCenter, { gap: ct.space.xs }]}
+            >
+              <Text
+                style={[ct.text.caption, { color: colors.onSurfaceVariant }]}
+              >
+                Get your key from{" "}
+                <Text
+                  style={{
+                    color: colors.primary,
+                    fontFamily: ct.fontFamily.semibold,
+                  }}
+                >
+                  {keyPortalLabel}
+                </Text>
+              </Text>
+              <Feather name="external-link" size={12} color={colors.primary} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Inline Error Banner */}
+        {error && (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: ct.space.sm,
+              backgroundColor: colors.errorContainer,
+              padding: ct.space.md,
+              borderRadius: ct.radius.lg,
+            }}
+          >
+            <Feather
+              name="alert-circle"
+              size={16}
+              color={colors.onErrorContainer}
+            />
             <Text
               style={[
                 ct.text.caption,
-                {
-                  color: colors.error,
-                  paddingHorizontal: ct.space.sm,
-                },
+                { color: colors.onErrorContainer, flex: 1 },
               ]}
             >
               {error}
             </Text>
-          )}
+          </View>
+        )}
 
-          <TouchableOpacity
-            onPress={handleSave}
-            disabled={!canSubmit}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel="Connect WakaDash"
-            style={{
-              minHeight: 52,
-              paddingHorizontal: ct.padding.lg,
-              borderRadius: ct.radius.full,
-              backgroundColor: colors.primary,
-              alignItems: "center",
-              justifyContent: "center",
-              opacity: canSubmit ? 1 : 0.4,
-            }}
-          >
-            {loading ? (
-              <ActivityIndicator color={colors.onPrimary} />
-            ) : (
-              <Text
-                style={{
-                  fontSize: ct.fontSize.lg,
-                  fontFamily: ct.fontFamily.semibold,
-                  color: colors.onPrimary,
-                }}
-              >
-                Connect WakaDash
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {/* Footer hint */}
-        <Text
-          style={[
-            ct.text.caption,
-            {
-              color: colors.onSurfaceVariant,
-              textAlign: "center",
-              lineHeight: ct.lineHeight.sm,
-            },
-          ]}
-        >
-          Find your key at{" "}
-          <Text style={{ color: colors.primary }}>
-            {isHackatime
-              ? "hackatime.hackclub.com"
-              : "wakatime.com/settings/api-key"}
-          </Text>
-        </Text>
-      </View>
-    </View>
+        <Button
+          onPress={handleSave}
+          disabled={!canSubmit}
+          label="Save & Continue"
+          loading={loading}
+        />
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

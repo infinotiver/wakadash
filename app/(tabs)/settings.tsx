@@ -27,8 +27,7 @@ import { Button } from "@/src/components/Button";
 const styles = ct.styles.settings;
 const appVersion = Constants.expoConfig?.version ?? "unknown";
 const gitCommit =
-  (Constants.expoConfig?.extra?.gitCommit as string | undefined) ??
-  "development";
+  (Constants.expoConfig?.extra?.gitCommit as string | undefined) ?? "dev";
 
 const URL_SUGGESTIONS = [
   { label: "WakaTime", url: DEFAULT_BASE_URL },
@@ -54,10 +53,7 @@ function FieldRow({
       <Text
         style={[
           styles.keyText,
-          {
-            color: c.onSurfaceVariant,
-            fontFamily: ct.fontFamily.regular,
-          },
+          { color: c.onSurfaceVariant, fontFamily: ct.fontFamily.regular },
         ]}
         numberOfLines={1}
       >
@@ -66,14 +62,15 @@ function FieldRow({
 
       <Button
         label="Edit"
-        icon={
-          <MaterialCommunityIcons
-            color={c.onSecondaryContainer}
-            name="pencil-outline"
-            size={18}
-          />
-        }
         variant="tonal"
+        tone="secondary"
+        icon={({ color, size }) => (
+          <MaterialCommunityIcons
+            name="pencil-outline"
+            size={size}
+            color={color}
+          />
+        )}
         onPress={onEdit}
       />
 
@@ -91,9 +88,9 @@ function FieldRow({
           }}
         >
           <MaterialCommunityIcons
-            color={c.error}
             name="trash-can-outline"
             size={18}
+            color={c.onErrorContainer}
           />
         </TouchableOpacity>
       )}
@@ -106,32 +103,29 @@ function ActionButtons({
   onSave,
   saving,
   disabled,
-  showCancel = true,
 }: {
   onCancel?: () => void;
   onSave: () => void;
   saving?: boolean;
   disabled?: boolean;
-  showCancel?: boolean;
 }) {
   return (
-    <View
-      style={[
-        styles.btnRow,
-        {
-          flexDirection: "row",
-          gap: ct.space.sm,
-        },
-      ]}
-    >
-      {showCancel && onCancel ? (
-        <Button label="Cancel" variant="outlined" onPress={onCancel} flex={1} />
+    <View style={[styles.btnRow, { flexDirection: "row", gap: ct.space.sm }]}>
+      {onCancel ? (
+        <Button
+          label="Cancel"
+          variant="outlined"
+          tone="secondary"
+          onPress={onCancel}
+          flex={1}
+        />
       ) : (
         <View style={{ flex: 1 }} />
       )}
-
       <Button
         label="Save"
+        variant="filled"
+        tone="primary"
         onPress={onSave}
         loading={saving}
         disabled={disabled}
@@ -145,7 +139,6 @@ export default function SettingsScreen() {
   const c = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-
   const { isConfigured, apiKey, setApiKey, clearApiKey, baseUrl, setBaseUrl } =
     useWakaTime();
 
@@ -159,6 +152,7 @@ export default function SettingsScreen() {
   const [savingUrl, setSavingUrl] = useState(false);
 
   const userQ = useWakaUser();
+  const user = userQ.data as WakaUser | undefined;
 
   useEffect(() => {
     if (!isConfigured) setEditingKey(true);
@@ -167,21 +161,18 @@ export default function SettingsScreen() {
   async function handleSaveKey() {
     const trimmed = newKey.trim();
     if (!trimmed) return;
-
     setSavingKey(true);
-
     try {
       await wakatimeApi.verifyKey(trimmed, baseUrl);
       await setApiKey(trimmed);
       setEditingKey(false);
       setNewKey("");
       setShow(false);
-    } catch (error) {
+    } catch (e) {
+      const isInvalid = e instanceof Error && e.message === "Invalid API key";
       Alert.alert(
-        error instanceof Error && error.message === "Invalid API key"
-          ? "Invalid key"
-          : "Error",
-        error instanceof Error && error.message === "Invalid API key"
+        isInvalid ? "Invalid key" : "Error",
+        isInvalid
           ? "Check your API key and try again."
           : "Could not verify key. Check your connection.",
       );
@@ -210,7 +201,6 @@ export default function SettingsScreen() {
 
   async function handleSaveUrl() {
     const trimmed = newUrl.trim().replace(/\/+$/, "");
-
     if (!/^https?:\/\/.+/.test(trimmed)) {
       Alert.alert(
         "Invalid URL",
@@ -218,9 +208,7 @@ export default function SettingsScreen() {
       );
       return;
     }
-
     setSavingUrl(true);
-
     try {
       await setBaseUrl(trimmed);
       setEditingUrl(false);
@@ -228,20 +216,6 @@ export default function SettingsScreen() {
       setSavingUrl(false);
     }
   }
-
-  function cancelUrl() {
-    setEditingUrl(false);
-    setNewUrl(baseUrl);
-  }
-
-  function cancelKey() {
-    setEditingKey(false);
-    setNewKey("");
-    setShow(false);
-  }
-
-  const user = userQ.data as WakaUser | undefined;
-  const maskedKey = apiKey ? `${apiKey.slice(0, 4)}...${apiKey.slice(-4)}` : "";
 
   return (
     <View style={{ flex: 1, backgroundColor: c.background }}>
@@ -259,7 +233,7 @@ export default function SettingsScreen() {
         style={ct.styles.scroll}
         contentContainerStyle={[
           styles.content,
-          { paddingBottom: insets.bottom + 64 + ct.space.lg },
+          { paddingBottom: insets.bottom + ct.space.xl },
         ]}
       >
         {userQ.isLoading ? (
@@ -281,28 +255,25 @@ export default function SettingsScreen() {
                 style={[styles.avatarFallback, { backgroundColor: c.primary }]}
               >
                 <MaterialCommunityIcons
-                  color={c.onPrimary}
                   name="account-circle-outline"
                   size={28}
+                  color={c.onPrimary}
                 />
               </View>
             )}
-
             <View style={styles.profileInfo}>
               <Text style={[styles.displayName, { color: c.onSurface }]}>
                 {user.display_name || user.username}
               </Text>
-
               <Text style={[styles.username, { color: c.onSurfaceVariant }]}>
                 @{user.username}
               </Text>
-
               {user.location && (
                 <View style={styles.locationRow}>
                   <MaterialCommunityIcons
-                    color="{c.onSurfaceVariant}"
                     name="map-marker-outline"
                     size={12}
+                    color={c.onSurfaceVariant}
                   />
                   <Text
                     style={[styles.location, { color: c.onSurfaceVariant }]}
@@ -315,13 +286,13 @@ export default function SettingsScreen() {
           </View>
         ) : null}
 
+        {/* API URL Card */}
         <View
           style={[styles.section, { backgroundColor: c.surfaceContainerHigh }]}
         >
           <Text style={[styles.sectionTitle, { color: c.onSurface }]}>
             API URL
           </Text>
-
           {!editingUrl ? (
             <FieldRow
               value={baseUrl}
@@ -336,7 +307,7 @@ export default function SettingsScreen() {
                 style={[
                   styles.inputRow,
                   {
-                    backgroundColor: c.surfaceContainerHigh,
+                    backgroundColor: c.surfaceContainerHighest,
                     borderColor: c.outline,
                   },
                 ]}
@@ -344,10 +315,7 @@ export default function SettingsScreen() {
                 <TextInput
                   style={[
                     styles.input,
-                    {
-                      color: c.onSurface,
-                      fontFamily: ct.fontFamily.regular,
-                    },
+                    { color: c.onSurface, fontFamily: ct.fontFamily.regular },
                   ]}
                   placeholder={DEFAULT_BASE_URL}
                   placeholderTextColor={c.onSurfaceVariant}
@@ -367,47 +335,25 @@ export default function SettingsScreen() {
                   marginTop: ct.space.sm,
                 }}
               >
-                {URL_SUGGESTIONS.map((suggestion) => {
-                  const selected =
-                    newUrl.trim().replace(/\/+$/, "") === suggestion.url;
-
+                {URL_SUGGESTIONS.map((s) => {
+                  const selected = newUrl.trim().replace(/\/+$/, "") === s.url;
                   return (
-                    <TouchableOpacity
-                      key={suggestion.url}
-                      onPress={() => setNewUrl(suggestion.url)}
-                      activeOpacity={0.8}
-                      style={{
-                        paddingVertical: ct.padding.sm,
-                        paddingHorizontal: ct.padding.md,
-                        borderRadius: ct.radius.full,
-                        borderWidth: 1,
-                        borderColor: selected
-                          ? c.secondaryContainer
-                          : c.outline,
-                        backgroundColor: selected
-                          ? c.secondaryContainer
-                          : c.surfaceContainerHigh,
-                      }}
-                    >
-                      <Text
-                        style={[
-                          ct.text.buttonText,
-                          {
-                            color: selected
-                              ? c.onSecondaryContainer
-                              : c.onSurfaceVariant,
-                          },
-                        ]}
-                      >
-                        {suggestion.label}
-                      </Text>
-                    </TouchableOpacity>
+                    <Button
+                      key={s.url}
+                      label={s.label}
+                      variant={selected ? "tonal" : "outlined"}
+                      tone="secondary"
+                      onPress={() => setNewUrl(s.url)}
+                    />
                   );
                 })}
               </View>
 
               <ActionButtons
-                onCancel={cancelUrl}
+                onCancel={() => {
+                  setEditingUrl(false);
+                  setNewUrl(baseUrl);
+                }}
                 onSave={handleSaveUrl}
                 saving={savingUrl}
                 disabled={!newUrl.trim()}
@@ -416,16 +362,18 @@ export default function SettingsScreen() {
           )}
         </View>
 
+        {/* API Key Card */}
         <View
           style={[styles.section, { backgroundColor: c.surfaceContainerHigh }]}
         >
           <Text style={[styles.sectionTitle, { color: c.onSurface }]}>
             API Key
           </Text>
-
           {!editingKey ? (
             <FieldRow
-              value={maskedKey}
+              value={
+                apiKey ? `${apiKey.slice(0, 4)}...${apiKey.slice(-4)}` : ""
+              }
               onEdit={() => setEditingKey(true)}
               onDelete={handleClearKey}
             />
@@ -435,7 +383,7 @@ export default function SettingsScreen() {
                 style={[
                   styles.inputRow,
                   {
-                    backgroundColor: c.surfaceContainerHigh,
+                    backgroundColor: c.surfaceContainerHighest,
                     borderColor: c.outline,
                   },
                 ]}
@@ -443,10 +391,7 @@ export default function SettingsScreen() {
                 <TextInput
                   style={[
                     styles.input,
-                    {
-                      color: c.onSurface,
-                      fontFamily: ct.fontFamily.regular,
-                    },
+                    { color: c.onSurface, fontFamily: ct.fontFamily.regular },
                   ]}
                   placeholder="waka_..."
                   placeholderTextColor={c.onSurfaceVariant}
@@ -456,10 +401,8 @@ export default function SettingsScreen() {
                   autoCapitalize="none"
                   autoCorrect={false}
                 />
-
                 <TouchableOpacity
                   onPress={() => setShow((s) => !s)}
-                  activeOpacity={0.8}
                   style={{ padding: ct.padding.sm }}
                 >
                   <MaterialCommunityIcons
@@ -471,30 +414,34 @@ export default function SettingsScreen() {
               </View>
 
               <ActionButtons
-                onCancel={isConfigured ? cancelKey : undefined}
+                onCancel={
+                  isConfigured
+                    ? () => {
+                        setEditingKey(false);
+                        setNewKey("");
+                        setShow(false);
+                      }
+                    : undefined
+                }
                 onSave={handleSaveKey}
                 saving={savingKey}
                 disabled={!newKey.trim()}
-                showCancel={isConfigured}
               />
             </View>
           )}
         </View>
 
+        {/* About Section - Restored original button layout & direct inline elements */}
         <View
           style={[styles.section, { backgroundColor: c.surfaceContainerHigh }]}
         >
           <Text style={[styles.sectionTitle, { color: c.onSurface }]}>
             About
           </Text>
-
           <Text
             style={[
               ct.text.body,
-              {
-                color: c.onSurfaceVariant,
-                marginBottom: ct.space.md,
-              },
+              { color: c.onSurfaceVariant, marginBottom: ct.space.md },
             ]}
           >
             made by infinotiver {"<3"}
@@ -508,59 +455,61 @@ export default function SettingsScreen() {
           >
             <Button
               label="Source Code"
-              icon={
+              variant="filled"
+              tone="primary"
+              icon={({ color, size }) => (
                 <MaterialCommunityIcons
                   name="github"
-                  size={18}
-                  color={c.onPrimary}
+                  size={size}
+                  color={color}
                 />
-              }
+              )}
               onPress={() =>
                 Linking.openURL("https://github.com/infinotiver/wakadash")
               }
               flex={1}
-              backgroundColor={c.primary}
-              color={c.onPrimary}
             />
-
             <Button
               label="Report Issue"
-              icon={
+              variant="tonal"
+              tone="primary"
+              icon={({ color, size }) => (
                 <MaterialCommunityIcons
                   name="alert-circle-outline"
-                  size={18}
-                  color={c.onSecondaryContainer}
+                  size={size}
+                  color={color}
                 />
-              }
+              )}
               onPress={() =>
                 Linking.openURL(
                   "https://github.com/infinotiver/wakadash/issues",
                 )
               }
               flex={1}
-              variant="tonal"
             />
           </View>
 
           <Button
             label="View Releases"
-            icon={
+            // variant="tonal"
+            tone="tertiary"
+            icon={({ color, size }) => (
               <MaterialCommunityIcons
                 name="tag-multiple-outline"
-                size={18}
-                color={c.onSecondaryContainer}
+                size={size}
+                color={color}
               />
-            }
+            )}
             onPress={() =>
               Linking.openURL(
                 "https://github.com/infinotiver/wakadash/releases",
               )
             }
-            variant="tonal"
             width="100%"
           />
         </View>
 
+        {/* Version Footer */}
         <View
           style={{
             alignItems: "center",
