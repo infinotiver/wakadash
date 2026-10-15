@@ -13,7 +13,7 @@ import {
   normalizeStats,
   normalizeWakaAllTime,
 } from "../utils/normalize";
-
+import { shiftDateKey } from "../utils/dashboard";
 export const DEFAULT_BASE_URL = "https://wakatime.com/api/v1";
 
 // just a basic error class
@@ -120,6 +120,17 @@ export const wakatimeApi = {
       baseUrl,
     ).then((d) => d.data?.[0] ?? null);
   },
+  getDaySummary: (
+    apiKey: string,
+    baseUrl: string,
+    date: string,
+  ): Promise<WakaSummaryDay | null> =>
+    wakFetch(
+      `/users/current/summaries?start=${date}&end=${date}`,
+      apiKey,
+      baseUrl,
+    ).then((d) => d.data?.[0] ?? null),
+
   getWeekSummaries: (
     apiKey: string,
     baseUrl: string,
@@ -133,16 +144,17 @@ export const wakatimeApi = {
       baseUrl,
     ).then((d) => d.data ?? []);
   },
+
   getSummaryRange: (
     days: number,
     apiKey: string,
     baseUrl: string,
+    endDate?: string, // YYYY-MM-DD, defaults to today
   ): Promise<WakaSummaryDay[]> => {
-    const end = new Date();
-    const start = new Date();
-    start.setDate(start.getDate() - (days - 1));
+    const end = endDate ?? fmt(new Date());
+    const start = shiftDateKey(end, -(days - 1));
     return wakFetch(
-      `/users/current/summaries?start=${fmt(start)}&end=${fmt(end)}`,
+      `/users/current/summaries?start=${start}&end=${end}`,
       apiKey,
       baseUrl,
     ).then((d) => d.data ?? []);

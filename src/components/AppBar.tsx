@@ -16,24 +16,24 @@ interface AppBarAction {
 
 interface AppBarProps {
   title: string;
-  variant?: "small" | "center"; // small = left-aligned title
-  elevated?: boolean; // true when content has scrolled under the bar
+  variant?: "small" | "center";
+  elevated?: boolean;
   leadingIcon?: IconName;
   leadingLabel?: string;
   onLeadingPress?: () => void;
   actions?: AppBarAction[];
+  onTitlePress?: () => void;
+  titleHint?: string;
 }
 
-// M3 top app bar (small / center-aligned)
 const BAR_HEIGHT = 64;
-const BUTTON_SIZE = 48; // minimum touch target
+const BUTTON_SIZE = 48;
 const ICON_SIZE = 24;
-const EDGE_PADDING = ct.space.xs; // 4: bar edge to icon button
-const TITLE_INSET = ct.space.lg; // 16: bar edge to title when there is no leading icon
-const PRESSED_OPACITY = 0.1; // M3 pressed state layer
-const DISABLED_OPACITY = 0.38; // M3 disabled content
+const EDGE_PADDING = ct.space.xs;
+const TITLE_INSET = ct.space.sm;
+const PRESSED_OPACITY = 0.1;
+const DISABLED_OPACITY = 0.38;
 
-// Round 48dp icon button with a state layer on press.
 function IconButton({
   icon,
   label,
@@ -86,12 +86,14 @@ export function AppBar({
   leadingLabel = "Go back",
   onLeadingPress,
   actions = [],
+  onTitlePress,
+  titleHint,
 }: AppBarProps) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const isCenter = variant === "center";
 
-  // Center variant: both sides get the same width so the title stays truly centered.
+  // Equal-width sides keep a centered title truly centered.
   const sideWidth = BUTTON_SIZE * Math.max(1, actions.length);
 
   return (
@@ -103,7 +105,6 @@ export function AppBar({
       }}
     >
       <View style={styles.row}>
-        {/* Leading: back/menu button. M3 colors it on-surface. */}
         {onLeadingPress ? (
           <View style={isCenter ? { width: sideWidth } : undefined}>
             <IconButton
@@ -117,25 +118,35 @@ export function AppBar({
           <View style={{ width: sideWidth }} />
         ) : null}
 
-        {/* Title: Title Large (22/28, regular). Starts right after the icon button,
-            or 16 from the edge when there is no leading icon. */}
-        <Text
-          numberOfLines={1}
-          style={[
-            styles.title,
+        <Pressable
+          disabled={!onTitlePress}
+          onPress={onTitlePress}
+          accessibilityRole={onTitlePress ? "button" : undefined}
+          accessibilityLabel={title}
+          accessibilityHint={onTitlePress ? titleHint : undefined}
+          style={({ pressed }) => [
+            styles.titleTouch,
             {
-              color: colors.onSurface,
-              fontFamily: ct.fontFamily.regular,
-              textAlign: isCenter ? "center" : "left",
-              marginLeft:
-                !isCenter && !onLeadingPress ? TITLE_INSET - EDGE_PADDING : 0,
+              paddingLeft: !isCenter && !onLeadingPress ? TITLE_INSET : 0,
+              opacity: onTitlePress && pressed ? 0.7 : 1,
             },
           ]}
         >
-          {title}
-        </Text>
+          <Text
+            numberOfLines={1}
+            style={[
+              styles.title,
+              {
+                color: colors.onSurface,
+                fontFamily: ct.fontFamily.medium ?? ct.fontFamily.regular,
+                textAlign: isCenter ? "center" : "left",
+              },
+            ]}
+          >
+            {title}
+          </Text>
+        </Pressable>
 
-        {/* Trailing actions. M3 colors them on-surface-variant. */}
         {actions.length > 0 ? (
           <View
             style={{
@@ -177,9 +188,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  title: {
+  titleTouch: {
     flex: 1,
-    fontSize: 22, // Title Large
+    height: "100%",
+    justifyContent: "center",
+  },
+  title: {
+    fontSize: 22,
     lineHeight: 28,
   },
 });

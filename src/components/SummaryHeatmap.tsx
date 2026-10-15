@@ -89,14 +89,39 @@ export function SummaryHeatmap({ days }: Props) {
 
   const legendCaption = `Relative to your busiest day (${formatDuration(maxSeconds)})`;
 
-  const monthLabels = weeks.map((week) => {
-    const firstDay = week.find((slot) => slot)?.day;
-    if (!firstDay?.range?.date) return "";
-    return new Date(`${firstDay.range.date}T12:00:00`).toLocaleDateString(
-      undefined,
-      { month: "short" },
-    );
-  });
+  const monthLabels = useMemo(() => {
+    // 1. Identify which month each week column belongs to, prioritizing the 1st of the month
+    const rawMonths = weeks.map((week) => {
+      const firstOfMonthSlot = week.find((slot) =>
+        slot?.day?.range?.date?.endsWith("-01"),
+      );
+      const targetDay = firstOfMonthSlot?.day ?? week.find((slot) => slot)?.day;
+      if (!targetDay?.range?.date) return "";
+
+      return new Date(`${targetDay.range.date}T12:00:00`).toLocaleDateString(
+        undefined,
+        { month: "short" },
+      );
+    });
+
+    // 2. Only output the label when the month transitions, and prevent label collisions
+    return rawMonths.map((month, i) => {
+      const isNewMonth = i === 0 || month !== rawMonths[i - 1];
+      if (!isNewMonth) return "";
+
+      // If column 0 is at the very end of a month and column 1 or 2 starts a new month,
+      // skip column 0's label so the two month texts don't overlap.
+      if (
+        i === 0 &&
+        ((rawMonths.length > 1 && rawMonths[1] !== month) ||
+          (rawMonths.length > 2 && rawMonths[2] !== month))
+      ) {
+        return "";
+      }
+
+      return month;
+    });
+  }, [weeks]);
 
   return (
     <View style={{ gap: ct.space.md }}>
@@ -128,7 +153,6 @@ export function SummaryHeatmap({ days }: Props) {
         onContentSizeChange={() =>
           scrollRef.current?.scrollToEnd({ animated: false })
         }
-        // grows to full width when content is narrow, so short ranges center
         contentContainerStyle={{
           flexGrow: 1,
           justifyContent: "center",
@@ -159,13 +183,23 @@ export function SummaryHeatmap({ days }: Props) {
             ))}
           </View>
           {weeks.map((week, weekIndex) => (
-            <View key={weekIndex} style={{ gap: GAP }}>
-              <View style={{ height: 20, justifyContent: "center" }}>
-                {weekIndex === 0 ||
-                monthLabels[weekIndex] !== monthLabels[weekIndex - 1] ? (
+            <View key={weekIndex} style={{ width: CELL, gap: GAP }}>
+              <View
+                style={{
+                  width: CELL,
+                  height: 20,
+                  justifyContent: "center",
+                  position: "relative",
+                }}
+              >
+                {monthLabels[weekIndex] ? (
                   <Text
+                    numberOfLines={1}
                     style={{
-                      color: colors.onSurface,
+                      position: "absolute",
+                      left: 0,
+                      width: CELL * 2.5,
+                      color: colors.onSurfaceVariant,
                       fontSize: ct.fontSize.xs,
                       fontFamily: ct.fontFamily.semibold,
                     }}

@@ -1,6 +1,9 @@
-﻿import React, { useCallback } from "react";
+﻿import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
+  Modal,
+  Platform,
+  Pressable,
   RefreshControl,
   ScrollView,
   Text,
@@ -8,7 +11,6 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/src/hooks/useColors";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
@@ -24,42 +26,90 @@ import { ct } from "@/src/constants/styles.common";
 import {
   averageSummarySeconds,
   buildLanguageColorMap,
+  dayHeading,
   formatDuration,
+  shiftDateKey,
+  toDateKey,
 } from "@/src/utils/dashboard";
 
 import {
-  useAllTimeSinceToday,
+  useDaySummary,
   useProgramLanguages,
-  useTodaySummary,
   useWeekSummaries,
+  useWindowSummaries,
 } from "@/src/hooks/useWakaTimeQueries";
+
+import DateTimePicker, {
+  DateTimePickerAndroid,
+  type DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
+
 const styles = ct.styles.overview;
 
-export default function OverviewScreen() {
+export default function TodayScreen() {
   const colors = useColors();
-  const insets = useSafeAreaInsets();
   const router = useRouter();
+  const [iosPickerOpen, setIosPickerOpen] = useState(false);
+  const onPickDate = (event: DateTimePickerEvent, picked?: Date) => {
+    if (Platform.OS === "ios") setIosPickerOpen(false);
+    if (event.type === "set" && picked) selectDate(toDateKey(picked));
+  };
+
+  const openPicker = () => {
+    if (Platform.OS === "android") {
+      DateTimePickerAndroid.open({
+        design: "material",
+        title: "Select date to view",
+        value: new Date(`${date}T12:00:00`),
+        mode: "date",
+        maximumDate: new Date(), // can't pick the future
+        onChange: onPickDate,
+      });
+    } else {
+      setIosPickerOpen(true);
+    }
+  };
 
   const { isConfigured } = useWakaTime();
 
-  const todayQ = useTodaySummary();
-  const weekQ = useWeekSummaries();
-  // const allTimeQ = useAllTimeSinceToday();
+  const [picked, setPicked] = useState<string | null>(null); // null = today
+  const [windowEnd, setWindowEnd] = useState<string | null>(null); // null = today
+  const todayKey = toDateKey(new Date());
+  const date = picked ?? todayKey;
+  const isToday = date === todayKey;
+  const dayLabel = isToday ? "today" : "that day";
+  const windowEndKey = windowEnd ?? todayKey;
+  const windowStartKey = shiftDateKey(windowEndKey, -6);
+
+  const dayQ = useDaySummary(date);
+  const weekQ = useWindowSummaries(windowEndKey);
   const langMetaQ = useProgramLanguages();
 
+  const selectDate = (key: string) => {
+    const next = key >= todayKey ? todayKey : key;
+
+    if (next < windowStartKey) {
+      setWindowEnd(next); // selected day becomes the right-most bar
+    } else if (next > windowEndKey) {
+      const end = shiftDateKey(next, 6); // selected day becomes the left-most bar
+      setWindowEnd(end >= todayKey ? null : end);
+    }
+
+    setPicked(next === todayKey ? null : next);
+  };
+
+  // Never go past today.
+  const step = (delta: number) => selectDate(shiftDateKey(date, delta));
+
   const refetch = useCallback(async () => {
-    await Promise.allSettled([
-      todayQ.refetch(),
-      weekQ.refetch(),
-      // allTimeQ.refetch(),
-    ]);
-  }, [todayQ, weekQ]);
+    await Promise.allSettled([dayQ.refetch(), weekQ.refetch()]);
+  }, [dayQ, weekQ]);
 
   if (!isConfigured) {
     return <SetupScreen />;
   }
 
-  const today = todayQ.data;
+  const selected = dayQ.data; // the selected day's summary
   const week = weekQ.data ?? [];
 
   const weekAvg = averageSummarySeconds(week);
@@ -67,7 +117,7 @@ export default function OverviewScreen() {
     (total, day) => total + (day.grand_total?.total_seconds ?? 0),
     0,
   );
-  const hasCategories = (today?.categories?.length ?? 0) > 0;
+  const hasCategories = (selected?.categories?.length ?? 0) > 0;
   const bestDay = week.reduce(
     (best, day) =>
       !best || day.grand_total.total_seconds > best.grand_total.total_seconds
@@ -76,8 +126,8 @@ export default function OverviewScreen() {
     null as (typeof week)[number] | null,
   );
 
-  const loading = todayQ.isLoading || weekQ.isLoading;
-  const failed = todayQ.isError || weekQ.isError;
+  const loading = dayQ.isLoading || weekQ.isLoading;
+  const failed = dayQ.isError || weekQ.isError;
 
   const chartColors = [
     colors.accent.violet.color,
@@ -87,14 +137,22 @@ export default function OverviewScreen() {
     colors.accent.green.color,
   ];
   const langColorMap = buildLanguageColorMap(langMetaQ.data);
-  const languageColors = (today?.languages ?? [])
+  const languageColors = (selected?.languages ?? [])
     .slice(0, 4)
     .map(
       (item, i) =>
         langColorMap.get(item.name.toLowerCase()) ??
         chartColors[i % chartColors.length],
     );
-
+  const shortDay = (key: string) =>
+    new Date(`${key}T12:00:00`).toLocaleDateString(undefined, {
+      day: "numeric",
+      month: "short",
+    });
+  const windowTitle =
+    windowEnd === null
+      ? "Last 7 Days"
+      : `${shortDay(windowStartKey)} – ${shortDay(windowEndKey)}`;
   return (
     <View
       style={[
@@ -104,29 +162,70 @@ export default function OverviewScreen() {
         },
       ]}
     >
-      {/* <AppBar title="WakaDash" variant="center" /> */}
       <AppBar
-        title="Today"
+        title={dayHeading(date, todayKey)}
+        onTitlePress={openPicker}
         variant="center"
         elevated={false}
+        leadingIcon="chevron-left"
+        leadingLabel="Previous day"
+        onLeadingPress={() => step(-1)}
         actions={[
           {
-            icon: "cog-outline",
-            label: "Settings",
-            onPress: () => router.push("/settings"),
+            icon: "chevron-right",
+            label: "Next day",
+            onPress: () => step(1),
+            disabled: isToday,
           },
         ]}
       />
+
+      {/* iOS: Android uses the native dialog via DateTimePickerAndroid */}
+      {Platform.OS === "ios" && iosPickerOpen ? (
+        <Modal
+          transparent
+          animationType="fade"
+          onRequestClose={() => setIosPickerOpen(false)}
+        >
+          <Pressable
+            style={{
+              flex: 1,
+              backgroundColor: "#00000066",
+              justifyContent: "center",
+              padding: ct.space.lg,
+            }}
+            onPress={() => setIosPickerOpen(false)}
+          >
+            <Pressable
+              onPress={() => {}} // swallow taps so the card doesn't dismiss
+              style={{
+                backgroundColor: colors.surfaceContainerHigh,
+                borderRadius: ct.radius["2xl"],
+                padding: ct.space.md,
+              }}
+            >
+              <DateTimePicker
+                value={new Date(`${date}T12:00:00`)}
+                mode="date"
+                display="inline"
+                maximumDate={new Date()}
+                accentColor={colors.primary}
+                onChange={onPickDate}
+              />
+            </Pressable>
+          </Pressable>
+        </Modal>
+      ) : null}
+
       <ScrollView
         style={ct.styles.scroll}
         contentContainerStyle={{
           flexGrow: 1,
           justifyContent: "flex-end",
-          //
         }}
         refreshControl={
           <RefreshControl
-            refreshing={todayQ.isFetching || weekQ.isFetching}
+            refreshing={dayQ.isFetching || weekQ.isFetching}
             onRefresh={refetch}
             tintColor={colors.primary}
           />
@@ -163,6 +262,21 @@ export default function OverviewScreen() {
           </View>
         ) : (
           <>
+            {!selected ? (
+              <Text
+                style={[
+                  ct.text.body,
+                  {
+                    color: colors.onSurfaceVariant,
+                    textAlign: "center",
+                    marginTop: ct.space.lg,
+                  },
+                ]}
+              >
+                No activity recorded
+              </Text>
+            ) : null}
+
             <View
               style={[
                 styles.row,
@@ -175,7 +289,7 @@ export default function OverviewScreen() {
               {hasCategories && (
                 <View style={{ flex: 5 }}>
                   <CategoryPieChart
-                    items={(today?.categories ?? [])
+                    items={(selected?.categories ?? [])
                       .slice(0, 5)
                       .map((item) => ({
                         name: item.name,
@@ -183,6 +297,7 @@ export default function OverviewScreen() {
                         total_seconds: item.total_seconds,
                         text: item.text ?? "",
                       }))}
+                    totalLabel={dayLabel}
                   />
                 </View>
               )}
@@ -196,11 +311,11 @@ export default function OverviewScreen() {
                 <View style={{ flex: 1 }}>
                   <StatCard
                     value={
-                      today
-                        ? formatDuration(today.grand_total.total_seconds)
+                      selected
+                        ? formatDuration(selected.grand_total.total_seconds)
                         : "-"
                     }
-                    subtitle="today"
+                    subtitle={dayLabel}
                     icon={(tint) => (
                       <Feather name="clock" size={20} color={tint} />
                     )}
@@ -257,7 +372,7 @@ export default function OverviewScreen() {
                     params: { category: "languages" },
                   })
                 }
-                items={(today?.languages ?? []).slice(0, 4).map((item) => ({
+                items={(selected?.languages ?? []).slice(0, 4).map((item) => ({
                   name: item.name,
                   percent: item.percent,
                   trailingText: item.text ?? "",
@@ -272,7 +387,7 @@ export default function OverviewScreen() {
                     params: { category: "editors" },
                   })
                 }
-                items={(today?.editors ?? []).slice(0, 4).map((item) => ({
+                items={(selected?.editors ?? []).slice(0, 4).map((item) => ({
                   name: item.name,
                   percent: item.percent,
                   trailingText: item.text ?? "",
@@ -287,7 +402,7 @@ export default function OverviewScreen() {
                     params: { category: "projects" },
                   })
                 }
-                items={(today?.projects ?? []).slice(0, 4).map((item) => ({
+                items={(selected?.projects ?? []).slice(0, 4).map((item) => ({
                   name: item.name,
                   percent: item.percent,
                   trailingText: item.text ?? "",
@@ -296,7 +411,7 @@ export default function OverviewScreen() {
               <DashboardBreakdownSection
                 title="Operating Systems"
                 chartColors={chartColors}
-                items={(today?.operating_systems ?? [])
+                items={(selected?.operating_systems ?? [])
                   .slice(0, 4)
                   .map((item) => ({
                     name: item.name,
@@ -304,6 +419,7 @@ export default function OverviewScreen() {
                     trailingText: item.text ?? "",
                   }))}
               />
+
               {/* Last 7 Days */}
               <View
                 style={{
@@ -329,7 +445,7 @@ export default function OverviewScreen() {
                         },
                       ]}
                     >
-                      Last 7 Days
+                      {windowTitle}
                     </Text>
                     <Text
                       style={{
@@ -345,7 +461,11 @@ export default function OverviewScreen() {
                 </View>
 
                 {week.length ? (
-                  <WeeklyChart days={week} />
+                  <WeeklyChart
+                    days={week}
+                    selectedDate={date}
+                    onSelectDate={selectDate}
+                  />
                 ) : (
                   <Text
                     style={[

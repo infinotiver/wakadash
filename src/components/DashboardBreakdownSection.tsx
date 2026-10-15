@@ -2,6 +2,7 @@ import { Pressable, Text, View } from "react-native";
 import { useColors } from "@/src/hooks/useColors";
 import { HorizontalBreakdownChart } from "@/src/components/HorizontalBreakdownChart";
 import { ct } from "@/src/constants/styles.common";
+import { Feather } from "@expo/vector-icons";
 
 interface DashboardBreakdownSectionProps {
   title: string;
@@ -52,7 +53,7 @@ export function DashboardBreakdownSection({
             {title}
           </Text>
           {onPress ? (
-            <Text style={{ color: colors.onBackground }}>›</Text>
+            <Feather name="chevron-right" size={16} color={colors.onSurface} />
           ) : null}
         </View>
       </Pressable>

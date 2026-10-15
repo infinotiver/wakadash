@@ -8,6 +8,10 @@ const styles = ct.styles.weeklyChart;
 
 interface Props {
   days: WakaSummaryDay[];
+  // Optional controlled selection (YYYY-MM-DD). When omitted, the chart
+  // manages its own selection like before.
+  selectedDate?: string;
+  onSelectDate?: (date: string) => void;
 }
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -26,16 +30,17 @@ function formatTime(totalSeconds: number): string {
 
 function formatDateLabel(date: string): string {
   return new Date(`${date}T12:00:00`).toLocaleDateString(undefined, {
+    weekday: "short",
     month: "short",
     day: "numeric",
   });
 }
 
-export function WeeklyChart({ days }: Props) {
+export function WeeklyChart({ days, selectedDate, onSelectDate }: Props) {
   const colors = useColors();
-  const [activeIndex, setActiveIndex] = useState<number | null>(
-    days.length - 1,
-  );
+
+  // Used only when the parent isn't controlling selection.
+  const [localIndex, setLocalIndex] = useState<number | null>(null);
 
   const maxSeconds = useMemo(
     () =>
@@ -43,9 +48,27 @@ export function WeeklyChart({ days }: Props) {
     [days],
   );
 
-  const activeDay =
-    activeIndex !== null ? days[activeIndex] : days[days.length - 1];
+  // Controlled: derive the highlighted bar from the date. If the selected
+  // date is outside this window, nothing is highlighted.
+  const controlled = selectedDate !== undefined;
+  const controlledIndex = controlled
+    ? days.findIndex((d) => d.range?.date === selectedDate)
+    : -1;
+  const activeIndex = controlled
+    ? controlledIndex >= 0
+      ? controlledIndex
+      : null
+    : localIndex;
+
+  const select = (index: number) => {
+    const date = days[index]?.range?.date;
+    if (onSelectDate && date) onSelectDate(date);
+    else setLocalIndex(index);
+  };
+
+  const activeDay = activeIndex !== null ? days[activeIndex] : null;
   const activeSeconds = activeDay?.grand_total?.total_seconds ?? 0;
+
   const activeDateLabel = activeDay?.range?.date
     ? formatDateLabel(activeDay.range.date)
     : null;
@@ -65,25 +88,32 @@ export function WeeklyChart({ days }: Props) {
       : "0%";
 
   return (
-    <View style={{ gap: ct.space.md }}>
-      {activeDateLabel ? (
-        <View style={{ alignItems: "center", gap: ct.space.xs / 2 }}>
-          <Text
-            style={{
-              fontSize: ct.fontSize["2xl"],
-              lineHeight: ct.lineHeight.md,
-              fontFamily: ct.fontFamily.bold,
-              color: colors.onSurface,
-            }}
-          >
-            {formatTime(activeSeconds)}
-          </Text>
-
+    <View>
+      {/* Selected-day details */}
+      <View
+        style={{
+          minHeight: ct.size.tooltip,
+          marginBottom: ct.space.sm,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Text
+          style={{
+            fontSize: ct.fontSize["2xl"],
+            lineHeight: ct.lineHeight.md,
+            fontFamily: ct.fontFamily.bold,
+            color: colors.onSurface,
+          }}
+        >
+          {formatTime(activeSeconds)}
+        </Text>
+        
+        {activeIndex !== null && activeDateLabel ? (
           <View
             style={{
               flexDirection: "row",
               alignItems: "center",
-              gap: ct.space.sm,
             }}
           >
             <Text
@@ -99,49 +129,40 @@ export function WeeklyChart({ days }: Props) {
 
             <View
               style={{
-                width: 3,
-                height: 3,
-                borderRadius: 1.5,
+                width: 4,
+                height: 4,
+                marginHorizontal: ct.space.sm,
+                borderRadius: 2,
                 backgroundColor: colors.outline,
               }}
             />
 
             <Text
               style={{
-                fontSize: ct.fontSize.xs,
-                lineHeight: ct.lineHeight.xs,
+                fontSize: ct.fontSize.sm,
+                lineHeight: ct.lineHeight.sm,
                 fontFamily: ct.fontFamily.semibold,
-                color:
-                  deltaSeconds >= 0 ? colors.primary : colors.onSurfaceVariant,
+                color: colors.onSurface,
               }}
             >
               {deltaText}
             </Text>
           </View>
-        </View>
-      ) : null}
-
-      <View style={{ alignItems: "flex-end", marginBottom: -ct.space.sm }}>
-        <View
-          style={{
-            paddingHorizontal: ct.space.sm,
-            paddingVertical: ct.space.xs,
-            borderRadius: ct.radius.full,
-            backgroundColor: colors.surfaceContainerHigh,
-          }}
-        >
+        ) : (
           <Text
             style={{
-              color: colors.onSurfaceVariant,
-              fontFamily: ct.fontFamily.medium,
               fontSize: ct.fontSize.xs,
+              lineHeight: ct.lineHeight.xs,
+              fontFamily: ct.fontFamily.regular,
+              color: colors.onSurfaceVariant,
             }}
           >
             Avg: {formatTime(avgSeconds)}
           </Text>
-        </View>
+        )}
       </View>
 
+      {/* Chart */}
       <View style={{ flexDirection: "row" }}>
         <View style={{ flex: 1 }}>
           <View
@@ -154,39 +175,50 @@ export function WeeklyChart({ days }: Props) {
               bottom: GRIDLINE_BOTTOM_INSET,
             }}
           >
-            <View
-              style={{
-                position: "absolute",
-                top: averageLineTop as any,
-                left: 0,
-                right: 0,
-                height: 1,
-                backgroundColor: colors.outlineVariant,
-                opacity: 0.9,
-              }}
-            />
+            {[0, 0.5, 1].map((position) => (
+              <View
+                key={position}
+                style={{
+                  position: "absolute",
+                  top: `${position * 100}%`,
+                  left: 0,
+                  right: 0,
+                  height: 1,
+                  backgroundColor: colors.outlineVariant,
+                  opacity: position === 1 ? 0.8 : 0.5,
+                }}
+              />
+            ))}
           </View>
 
           <View style={styles.bars}>
             {days.map((day, index) => {
               const seconds = day.grand_total?.total_seconds ?? 0;
+
               const heightPercent =
-                seconds === 0 ? 0 : Math.max(6, (seconds / maxSeconds) * 100);
+                seconds === 0 ? 0 : Math.max(4, (seconds / maxSeconds) * 100);
+
               const isActive = activeIndex === index;
+
               const date = day.range?.date
                 ? new Date(`${day.range.date}T12:00:00`)
                 : null;
-              const label = date ? DAY_LABELS[date.getDay()] : "-";
+
+              const label = date ? DAY_LABELS[date.getDay()] : "—";
 
               return (
                 <Pressable
                   key={day.range?.date ?? index}
                   style={styles.barCol}
-                  onPress={() => setActiveIndex(index)}
+                  onHoverIn={() => select(index)}
+                  onPress={() => select(index)}
                   accessibilityRole="button"
                   accessibilityLabel={`${label}, ${formatTime(seconds)}`}
-                  accessibilityState={{ selected: isActive }}
+                  accessibilityState={{
+                    selected: isActive,
+                  }}
                 >
+                  {/* Bar */}
                   <View
                     style={{
                       flex: 1,
@@ -201,22 +233,27 @@ export function WeeklyChart({ days }: Props) {
                           width: "100%",
                           height: `${heightPercent}%`,
                           minHeight: 8,
+
                           backgroundColor: isActive
-                            ? colors.primary
+                            ? colors.tertiary
                             : colors.tertiaryContainer,
+
+                          // Pill shape.
                           borderRadius: 999,
                         }}
                       />
                     )}
                   </View>
 
+                  {/* Day label */}
                   <Text
                     style={[
                       styles.dayLabel,
                       {
                         color: isActive
-                          ? colors.primary
+                          ? colors.tertiary
                           : colors.onSurfaceVariant,
+
                         fontFamily: isActive
                           ? ct.fontFamily.semibold
                           : ct.fontFamily.medium,

@@ -10,6 +10,10 @@ function getGitCommit() {
 
 module.exports = ({ config }) => ({
     ...config,
+    plugins: [
+        ...(config.plugins ?? []),
+        "@react-native-community/datetimepicker",
+    ],
     extra: {
         ...config.extra,
         gitCommit: getGitCommit(),

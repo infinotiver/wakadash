@@ -69,7 +69,18 @@ export function useWeekSummaries() {
     retry: 1,
   });
 }
-
+export function useWindowSummaries(endDate: string) {
+  const { apiKey, baseUrl, isConfigured } = useWakaTime();
+  const scope = useWakaQueryScope();
+  return useQuery({
+    queryKey: [...wakaKeys.all, "window", endDate, ...scope],
+    queryFn: () => wakatimeApi.getSummaryRange(7, apiKey!, baseUrl, endDate),
+    enabled: isConfigured,
+    staleTime: TEN_MIN,
+    gcTime: THIRTY_MIN,
+    retry: 1,
+  });
+}
 export function useSummaryRange(days: number) {
   const { apiKey, baseUrl, isConfigured } = useWakaTime();
   const scope = useWakaQueryScope();
@@ -168,6 +179,19 @@ export function useGoal(id: string) {
     retry: 1,
   });
 }
+export function useDaySummary(date: string) {
+  const { apiKey, baseUrl, isConfigured } = useWakaTime();
+  const scope = useWakaQueryScope();
+  return useQuery({
+    queryKey: [...wakaKeys.all, "day", date, ...scope],
+    queryFn: () => wakatimeApi.getDaySummary(apiKey!, baseUrl, date),
+    enabled: isConfigured,
+    staleTime: FIVE_MIN, // past days rarely change, but late syncs can land
+    gcTime: THIRTY_MIN,
+    retry: 1,
+  });
+}
+
 function top(xs: { name: string; percent: number }[] = [], n = 3) {
   return xs.slice(0, n).map((x) => ({
     name: String(x?.name ?? "?"),
