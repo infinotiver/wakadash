@@ -15,7 +15,6 @@ import { Feather } from "@expo/vector-icons";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
 import { useColors } from "@/src/hooks/useColors";
 import { wakatimeApi, DEFAULT_BASE_URL } from "@/src/api/wakatime";
-import { useWakaTimeOAuth } from "@/src/api/wakatimeOAuth";
 import { ct } from "@/src/constants/styles.common";
 import { SegmentedButtons } from "@/src/components/SegmentedButtons";
 import { Button } from "./Button";
@@ -265,9 +264,7 @@ export function SetupScreen() {
               placeholder={
                 providerMode === "wakatime" ? "waka_tok_..." : "waka_..."
               }
-              placeholder={
-                providerMode === "wakatime" ? "waka_tok_..." : "waka_..."
-              }
+              
               placeholderTextColor={colors.onSurfaceVariant}
               value={key}
               onChangeText={(v) => {
