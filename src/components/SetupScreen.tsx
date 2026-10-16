@@ -19,6 +19,7 @@ import { useWakaTimeOAuth } from "@/src/api/wakatimeOAuth";
 import { ct } from "@/src/constants/styles.common";
 import { SegmentedButtons } from "@/src/components/SegmentedButtons";
 import { Button } from "./Button";
+import { useWakaTimeOAuth } from "../api/wakatimeOAuth";
 
 const HACKATIME_URL = "https://hackatime.hackclub.com/api/hackatime/v1";
 const LOGO_SIZE = 72;
@@ -261,6 +262,9 @@ export function SetupScreen() {
                 fontFamily: fieldStyle.fontFamily,
                 color: fieldStyle.color,
               }}
+              placeholder={
+                providerMode === "wakatime" ? "waka_tok_..." : "waka_..."
+              }
               placeholder={
                 providerMode === "wakatime" ? "waka_tok_..." : "waka_..."
               }
