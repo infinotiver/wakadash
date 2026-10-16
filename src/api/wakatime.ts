@@ -33,10 +33,13 @@ function isHackatime(baseUrl: string): boolean {
   return baseUrl.includes("hackatime.hackclub.com");
 }
 
+// Hackatime: always Bearer. WakaTime: OAuth tokens (waka_tok_...) use Bearer,
+// legacy API keys keep Basic auth for wakatime.
 function authHeader(apiKey: string, baseUrl: string): string {
-  return isHackatime(baseUrl)
-    ? `Bearer ${apiKey}`
-    : `Basic ${btoa(`${apiKey}:`)}`;
+  if (isHackatime(baseUrl) || apiKey.startsWith("waka_tok_")) {
+    return `Bearer ${apiKey}`;
+  }
+  return `Basic ${btoa(`${apiKey}:`)}`;
 }
 
 // Thrown synchronously, before any request goes out,

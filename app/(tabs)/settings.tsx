@@ -367,7 +367,7 @@ export default function SettingsScreen() {
           style={[styles.section, { backgroundColor: c.surfaceContainerHigh }]}
         >
           <Text style={[styles.sectionTitle, { color: c.onSurface }]}>
-            API Key
+            API Key/Token
           </Text>
           {!editingKey ? (
             <FieldRow
@@ -429,6 +429,9 @@ export default function SettingsScreen() {
               />
             </View>
           )}
+          <Text style={{ fontSize: ct.fontSize.xs, color: c.onSurfaceVariant }}>
+            Delete they key to use WakaTime OAuth on Setup Screen.
+          </Text>
         </View>
 
         {/* About Section - Restored original button layout & direct inline elements */}

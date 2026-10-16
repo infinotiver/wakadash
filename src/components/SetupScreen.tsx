@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {
-  ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Linking,
   Platform,
@@ -15,11 +15,15 @@ import { Feather } from "@expo/vector-icons";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
 import { useColors } from "@/src/hooks/useColors";
 import { wakatimeApi, DEFAULT_BASE_URL } from "@/src/api/wakatime";
+import { useWakaTimeOAuth } from "@/src/api/wakatimeOAuth";
 import { ct } from "@/src/constants/styles.common";
 import { SegmentedButtons } from "@/src/components/SegmentedButtons";
 import { Button } from "./Button";
 
 const HACKATIME_URL = "https://hackatime.hackclub.com/api/hackatime/v1";
+const LOGO_SIZE = 72;
+
+const ICON_HIT_SLOP = { top: 16, bottom: 16, left: 4, right: 4 } as const;
 
 type ProviderMode = "wakatime" | "hackatime" | "custom";
 
@@ -66,10 +70,7 @@ export function SetupScreen() {
 
   const keyPortalUrl = isHackatime
     ? "https://hackatime.hackclub.com"
-    : "https://wakatime.com/settings/api-key";
-  const keyPortalLabel = isHackatime
-    ? "hackatime.hackclub.com"
-    : "wakatime.com/settings/api-key";
+    : "https://wakatime.com/oauth";
 
   const fieldStyle = {
     borderWidth: 1,
@@ -83,6 +84,33 @@ export function SetupScreen() {
     color: colors.onSurface,
   } as const;
 
+  const cardStyle = {
+    backgroundColor: colors.surfaceContainerHigh,
+    borderRadius: ct.radius["2xl"],
+    padding: ct.space.lg,
+    gap: ct.space.md,
+  } as const;
+
+  async function connect(credential: string, url: string) {
+    setLoading(true);
+    setError(null);
+    try {
+      await wakatimeApi.verifyKey(credential, url);
+      await setBaseUrl(url);
+      await setApiKey(credential);
+    } catch (e: unknown) {
+      if (e instanceof Error && e.message === "Invalid API key") {
+        setError("Invalid key or token.");
+      } else if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError("Could not connect to server. Check your URL and network.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleSave() {
     const trimmedKey = key.trim();
     const trimmedUrl = activeServerUrl;
@@ -93,24 +121,12 @@ export function SetupScreen() {
       return;
     }
 
-    setLoading(true);
-    setError(null);
-    try {
-      await wakatimeApi.verifyKey(trimmedKey, trimmedUrl);
-      await setBaseUrl(trimmedUrl);
-      await setApiKey(trimmedKey);
-    } catch (e: unknown) {
-      if (e instanceof Error && e.message === "Invalid API key") {
-        setError("Invalid API key. Check your credentials and try again.");
-      } else if (e instanceof Error) {
-        setError(e.message);
-      } else {
-        setError("Could not connect to server. Check your URL and network.");
-      }
-    } finally {
-      setLoading(false);
-    }
+    await connect(trimmedKey, trimmedUrl);
   }
+
+  const { signIn, ready } = useWakaTimeOAuth((token) =>
+    connect(token, DEFAULT_BASE_URL),
+  );
 
   const hasValidProvider =
     providerMode !== "custom" || customUrl.trim().length > 0;
@@ -134,9 +150,16 @@ export function SetupScreen() {
           alignSelf: "center",
         }}
       >
-        {/* Top Header */}
-        <View style={{ gap: ct.space.xs, paddingHorizontal: ct.space.xs }}>
+        {/* Logo + title */}
+        <View style={{ alignItems: "flex-start", gap: ct.space.md }}>
+          <Image
+            source={require("/assets/icons/icon.png")}
+            style={{ width: LOGO_SIZE, height: LOGO_SIZE }}
+            accessible={false}
+            importantForAccessibility="no"
+          />
           <Text
+            accessibilityRole="header"
             style={{
               fontSize: ct.fontSize.display,
               fontFamily: ct.fontFamily.bold,
@@ -145,30 +168,10 @@ export function SetupScreen() {
           >
             WakaDash
           </Text>
-          <Text style={[ct.text.body, { color: colors.onSurfaceVariant }]}>
-            Connect your WakaTime or compatible server to view your coding
-            analytics.
-          </Text>
         </View>
 
-        {/* Step 1: Server Provider Card */}
-        <View
-          style={{
-            backgroundColor: colors.surfaceContainerHigh,
-            borderRadius: ct.radius["2xl"],
-            padding: ct.space.lg,
-            gap: ct.space.md,
-          }}
-        >
-          <View style={[ct.styles.rowCenter, { gap: ct.space.sm }]}>
-            <Feather name="server" size={16} color={colors.primary} />
-            <Text
-              style={[ct.text.bodyMedium, { color: colors.onSurface, flex: 1 }]}
-            >
-              Provider
-            </Text>
-          </View>
-
+        {/* Provider */}
+        <View style={cardStyle}>
           <SegmentedButtons
             items={PROVIDER_OPTIONS}
             value={providerMode}
@@ -179,82 +182,66 @@ export function SetupScreen() {
           />
 
           {providerMode === "custom" && (
-            <>
-              <View
+            <View
+              style={{
+                ...fieldStyle,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: ct.space.sm,
+              }}
+            >
+              <Feather name="globe" size={16} color={colors.onSurfaceVariant} />
+              <TextInput
                 style={{
-                  ...fieldStyle,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: ct.space.sm,
+                  flex: 1,
+                  height: "100%",
+                  paddingVertical: 0,
+                  fontSize: fieldStyle.fontSize,
+                  fontFamily: fieldStyle.fontFamily,
+                  color: fieldStyle.color,
                 }}
-              >
-                <Feather
-                  name="globe"
-                  size={16}
-                  color={colors.onSurfaceVariant}
-                />
-                <TextInput
-                  style={{
-                    flex: 1,
-                    height: "100%",
-                    paddingVertical: 0,
-                    fontSize: fieldStyle.fontSize,
-                    fontFamily: fieldStyle.fontFamily,
-                    color: fieldStyle.color,
-                  }}
-                  value={customUrl}
-                  onChangeText={(v) => {
-                    setCustomUrl(v);
-                    setError(null);
-                  }}
-                  placeholder="https://wakapi.dev/api/compat/wakatime/v1"
-                  placeholderTextColor={colors.onSurfaceVariant}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  keyboardType="url"
-                />
-                {customUrl.length > 0 && (
-                  <TouchableOpacity
-                    onPress={() => setCustomUrl("")}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    accessibilityRole="button"
-                    accessibilityLabel="Clear custom URL"
-                  >
-                    <Feather
-                      name="x"
-                      size={15}
-                      color={colors.onSurfaceVariant}
-                    />
-                  </TouchableOpacity>
-                )}
-              </View>
-
-              <Text
-                style={[ct.text.caption, { color: colors.onSurfaceVariant }]}
-              >
-                Enter a WakaTime-compatible API endpoint (e.g. Wakapi).
-              </Text>
-            </>
+                value={customUrl}
+                onChangeText={(v) => {
+                  setCustomUrl(v);
+                  setError(null);
+                }}
+                placeholder="https://wakapi.dev/api/compat/wakatime/v1"
+                placeholderTextColor={colors.onSurfaceVariant}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+              />
+              {customUrl.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => setCustomUrl("")}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Clear custom URL"
+                >
+                  <Feather name="x" size={15} color={colors.onSurfaceVariant} />
+                </TouchableOpacity>
+              )}
+            </View>
           )}
         </View>
 
-        {/* Step 2: API Key Card */}
-        <View
-          style={{
-            backgroundColor: colors.surfaceContainerHigh,
-            borderRadius: ct.radius["2xl"],
-            padding: ct.space.lg,
-            gap: ct.space.md,
-          }}
-        >
-          <View style={[ct.styles.rowCenter, { gap: ct.space.sm }]}>
-            <Feather name="key" size={16} color={colors.primary} />
-            <Text
-              style={[ct.text.bodyMedium, { color: colors.onSurface, flex: 1 }]}
-            >
-              API Key
-            </Text>
-          </View>
+        {/* Sign in + API key */}
+        <View style={cardStyle}>
+          {providerMode === "wakatime" && (
+            <>
+              <Button
+                onPress={signIn}
+                disabled={!ready || loading}
+                label="Sign in with WakaTime"
+              />
+              <View
+                style={[
+                  ct.styles.divider,
+                  { backgroundColor: colors.outlineVariant },
+                ]}
+              />
+            </>
+          )}
 
           <View
             style={{
@@ -274,7 +261,9 @@ export function SetupScreen() {
                 fontFamily: fieldStyle.fontFamily,
                 color: fieldStyle.color,
               }}
-              placeholder="waka_..."
+              placeholder={
+                providerMode === "wakatime" ? "waka_tok_..." : "waka_..."
+              }
               placeholderTextColor={colors.onSurfaceVariant}
               value={key}
               onChangeText={(v) => {
@@ -287,11 +276,25 @@ export function SetupScreen() {
               returnKeyType="done"
               onSubmitEditing={handleSave}
             />
+            {providerMode !== "custom" && (
+              <TouchableOpacity
+                onPress={() => Linking.openURL(keyPortalUrl)}
+                hitSlop={ICON_HIT_SLOP}
+                accessibilityRole="button"
+                accessibilityLabel="Get a key"
+              >
+                <Feather
+                  name="external-link"
+                  size={16}
+                  color={colors.onSurfaceVariant}
+                />
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               onPress={() => setShow((s) => !s)}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              hitSlop={ICON_HIT_SLOP}
               accessibilityRole="button"
-              accessibilityLabel={show ? "Hide API key" : "Show API key"}
+              accessibilityLabel={show ? "Hide key" : "Show key"}
             >
               <Feather
                 name={show ? "eye-off" : "eye"}
@@ -301,32 +304,14 @@ export function SetupScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Clickable External Link to grab API Key */}
-          {providerMode !== "custom" && (
-            <TouchableOpacity
-              onPress={() => Linking.openURL(keyPortalUrl)}
-              activeOpacity={0.7}
-              style={[ct.styles.rowCenter, { gap: ct.space.xs }]}
-            >
-              <Text
-                style={[ct.text.caption, { color: colors.onSurfaceVariant }]}
-              >
-                Get your key from{" "}
-                <Text
-                  style={{
-                    color: colors.primary,
-                    fontFamily: ct.fontFamily.semibold,
-                  }}
-                >
-                  {keyPortalLabel}
-                </Text>
-              </Text>
-              <Feather name="external-link" size={12} color={colors.primary} />
-            </TouchableOpacity>
-          )}
+          <Button
+            onPress={handleSave}
+            disabled={!canSubmit}
+            label="Connect"
+            loading={loading}
+          />
         </View>
 
-        {/* Inline Error Banner */}
         {error && (
           <View
             style={{
@@ -353,13 +338,6 @@ export function SetupScreen() {
             </Text>
           </View>
         )}
-
-        <Button
-          onPress={handleSave}
-          disabled={!canSubmit}
-          label="Save & Continue"
-          loading={loading}
-        />
       </ScrollView>
     </KeyboardAvoidingView>
   );
