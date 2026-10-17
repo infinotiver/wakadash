@@ -29,7 +29,7 @@ export class WakaTimeApiError extends Error {
 
 // Hackatime authenticates via `Authorization: Bearer <key>`. WakaTime (and
 // "custom", assumed WakaTime-shaped) uses Basic auth like WakaTime's own API.
-function isHackatime(baseUrl: string): boolean {
+export function isHackatime(baseUrl: string): boolean {
   return baseUrl.includes("hackatime.hackclub.com");
 }
 
@@ -56,8 +56,13 @@ async function wakFetch(path: string, apiKey: string, baseUrl: string) {
   if (res.status === 202) {
     throw new WakaTimeApiError("Stats processing, retry shortly", 202);
   }
-  if (!res.ok)
+  if (!res.ok) {
+    if (__DEV__) {
+      const body = await res.text().catch(() => "");
+      console.warn("wakFetch", res.status, `${baseUrl}${path}`, body);
+    }
     throw new WakaTimeApiError(`API error ${res.status}`, res.status);
+  }
   return res.json();
 }
 
@@ -71,7 +76,7 @@ async function wakFetchPublic(path: string) {
 
 // not to be confused with the other user facing date formatter, wakatime requires a specific format for the API, which is YYYY-MM-DD. This function formats a Date object into that string format.
 
-const fmt = (date: Date) => {
+export const fmt = (date: Date) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
@@ -80,12 +85,20 @@ const fmt = (date: Date) => {
 
 const HACKATIME_NATIVE_BASE_URL = "https://hackatime.hackclub.com/api/v1";
 
-type StatsRange =
+export type PresetRange =
   | "last_7_days"
   | "last_30_days"
   | "last_6_months"
   | "last_year"
   | "all_time";
+
+// custom: YYYY/ custom: YYYY-MM (Wakatime)
+// custom: YYYY-MM-DD_YYYY-MM-DD (Hackatime)
+export type CustomRange = `custom:${string}`;
+export type StatsRange = PresetRange | CustomRange;
+
+export const isCustomRange = (r: StatsRange): r is CustomRange =>
+  r.startsWith("custom:");
 
 const HACKATIME_RANGE_DAYS: Record<Exclude<StatsRange, "all_time">, number> = {
   last_7_days: 7,
@@ -99,6 +112,10 @@ function hackatimeDateRange(
 ): { start_date: string; end_date: string } | null {
   if (range === "all_time") return null;
 
+  if (isCustomRange(range)) {
+    const [start_date, end_date] = range.slice("custom:".length).split("_");
+    return { start_date, end_date };
+  }
   const end = new Date();
   const start = new Date();
   start.setDate(start.getDate() - (HACKATIME_RANGE_DAYS[range] - 1));
@@ -192,9 +209,11 @@ export const wakatimeApi = {
             HACKATIME_NATIVE_BASE_URL,
           ).then((d: HackaTimeStats) => d.data);
         })()
-      : wakFetch(`/users/current/stats/${range}`, apiKey, baseUrl).then((d) =>
-          normalizeStats(d.data),
-        ),
+      : wakFetch(
+          `/users/current/stats/${isCustomRange(range) ? range.slice("custom:".length) : range}`,
+          apiKey,
+          baseUrl,
+        ).then((d) => normalizeStats(d.data)),
   getGoals: (apiKey: string, baseUrl: string): Promise<WakaGoal[]> =>
     isHackatime(baseUrl)
       ? unsupported("Goals")

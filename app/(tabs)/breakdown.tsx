@@ -26,6 +26,9 @@ import { Feather } from "@expo/vector-icons";
 import { buildLanguageColorMap, formatDuration } from "@/src/utils/dashboard";
 import { SegmentedButtons } from "@/src/components/SegmentedButtons";
 import { AiChangesChart } from "@/src/components/AiChangesChart";
+import { fmt, isHackatime, type StatsRange } from "@/src/api/wakatime";
+import { DateRangePicker } from "@/src/components/DateRangePicker";
+import { PeriodPicker } from "@/src/components/PeriodPicker";
 const styles = ct.styles.breakdown;
 
 type Range =
@@ -34,6 +37,8 @@ type Range =
   | "last_6_months"
   | "last_year"
   | "all_time";
+type RangeChip = Range | "custom";
+
 type Category =
   | "categories"
   | "languages"
@@ -42,20 +47,22 @@ type Category =
   | "projects";
 type ChartView = "pie" | "bar";
 
-const RANGES: { label: string; value: Range }[] = [
+const RANGES: { label: string; value: RangeChip }[] = [
   { label: "7D", value: "last_7_days" },
   { label: "1M", value: "last_30_days" },
   { label: "6M", value: "last_6_months" },
   { label: "1Y", value: "last_year" },
   { label: "All Time", value: "all_time" },
+  { label: "Custom", value: "custom" },
 ];
 
-const RANGE_LABEL: Record<Range, string> = {
+const RANGE_LABEL: Record<RangeChip, string> = {
   last_7_days: "last week",
   last_30_days: "last month",
   last_6_months: "last 6 months",
   last_year: "last year",
   all_time: "all time",
+  custom: "custom range",
 };
 
 const CATEGORIES: { label: string; value: Category }[] = [
@@ -76,6 +83,11 @@ const CHART_VIEWS: { label: string; value: ChartView }[] = [
 // honestly, instead of silently dropping the tail.
 const CHART_TOP_N = 6;
 
+function defaultCustomValue(baseUrl: string): string {
+  const now = new Date();
+  const month = fmt(now).slice(0, 7);
+  return isHackatime(baseUrl) ? `${month}-01_${fmt(now)}` : month;
+}
 function SectionLabel({
   title,
   c,
@@ -104,8 +116,18 @@ export default function BreakdownScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const params = useLocalSearchParams<{ category?: string }>();
-  const { isConfigured } = useWakaTime();
-  const [range, setRange] = useState<Range>("last_7_days");
+  const { isConfigured, baseUrl } = useWakaTime();
+  const [range, setRange] = useState<RangeChip>("last_7_days");
+  const [customValue, setCustomValue] = useState(() =>
+    defaultCustomValue(baseUrl),
+  );
+  // a WakaTime value (YYYY-MM) is invalid on Hackatime and vice versa
+  useEffect(() => {
+    setCustomValue(defaultCustomValue(baseUrl));
+  }, [baseUrl]);
+
+  const activeRange: StatsRange =
+    range === "custom" ? `custom:${customValue}` : range;
   const [category, setCategory] = useState<Category>(() =>
     CATEGORIES.some((item) => item.value === params.category)
       ? (params.category as Category)
@@ -113,7 +135,7 @@ export default function BreakdownScreen() {
   );
   const [chartView, setChartView] = useState<ChartView>("pie");
 
-  const statsQ = useWakaStats(range);
+  const statsQ = useWakaStats(activeRange);
   const langMetaQ = useProgramLanguages();
 
   const stats = statsQ.data;
@@ -199,8 +221,17 @@ export default function BreakdownScreen() {
         }
       >
         <ButtonGroup items={RANGES} value={range} onChange={setRange} />
-
-        {/* Pro upsell */}
+        {range === "custom" &&
+          (isHackatime(baseUrl) ? (
+            <DateRangePicker value={customValue} onChange={setCustomValue} />
+          ) : (
+            <PeriodPicker
+              value={customValue}
+              onChange={(v) => {
+                setCustomValue(v);
+              }}
+            />
+          ))}
         {showProError && (
           <View
             style={[
@@ -339,15 +370,7 @@ export default function BreakdownScreen() {
                 </View>
               </>
             )}
-            <View
-              style={[
-                ct.styles.section,
-                {
-                  marginBottom: ct.space.lg,
-                  backgroundColor: c.surfaceContainerHigh,
-                },
-              ]}
-            >
+            <View>
               <AiChangesChart
                 aiAdditions={aiAdditions}
                 aiDeletions={aiDeletions}

@@ -81,6 +81,14 @@ export function AiChangesChart({
     fontFamily: ct.fontFamily.semibold,
     fontSize: ct.fontSize.md,
   };
+  if (
+    aiAdditions === 0 &&
+    aiDeletions === 0 &&
+    humanAdditions === 0 &&
+    humanDeletions === 0
+  ) {
+    return null;
+  }
 
   return (
     <View

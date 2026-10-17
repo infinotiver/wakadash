@@ -1,5 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { wakatimeApi } from "@/src/api/wakatime";
+import {
+  wakatimeApi,
+  WakaTimeApiError,
+  type StatsRange,
+} from "@/src/api/wakatime";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
 import { useEffect } from "react";
 import { syncWidgets } from "@/src/widgets/syncWidgets";
@@ -105,14 +109,7 @@ export function useAllTimeSinceToday() {
     retry: 1,
   });
 }
-export function useWakaStats(
-  range:
-    | "last_7_days"
-    | "last_30_days"
-    | "last_6_months"
-    | "last_year"
-    | "all_time",
-) {
+export function useWakaStats(range: StatsRange) {
   const { apiKey, baseUrl, isConfigured } = useWakaTime();
   const scope = useWakaQueryScope();
   return useQuery({
@@ -121,7 +118,12 @@ export function useWakaStats(
     enabled: isConfigured,
     staleTime: TEN_MIN,
     gcTime: THIRTY_MIN,
-    retry: 1,
+    // 202 = WakaTime is still computing; keep polling instead of failing
+    retry: (failureCount, error) =>
+      error instanceof WakaTimeApiError && error.status === 202
+        ? failureCount < 8
+        : failureCount < 1,
+    retryDelay: 3000,
   });
 }
 
