@@ -38,37 +38,16 @@ import {
   useWeekSummaries,
   useWindowSummaries,
 } from "@/src/hooks/useWakaTimeQueries";
-
-import DateTimePicker, {
-  DateTimePickerAndroid,
-  type DateTimePickerEvent,
-} from "@react-native-community/datetimepicker";
+import { useDatePicker } from "@/src/hooks/useDatePicker";
 
 const styles = ct.styles.overview;
 
 export default function TodayScreen() {
   const colors = useColors();
   const router = useRouter();
-  const [iosPickerOpen, setIosPickerOpen] = useState(false);
-  const onPickDate = (event: DateTimePickerEvent, picked?: Date) => {
-    if (Platform.OS === "ios") setIosPickerOpen(false);
-    if (event.type === "set" && picked) selectDate(toDateKey(picked));
-  };
-
-  const openPicker = () => {
-    if (Platform.OS === "android") {
-      DateTimePickerAndroid.open({
-        design: "material",
-        title: "Select date to view",
-        value: new Date(`${date}T12:00:00`),
-        mode: "date",
-        maximumDate: new Date(), // can't pick the future
-        onChange: onPickDate,
-      });
-    } else {
-      setIosPickerOpen(true);
-    }
-  };
+  const { open, modal } = useDatePicker();
+  const openPicker = () =>
+    open({ value: date, title: "Select date to view", onPick: selectDate });
 
   const { isConfigured } = useWakaTime();
 
@@ -180,42 +159,7 @@ export default function TodayScreen() {
         ]}
       />
 
-      {/* iOS: Android uses the native dialog via DateTimePickerAndroid */}
-      {Platform.OS === "ios" && iosPickerOpen ? (
-        <Modal
-          transparent
-          animationType="fade"
-          onRequestClose={() => setIosPickerOpen(false)}
-        >
-          <Pressable
-            style={{
-              flex: 1,
-              backgroundColor: "#00000066",
-              justifyContent: "center",
-              padding: ct.space.lg,
-            }}
-            onPress={() => setIosPickerOpen(false)}
-          >
-            <Pressable
-              onPress={() => {}} // swallow taps so the card doesn't dismiss
-              style={{
-                backgroundColor: colors.surfaceContainerHigh,
-                borderRadius: ct.radius["2xl"],
-                padding: ct.space.md,
-              }}
-            >
-              <DateTimePicker
-                value={new Date(`${date}T12:00:00`)}
-                mode="date"
-                display="inline"
-                maximumDate={new Date()}
-                accentColor={colors.primary}
-                onChange={onPickDate}
-              />
-            </Pressable>
-          </Pressable>
-        </Modal>
-      ) : null}
+      {modal}
 
       <ScrollView
         style={ct.styles.scroll}

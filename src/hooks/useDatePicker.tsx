@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Modal, Platform, Pressable } from "react-native";
 import DateTimePicker, {
   DateTimePickerAndroid,
-  type DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { useColors } from "@/src/hooks/useColors";
 import { ct } from "@/src/constants/styles.common";
@@ -21,19 +20,13 @@ export function useDatePicker() {
   const [iosOpts, setIosOpts] = useState<OpenOptions | null>(null);
 
   const open = (opts: OpenOptions) => {
-    const handle = (event: DateTimePickerEvent, picked?: Date) => {
-      if (Platform.OS === "ios") setIosOpts(null);
-      if (event.type === "set" && picked) opts.onPick(toDateKey(picked));
-    };
-
     if (Platform.OS === "android") {
       DateTimePickerAndroid.open({
-        // design: "material",
         title: opts.title,
         value: toDate(opts.value),
         mode: "date",
         maximumDate: new Date(), // can't pick the future
-        onChange: handle,
+        onValueChange: (_e, d) => opts.onPick(toDateKey(d)),
       });
     } else {
       setIosOpts(opts);
@@ -70,10 +63,11 @@ export function useDatePicker() {
               display="inline"
               maximumDate={new Date()}
               accentColor={colors.primary}
-              onChange={(e, d) => {
+              onValueChange={(_e, d) => {
                 setIosOpts(null);
-                if (e.type === "set" && d) iosOpts.onPick(toDateKey(d));
+                iosOpts.onPick(toDateKey(d));
               }}
+              onDismiss={() => setIosOpts(null)}
             />
           </Pressable>
         </Pressable>

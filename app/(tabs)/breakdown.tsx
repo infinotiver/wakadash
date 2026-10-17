@@ -164,10 +164,10 @@ export default function BreakdownScreen() {
   const items = stats?.[category] ?? [];
   const visibleItems = items.filter((item) => (item?.percent ?? 0) >= 0.1);
   const showProError =
+    !isHackatime(baseUrl) &&
     statsQ.error instanceof Error &&
     "status" in statsQ.error &&
-    statsQ.error.status === 403 &&
-    range === "last_30_days";
+    statsQ.error.status === 403;
 
   const chartColors = [
     c.accent.violet.color,
@@ -243,7 +243,7 @@ export default function BreakdownScreen() {
             ]}
           >
             <Text style={[{ color: c.onSurface }]}>
-              30-day stats require a WakaTime Pro account.
+              This range requires a WakaTime Pro account.
             </Text>
           </View>
         )}
