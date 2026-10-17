@@ -13,7 +13,6 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import "@/src/notifications/todayNotification"; // registers the background task at startup
 import { WakaTimeProvider } from "@/src/context/WakaTimeContext";
 import { useSyncTodayNotification } from "@/src/hooks/useWakaTimeQueries";
 

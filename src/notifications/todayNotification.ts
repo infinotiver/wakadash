@@ -13,7 +13,7 @@ const CONFIG_KEY = "notif:todayConfig";
 const TASK = "today-notification-sync";
 const ACTION_TASK = "today-notification-action";
 const CHANNEL = "today-stats";
-const CATEGORY = "today-stats";
+const CATEGORY = "todayStats";
 const SYNC_ACTION = "sync";
 const NOTIFICATION_ID = "today-stats";
 
@@ -96,21 +96,20 @@ export async function saveConfig(
       if (await TaskManager.isTaskRegisteredAsync(TASK)) {
         await BackgroundTask.unregisterTaskAsync(TASK);
       }
-    } else {
-      const perm = await Notifications.requestPermissionsAsync();
-      if (!perm.granted) {
-        final = { ...config, enabled: false };
-      } else {
-        await Notifications.setNotificationChannelAsync(CHANNEL, {
-          name: "Today's stats",
-          importance: Notifications.AndroidImportance.LOW,
-          showBadge: false,
-          enableVibrate: false,
-        });
-        if (!(await TaskManager.isTaskRegisteredAsync(TASK))) {
-          await BackgroundTask.registerTaskAsync(TASK, { minimumInterval: 15 });
-        }
-      }
+    }
+  } else {
+    // Android 13+: the prompt only appears once a channel exists
+    await Notifications.setNotificationChannelAsync(CHANNEL, {
+      name: "Today's stats",
+      importance: Notifications.AndroidImportance.LOW,
+      showBadge: false,
+      enableVibrate: false,
+    });
+    const perm = await Notifications.requestPermissionsAsync();
+    if (!perm.granted) {
+      final = { ...config, enabled: false };
+    } else if (!(await TaskManager.isTaskRegisteredAsync(TASK))) {
+      await BackgroundTask.registerTaskAsync(TASK, { minimumInterval: 15 });
     }
   }
 
