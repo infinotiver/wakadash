@@ -1,12 +1,19 @@
 import { Tabs } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, Keyboard, Platform, Pressable, View } from "react-native";
+import {
+  Animated,
+  Keyboard,
+  Platform,
+  Pressable,
+  View,
+  Text,
+} from "react-native";
 import { SymbolView } from "expo-symbols";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { usePathname } from "expo-router";
-
 import { useColors } from "@/src/hooks/useColors";
+import { ct } from "@/src/constants/styles.common";
 
 // Props type taken from <Tabs> itself so it always matches expo-router's own types.
 // Avoids importing bottom bar for props which lead to a conflict
@@ -18,28 +25,30 @@ type TabBarProps = Parameters<
 const isIOS26 =
   Platform.OS === "ios" && parseInt(Platform.Version.toString(), 10) >= 26;
 
-// Sizes follow the M3 floating toolbar: 64 bar, 48 round buttons.
+// Floating toolbar: 72 bar, 96x56 pill indicator, 8 padding around it.
 const TAB_BAR_HEIGHT = 64;
-const ICON_BUTTON_SIZE = 48;
-const ITEM_WIDTH = 56; // button slot: 48 circle + 4 spare on each side
-const BAR_PADDING = 4; // + the 4 spare above = 8 gap between circle and pill edge
+const ITEM_WIDTH = 92;
+const ITEM_HEIGHT = 56;
+const BAR_PADDING = 4;
 
 // The three tabs shown in the bar.
 // Settings is not shown as a tab
 const BAR_TABS = ["index", "today", "breakdown"];
 
-// Tab icon: fill icon on active
+// Tab icon: wide pill indicator with icon + label
 function TabIcon({
   focused,
+  label,
   render,
 }: {
   focused: boolean;
+  label: string;
   render: (color: string) => React.ReactNode;
 }) {
   const colors = useColors();
   const progress = useRef(new Animated.Value(focused ? 1 : 0)).current;
 
-  // Spring the fill in/out when selection changes.
+  // Spring the pill in/out when selection changes.
   useEffect(() => {
     Animated.spring(progress, {
       toValue: focused ? 1 : 0,
@@ -49,23 +58,25 @@ function TabIcon({
     }).start();
   }, [focused, progress]);
 
+  const color = focused ? colors.onPrimary : colors.onPrimaryContainer;
+
   return (
     <View
       style={{
-        width: ICON_BUTTON_SIZE,
-        height: ICON_BUTTON_SIZE,
+        width: ITEM_WIDTH,
+        height: ITEM_HEIGHT,
         alignItems: "center",
         justifyContent: "center",
       }}
     >
-      {/* Always mounted, only opacity/scale animate, so the circle never flashes square. */}
+      {/* Always mounted, only opacity/scale animate, so the pill never flashes square. */}
       <Animated.View
         pointerEvents="none"
         style={{
           position: "absolute",
-          width: ICON_BUTTON_SIZE,
-          height: ICON_BUTTON_SIZE,
-          borderRadius: ICON_BUTTON_SIZE / 2,
+          width: ITEM_WIDTH,
+          height: ITEM_HEIGHT,
+          borderRadius: ITEM_HEIGHT / 2,
           backgroundColor: colors.primary,
           opacity: progress,
           transform: [
@@ -78,7 +89,17 @@ function TabIcon({
           ],
         }}
       />
-      {render(focused ? colors.onPrimary : colors.onPrimaryContainer)}
+      {render(color)}
+      <Text
+        numberOfLines={1}
+        style={{
+          fontSize: ct.fontSize.xs,
+          fontFamily: focused ? ct.fontFamily.semibold : ct.fontFamily.medium,
+          color,
+        }}
+      >
+        {label}
+      </Text>
     </View>
   );
 }
@@ -215,6 +236,7 @@ function ClassicTabLayout() {
     <Tabs
       tabBar={(props) => <FloatingTabBar {...props} />}
       screenOptions={{ headerShown: false }}
+      backBehavior="history"
     >
       <Tabs.Screen
         name="index"
@@ -223,6 +245,7 @@ function ClassicTabLayout() {
           tabBarIcon: ({ focused }) => (
             <TabIcon
               focused={focused}
+              label="Overview"
               render={(color) =>
                 isIOS ? (
                   <SymbolView
@@ -249,6 +272,7 @@ function ClassicTabLayout() {
           tabBarIcon: ({ focused }) => (
             <TabIcon
               focused={focused}
+              label="Today"
               render={(color) =>
                 isIOS ? (
                   <SymbolView name="calendar" tintColor={color} size={22} />
@@ -271,6 +295,7 @@ function ClassicTabLayout() {
           tabBarIcon: ({ focused }) => (
             <TabIcon
               focused={focused}
+              label="Breakdown"
               render={(color) =>
                 isIOS ? (
                   <SymbolView
