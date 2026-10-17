@@ -23,7 +23,7 @@ import type { WakaUser } from "@/src/types/wakatime";
 import { ct } from "@/src/constants/styles.common";
 import { AppBar } from "@/src/components/AppBar";
 import { Button } from "@/src/components/Button";
-
+import { NotificationSettings } from "@/src/components/settings/notifications/Settings";
 const styles = ct.styles.settings;
 const appVersion = Constants.expoConfig?.version ?? "unknown";
 const gitCommit =
@@ -433,8 +433,7 @@ export default function SettingsScreen() {
             Delete they key to use WakaTime OAuth on Setup Screen.
           </Text>
         </View>
-
-        {/* About Section - Restored original button layout & direct inline elements */}
+        <NotificationSettings />
         <View
           style={[styles.section, { backgroundColor: c.surfaceContainerHigh }]}
         >

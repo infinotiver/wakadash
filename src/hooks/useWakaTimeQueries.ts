@@ -7,7 +7,7 @@ import {
 import { useWakaTime } from "@/src/context/WakaTimeContext";
 import { useEffect } from "react";
 import { syncWidgets } from "@/src/widgets/syncWidgets";
-
+import { postTodayNotification } from "../notifications/todayNotification";
 // reusable math consts cuz I'll mess up them later
 
 const FIVE_MIN = 5 * 60 * 1000;
@@ -135,6 +135,14 @@ export function useProgramLanguages() {
     queryFn: () => wakatimeApi.getProgramLanguages(),
     gcTime: 1000 * 60 * 60 * 24 * 7,
   });
+}
+
+export function useSyncTodayNotification() {
+  const todayQ = useTodaySummary();
+
+  useEffect(() => {
+    if (todayQ.isSuccess) postTodayNotification(todayQ.data);
+  }, [todayQ.dataUpdatedAt]);
 }
 
 export function useSyncTodayPill() {

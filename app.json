@@ -76,6 +76,13 @@
           ]
         }
       ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icons/notification.png",
+          "color": "#006874"
+        }
+      ],
       "expo-font"
     ],
     "scheme": "wakadash",

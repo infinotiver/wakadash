@@ -13,23 +13,20 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import "@/src/notifications/todayNotification"; // registers the background task at startup
 import { WakaTimeProvider } from "@/src/context/WakaTimeContext";
-import { useSyncTodayPill } from "@/src/hooks/useWakaTimeQueries";
+import { useSyncTodayNotification } from "@/src/hooks/useWakaTimeQueries";
 
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
-  useSyncTodayPill();
+  useSyncTodayNotification();
 
   return (
-    <Stack screenOptions={{ headerBackTitle: "Back", headerShown: false }}>
+    <Stack screenOptions={{ headerBackTitle: "Back" }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="oauth"
-        options={{ headerShown: false, animation: "fade" }}
-      />
     </Stack>
   );
 }
