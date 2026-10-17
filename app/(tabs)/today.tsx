@@ -39,9 +39,9 @@ import {
   useWindowSummaries,
 } from "@/src/hooks/useWakaTimeQueries";
 import { useDatePicker } from "@/src/hooks/useDatePicker";
+import { Button } from "@/src/components/Button";
 
 const styles = ct.styles.overview;
-
 export default function TodayScreen() {
   const colors = useColors();
   const router = useRouter();
@@ -115,6 +115,16 @@ export default function TodayScreen() {
     colors.accent.coral.color,
     colors.accent.green.color,
   ];
+  const groupStyle = {
+    gap: ct.space.sm,
+    backgroundColor: colors.surfaceContainerHighest,
+    padding: ct.space.xs,
+    borderRadius: ct.radius["2xl"],
+  } as const;
+
+  const viewAllIcon = ({ color, size }: { color: string; size: number }) => (
+    <Feather name="arrow-right" size={size} color={color} />
+  );
   const langColorMap = buildLanguageColorMap(langMetaQ.data);
   const languageColors = (selected?.languages ?? [])
     .slice(0, 4)
@@ -307,63 +317,117 @@ export default function TodayScreen() {
                 },
               ]}
             >
-              <DashboardBreakdownSection
-                title="Languages"
-                chartColors={languageColors}
-                onPress={() =>
-                  router.push({
-                    pathname: "/breakdown",
-                    params: { category: "languages" },
-                  })
-                }
-                items={(selected?.languages ?? []).slice(0, 4).map((item) => ({
-                  name: item.name,
-                  percent: item.percent,
-                  trailingText: item.text ?? "",
-                }))}
-              />
-              <DashboardBreakdownSection
-                title="Editors"
-                chartColors={chartColors}
-                onPress={() =>
-                  router.push({
-                    pathname: "/breakdown",
-                    params: { category: "editors" },
-                  })
-                }
-                items={(selected?.editors ?? []).slice(0, 4).map((item) => ({
-                  name: item.name,
-                  percent: item.percent,
-                  trailingText: item.text ?? "",
-                }))}
-              />
-              <DashboardBreakdownSection
-                title="Projects"
-                chartColors={chartColors}
-                onPress={() =>
-                  router.push({
-                    pathname: "/breakdown",
-                    params: { category: "projects" },
-                  })
-                }
-                items={(selected?.projects ?? []).slice(0, 4).map((item) => ({
-                  name: item.name,
-                  percent: item.percent,
-                  trailingText: item.text ?? "",
-                }))}
-              />
-              <DashboardBreakdownSection
-                title="Operating Systems"
-                chartColors={chartColors}
-                items={(selected?.operating_systems ?? [])
-                  .slice(0, 4)
-                  .map((item) => ({
+              <View style={groupStyle}>
+                <DashboardBreakdownSection
+                  title="Languages"
+                  chartColors={languageColors}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/breakdown",
+                      params: { category: "languages" },
+                    })
+                  }
+                  items={(selected?.languages ?? [])
+                    .slice(0, 4)
+                    .map((item) => ({
+                      name: item.name,
+                      percent: item.percent,
+                      trailingText: item.text ?? "",
+                    }))}
+                />
+                <Button
+                  label="View Languages"
+                  variant="tonal"
+                  tone="secondary"
+                  icon={viewAllIcon}
+                  iconPosition="right"
+                  onPress={() => router.push("/languages")}
+                />
+              </View>
+              <View style={groupStyle}>
+                <DashboardBreakdownSection
+                  title="Editors"
+                  chartColors={chartColors}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/breakdown",
+                      params: { category: "editors" },
+                    })
+                  }
+                  items={(selected?.editors ?? []).slice(0, 4).map((item) => ({
                     name: item.name,
                     percent: item.percent,
                     trailingText: item.text ?? "",
                   }))}
-              />
+                />
+                <Button
+                  label="View Editors"
+                  variant="tonal"
+                  tone="secondary"
+                  icon={viewAllIcon}
+                  iconPosition="right"
+                  onPress={() => router.push("/editors")}
+                />
+              </View>
+              <View
+                style={
+                  (ct.styles.card,
+                  {
+                    gap: ct.space.sm,
+                    backgroundColor: colors.surfaceContainerHighest,
+                    padding: ct.space.xs,
+                    borderRadius: ct.radius["2xl"],
+                  })
+                }
+              >
+                <DashboardBreakdownSection
+                  title="Projects"
+                  chartColors={chartColors}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/breakdown",
+                      params: { category: "projects" },
+                    })
+                  }
+                  items={(selected?.projects ?? []).slice(0, 4).map((item) => ({
+                    name: item.name,
+                    percent: item.percent,
+                    trailingText: item.text ?? "",
+                  }))}
+                />
+                <Button
+                  label="View Projects"
+                  variant="tonal"
+                  tone="secondary"
+                  icon={({ color, size }) => (
+                    <Feather name="arrow-right" size={size} color={color} />
+                  )}
+                  iconPosition="right"
+                  onPress={() => router.push("/projects")}
+                />
+              </View>
 
+              <View style={groupStyle}>
+                <DashboardBreakdownSection
+                  title="Operating Systems"
+                  chartColors={chartColors}
+                  items={(selected?.operating_systems ?? [])
+                    .slice(0, 4)
+                    .map((item) => ({
+                      name: item.name,
+                      percent: item.percent,
+                      trailingText: item.text ?? "",
+                    }))}
+                />
+                <Button
+                  label="View Operating Systems"
+                  variant="tonal"
+                  tone="secondary"
+                  icon={viewAllIcon}
+                  iconPosition="right"
+                  onPress={() => router.push("/operating-systems")}
+                />
+              </View>
               {/* Last 7 Days */}
               <View
                 style={{

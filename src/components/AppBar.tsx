@@ -127,7 +127,11 @@ export function AppBar({
           style={({ pressed }) => [
             styles.titleTouch,
             {
-              paddingLeft: !isCenter && !onLeadingPress ? TITLE_INSET : 0,
+              paddingLeft: isCenter
+                ? 0
+                : onLeadingPress
+                  ? ct.space.md
+                  : TITLE_INSET,
               opacity: onTitlePress && pressed ? 0.7 : 1,
             },
           ]}
