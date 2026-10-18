@@ -145,19 +145,25 @@ export default function BreakdownScreen() {
     (cat) => stats?.[cat.value] !== undefined,
   );
 
+  // take the deep-link param once, then clear it so it can't override later behavior
+  // so user can change category and stuff
   useEffect(() => {
+    if (!params.category) return;
     if (CATEGORIES.some((item) => item.value === params.category)) {
       setCategory(params.category as Category);
-      return;
     }
+    router.setParams({ category: undefined });
+  }, [params.category]);
+
+  // Fall back if the selected category doesn't exist for this provider/range.
+  useEffect(() => {
     if (!stats) return;
-    const stillAvailable = availableCategories.some(
-      (c) => c.value === category,
-    );
-    if (!stillAvailable && availableCategories.length > 0) {
-      setCategory(availableCategories[0].value);
+    if (!availableCategories.some((cat) => cat.value === category)) {
+      if (availableCategories.length > 0) {
+        setCategory(availableCategories[0].value);
+      }
     }
-  }, [stats, availableCategories, category, params.category]);
+  }, [stats, category]);
 
   if (!isConfigured) return <SetupScreen />;
 
