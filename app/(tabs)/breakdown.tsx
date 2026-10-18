@@ -478,7 +478,7 @@ export default function BreakdownScreen() {
                         />
                       ) : (
                         <CategoryBarChart
-                          key={`${range}-${category}}`}
+                          key={`${range}-${category}`}
                           items={chartItems}
                           colors={chartItems.map((i) => i.color)}
                         />
