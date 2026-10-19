@@ -36,6 +36,7 @@ import {
   useWindowSummaries,
 } from "@/src/hooks/useWakaTimeQueries";
 import { useDatePicker } from "@/src/hooks/useDatePicker";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
 const styles = ct.styles.overview;
 
@@ -80,6 +81,15 @@ export default function TodayScreen() {
 
   // Never go past today.
   const step = (delta: number) => selectDate(shiftDateKey(date, delta));
+
+  const swipe = Gesture.Pan()
+    .runOnJS(true)
+    .activeOffsetX([-24, 24])
+    .failOffsetY([-12, 12])
+    .onEnd((e) => {
+      if (e.translationX > 60) step(-1);
+      else if (e.translationX < -60 && !isToday) step(1);
+    });
 
   const refetch = useCallback(async () => {
     await Promise.allSettled([dayQ.refetch(), weekQ.refetch()]);
@@ -203,274 +213,281 @@ export default function TodayScreen() {
       />
 
       {modal}
-
-      <ScrollView
-        style={ct.styles.scroll}
-        contentContainerStyle={{
-          flexGrow: 1,
-        }}
-        refreshControl={
-          <RefreshControl
-            refreshing={dayQ.isFetching || weekQ.isFetching}
-            onRefresh={refetch}
-            tintColor={colors.primary}
-          />
-        }
-      >
-        {loading ? (
-          <ActivityIndicator
-            color={colors.primary}
-            style={{
-              marginTop: ct.size.loading,
-            }}
-          />
-        ) : failed ? (
-          <View
-            style={[
-              styles.errorCard,
-              {
-                marginHorizontal: ct.padding.md,
-                backgroundColor: colors.errorContainer,
-                borderColor: colors.error,
-              },
-            ]}
-          >
-            <Text
+      <GestureDetector gesture={swipe}>
+        <ScrollView
+          style={[
+            ct.styles.scroll,
+            {
+              opacity:
+                dayQ.isPlaceholderData || weekQ.isPlaceholderData ? 0.5 : 1,
+            },
+          ]}
+          contentContainerStyle={{
+            flexGrow: 1,
+          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={dayQ.isFetching || weekQ.isFetching}
+              onRefresh={refetch}
+              tintColor={colors.primary}
+            />
+          }
+        >
+          {loading ? (
+            <ActivityIndicator
+              color={colors.primary}
+              style={{
+                marginTop: ct.size.loading,
+              }}
+            />
+          ) : failed ? (
+            <View
               style={[
-                styles.errorText,
+                styles.errorCard,
                 {
-                  color: colors.onErrorContainer,
+                  marginHorizontal: ct.padding.md,
+                  backgroundColor: colors.errorContainer,
+                  borderColor: colors.error,
                 },
               ]}
             >
-              Failed to load
-            </Text>
-          </View>
-        ) : (
-          <>
-            {!selected ? (
               <Text
                 style={[
-                  ct.text.body,
+                  styles.errorText,
                   {
-                    color: colors.onSurfaceVariant,
-                    textAlign: "center",
-                    marginTop: ct.space.lg,
+                    color: colors.onErrorContainer,
                   },
                 ]}
               >
-                No activity recorded
+                Failed to load
               </Text>
-            ) : null}
-
-            {/* Top Row: Category Pie Chart + 3 Summary StatCards */}
-            <View
-              style={[
-                styles.row,
-                styles.cardSpacing,
-                {
-                  alignItems: "stretch",
-                },
-              ]}
-            >
-              {hasCategories && (
-                <View style={{ flex: 5 }}>
-                  <CategoryPieChart
-                    items={(selected?.categories ?? [])
-                      .slice(0, 5)
-                      .map((item) => ({
-                        name: item.name,
-                        percent: item.percent,
-                        total_seconds: item.total_seconds,
-                        text: item.text ?? "",
-                      }))}
-                    totalLabel={dayLabel}
-                  />
-                </View>
-              )}
-
-              <View
-                style={{
-                  flex: hasCategories ? 3 : 1,
-                  gap: ct.padding.sm,
-                }}
-              >
-                <View style={{ flex: 1 }}>
-                  <StatCard
-                    value={
-                      selected
-                        ? formatDuration(selected.grand_total.total_seconds)
-                        : "-"
-                    }
-                    subtitle={dayLabel}
-                    icon={(tint) => (
-                      <Feather name="clock" size={20} color={tint} />
-                    )}
-                  />
-                </View>
-
-                <View style={{ flex: 1 }}>
-                  <StatCard
-                    value={formatDuration(weekAvg)}
-                    subtitle="7-Day Avg"
-                    icon={(tint) => (
-                      <Feather name="bar-chart" size={20} color={tint} />
-                    )}
-                  />
-                </View>
-
-                <View style={{ flex: 1 }}>
-                  <StatCard
-                    value={
-                      bestDay
-                        ? formatDuration(bestDay.grand_total.total_seconds)
-                        : "-"
-                    }
-                    subtitle="best day"
-                    icon={(tint) => (
-                      <Feather name="award" size={20} color={tint} />
-                    )}
-                  />
-                </View>
-              </View>
             </View>
-
-            {/* Unified 7-Day Window Header + Interactive Weekly Chart */}
-            <View
-              style={[
-                styles.cardSpacing,
-                {
-                  backgroundColor:
-                    colors.surfaceContainer ?? colors.surfaceContainerHigh,
-                  padding: ct.padding.lg,
-                  borderRadius: ct.radius["2xl"],
-                  gap: ct.padding.sm,
-                },
-              ]}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "baseline",
-                  gap: ct.space.md,
-                }}
-              >
+          ) : (
+            <>
+              {!selected ? (
                 <Text
                   style={[
-                    styles.sectionTitle,
-                    {
-                      color: colors.onSurface,
-                    },
-                  ]}
-                >
-                  {windowTitle}
-                </Text>
-                <Text
-                  style={{
-                    fontSize: ct.fontSize.sm,
-                    fontFamily: ct.fontFamily.medium,
-                    color: colors.onSurfaceVariant,
-                  }}
-                >
-                  {formatDuration(weekTotal)}
-                </Text>
-              </View>
-
-              {week.length ? (
-                <WeeklyChart
-                  days={week}
-                  selectedDate={date}
-                  onSelectDate={selectDate}
-                />
-              ) : (
-                <Text
-                  style={[
-                    styles.empty,
+                    ct.text.body,
                     {
                       color: colors.onSurfaceVariant,
+                      textAlign: "center",
+                      marginTop: ct.space.lg,
                     },
                   ]}
                 >
-                  No data available
+                  No activity recorded
                 </Text>
-              )}
-            </View>
+              ) : null}
 
-            {/* Breakdown Bottom Sheet Group */}
-            <View
-              style={[
-                ct.styles.flex,
-                {
-                  paddingTop: ct.padding["2xl"],
-                  paddingBottom: 64 + ct.space["2xl"],
-                  paddingHorizontal: ct.padding.xl,
-                  backgroundColor: colors.surfaceContainerLow,
-                  borderTopLeftRadius: ct.radius["3xl"],
-                  borderTopRightRadius: ct.radius["3xl"],
-                  gap: ct.padding.md,
-                },
-              ]}
-            >
-              {breakdownSections.map((sec) => {
-                const top4 = sec.rawItems.slice(0, 4).map((item) => ({
-                  name: item.name,
-                  percent: item.percent,
-                  trailingText: item.text ?? "",
-                }));
-
-                return (
-                  <View key={sec.key} style={groupStyle}>
-                    <DashboardBreakdownSection
-                      title={sec.title}
-                      chartColors={sec.colors}
-                      items={top4}
-                      onPress={() =>
-                        router.push({
-                          pathname: "/breakdown",
-                          params: { category: sec.key },
-                        })
-                      }
+              {/* Top Row: Category Pie Chart + 3 Summary StatCards */}
+              <View
+                style={[
+                  styles.row,
+                  styles.cardSpacing,
+                  {
+                    alignItems: "stretch",
+                  },
+                ]}
+              >
+                {hasCategories && (
+                  <View style={{ flex: 5 }}>
+                    <CategoryPieChart
+                      items={(selected?.categories ?? [])
+                        .slice(0, 5)
+                        .map((item) => ({
+                          name: item.name,
+                          percent: item.percent,
+                          total_seconds: item.total_seconds,
+                          text: item.text ?? "",
+                        }))}
+                      totalLabel={dayLabel}
                     />
-
-                    {/* Uniform, full-width footer row to open multi-range CategoryScreen */}
-                    <Pressable
-                      onPress={() => router.push(sec.route)}
-                      accessibilityRole="button"
-                      accessibilityLabel={`View all ${sec.title}`}
-                      style={({ pressed }) => ({
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        paddingHorizontal: ct.padding.md,
-                        paddingVertical: ct.space.sm,
-                        borderTopWidth: 1,
-                        borderTopColor: colors.outlineVariant + "40",
-                        opacity: pressed ? 0.7 : 1,
-                      })}
-                    >
-                      <Text
-                        style={{
-                          fontSize: ct.fontSize.xs,
-                          fontFamily: ct.fontFamily.medium,
-                          color: colors.onSurfaceVariant,
-                        }}
-                      >
-                        View all {sec.title.toLowerCase()}
-                      </Text>
-                      <Feather
-                        name="chevron-right"
-                        size={16}
-                        color={colors.onSurfaceVariant}
-                      />
-                    </Pressable>
                   </View>
-                );
-              })}
-            </View>
-          </>
-        )}
-      </ScrollView>
+                )}
+
+                <View
+                  style={{
+                    flex: hasCategories ? 3 : 1,
+                    gap: ct.padding.sm,
+                  }}
+                >
+                  <View style={{ flex: 1 }}>
+                    <StatCard
+                      value={
+                        selected
+                          ? formatDuration(selected.grand_total.total_seconds)
+                          : "-"
+                      }
+                      subtitle={dayLabel}
+                      icon={(tint) => (
+                        <Feather name="clock" size={20} color={tint} />
+                      )}
+                    />
+                  </View>
+
+                  <View style={{ flex: 1 }}>
+                    <StatCard
+                      value={formatDuration(weekAvg)}
+                      subtitle="7-Day Avg"
+                      icon={(tint) => (
+                        <Feather name="bar-chart" size={20} color={tint} />
+                      )}
+                    />
+                  </View>
+
+                  <View style={{ flex: 1 }}>
+                    <StatCard
+                      value={
+                        bestDay
+                          ? formatDuration(bestDay.grand_total.total_seconds)
+                          : "-"
+                      }
+                      subtitle="best day"
+                      icon={(tint) => (
+                        <Feather name="award" size={20} color={tint} />
+                      )}
+                    />
+                  </View>
+                </View>
+              </View>
+
+              {/* Unified 7-Day Window Header + Interactive Weekly Chart */}
+              <View
+                style={[
+                  styles.cardSpacing,
+                  {
+                    backgroundColor:
+                      colors.surfaceContainer ?? colors.surfaceContainerHigh,
+                    padding: ct.padding.lg,
+                    borderRadius: ct.radius["2xl"],
+                    gap: ct.padding.sm,
+                  },
+                ]}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "baseline",
+                    gap: ct.space.md,
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.sectionTitle,
+                      {
+                        color: colors.onSurface,
+                      },
+                    ]}
+                  >
+                    {windowTitle}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: ct.fontSize.sm,
+                      fontFamily: ct.fontFamily.medium,
+                      color: colors.onSurfaceVariant,
+                    }}
+                  >
+                    {formatDuration(weekTotal)}
+                  </Text>
+                </View>
+
+                {week.length ? (
+                  <WeeklyChart
+                    days={week}
+                    selectedDate={date}
+                    onSelectDate={selectDate}
+                  />
+                ) : (
+                  <Text
+                    style={[
+                      styles.empty,
+                      {
+                        color: colors.onSurfaceVariant,
+                      },
+                    ]}
+                  >
+                    No data available
+                  </Text>
+                )}
+              </View>
+
+              {/* Breakdown Bottom Sheet Group */}
+              <View
+                style={[
+                  ct.styles.flex,
+                  {
+                    paddingTop: ct.padding["2xl"],
+                    paddingBottom: 64 + ct.space["2xl"],
+                    paddingHorizontal: ct.padding.xl,
+                    backgroundColor: colors.surfaceContainerLow,
+                    borderTopLeftRadius: ct.radius["3xl"],
+                    borderTopRightRadius: ct.radius["3xl"],
+                    gap: ct.padding.md,
+                  },
+                ]}
+              >
+                {breakdownSections.map((sec) => {
+                  const top4 = sec.rawItems.slice(0, 4).map((item) => ({
+                    name: item.name,
+                    percent: item.percent,
+                    trailingText: item.text ?? "",
+                  }));
+
+                  return (
+                    <View key={sec.key} style={groupStyle}>
+                      <DashboardBreakdownSection
+                        title={sec.title}
+                        chartColors={sec.colors}
+                        items={top4}
+                        onPress={() =>
+                          router.push({
+                            pathname: "/breakdown",
+                            params: { category: sec.key },
+                          })
+                        }
+                      />
+
+                      {/* Uniform, full-width footer row to open multi-range CategoryScreen */}
+                      <Pressable
+                        onPress={() => router.push(sec.route)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`View all ${sec.title}`}
+                        style={({ pressed }) => ({
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          paddingHorizontal: ct.padding.md,
+                          paddingVertical: ct.space.sm,
+                          borderTopWidth: 1,
+                          borderTopColor: colors.outlineVariant + "40",
+                          opacity: pressed ? 0.7 : 1,
+                        })}
+                      >
+                        <Text
+                          style={{
+                            fontSize: ct.fontSize.xs,
+                            fontFamily: ct.fontFamily.medium,
+                            color: colors.onSurfaceVariant,
+                          }}
+                        >
+                          View all {sec.title.toLowerCase()}
+                        </Text>
+                        <Feather
+                          name="chevron-right"
+                          size={16}
+                          color={colors.onSurfaceVariant}
+                        />
+                      </Pressable>
+                    </View>
+                  );
+                })}
+              </View>
+            </>
+          )}
+        </ScrollView>
+      </GestureDetector>
     </View>
   );
 }
