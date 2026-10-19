@@ -6,49 +6,99 @@ import {
   Keyboard,
   Platform,
   Pressable,
-  View,
   Text,
+  View,
+  StyleSheet,
+  useWindowDimensions,
 } from "react-native";
 import { SymbolView } from "expo-symbols";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { usePathname } from "expo-router";
 import { useColors } from "@/src/hooks/useColors";
 import { ct } from "@/src/constants/styles.common";
+type SymbolName = React.ComponentProps<typeof SymbolView>["name"];
+type IconName = React.ComponentProps<typeof MaterialCommunityIcons>["name"];
 
-// Props type taken from <Tabs> itself so it always matches expo-router's own types.
-// Avoids importing bottom bar for props which lead to a conflict
-type TabBarProps = Parameters<
-  NonNullable<React.ComponentProps<typeof Tabs>["tabBar"]>
->[0];
+const isIOS = Platform.OS === "ios";
+const isIOS26 = isIOS && parseInt(Platform.Version.toString(), 10) >= 26;
 
-// iOS 26+ uses the system (liquid glass) tab bar; everything else gets the floating bar.
-const isIOS26 =
-  Platform.OS === "ios" && parseInt(Platform.Version.toString(), 10) >= 26;
-
-// Floating toolbar: 72 bar, 96x56 pill indicator, 8 padding around it.
-const TAB_BAR_HEIGHT = 64;
-const ITEM_WIDTH = 92;
+const BAR_HEIGHT = 64;
+const MAX_ITEM_WIDTH = 84; // shrinks on narrow screens, see FloatingTabBar
 const ITEM_HEIGHT = 56;
-const BAR_PADDING = 4;
+const ICON_SIZE = 20;
 
-// The three tabs shown in the bar.
-// Settings is not shown as a tab
-const BAR_TABS = ["index", "today", "breakdown"];
+// Pages hosted under the More tab; they keep More highlighted.
+const MORE_ROUTES = [
+  "settings",
+  "languages",
+  "editors",
+  "projects",
+  "operating-systems",
+];
 
-// Tab icon: wide pill indicator with icon + label
-function TabIcon({
-  focused,
-  label,
-  render,
-}: {
-  focused: boolean;
+// [inactive, active] icon pairs
+const TABS: {
+  name: string;
   label: string;
-  render: (color: string) => React.ReactNode;
+  sf: [SymbolName, SymbolName];
+  md: [IconName, IconName];
+  nativeMd: string;
+  also?: string[];
+}[] = [
+  {
+    name: "index",
+    label: "Overview",
+    sf: ["chart.bar", "chart.bar.fill"],
+    md: ["view-dashboard-outline", "view-dashboard"],
+    nativeMd: "dashboard",
+    also: ["goals"],
+  },
+  {
+    name: "today",
+    label: "Today",
+    sf: ["calendar", "calendar"],
+    md: ["calendar-today-outline", "calendar-today"],
+    nativeMd: "today",
+  },
+  {
+    name: "breakdown",
+    label: "Breakdown",
+    sf: ["chart.pie", "chart.pie.fill"],
+    md: ["chart-pie-outline", "chart-pie"],
+    nativeMd: "pie_chart",
+  },
+  {
+    name: "more",
+    label: "More",
+    sf: ["ellipsis.circle", "ellipsis.circle.fill"],
+    md: ["dots-horizontal-circle-outline", "dots-horizontal-circle"],
+    nativeMd: "more_horiz",
+    also: MORE_ROUTES,
+  },
+];
+
+function withAlpha(hex: string, opacity: number) {
+  return (
+    hex +
+    Math.round(opacity * 255)
+      .toString(16)
+      .padStart(2, "0")
+  );
+}
+
+function TabItem({
+  tab,
+  focused,
+  width,
+  onPress,
+}: {
+  tab: (typeof TABS)[number];
+  focused: boolean;
+  width: number;
+  onPress: () => void;
 }) {
   const colors = useColors();
   const progress = useRef(new Animated.Value(focused ? 1 : 0)).current;
 
-  // Spring the pill in/out when selection changes.
   useEffect(() => {
     Animated.spring(progress, {
       toValue: focused ? 1 : 0,
@@ -58,26 +108,31 @@ function TabIcon({
     }).start();
   }, [focused, progress]);
 
-  const color = focused ? colors.onPrimary : colors.onPrimaryContainer;
+  const color = focused ? colors.onSecondaryContainer : colors.onSurface;
+  const i = focused ? 1 : 0;
 
   return (
-    <View
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={tab.label}
+      accessibilityState={{ selected: focused }}
       style={{
-        width: ITEM_WIDTH,
+        width,
         height: ITEM_HEIGHT,
         alignItems: "center",
         justifyContent: "center",
       }}
     >
-      {/* Always mounted, only opacity/scale animate, so the pill never flashes square. */}
       <Animated.View
         pointerEvents="none"
         style={{
           position: "absolute",
-          width: ITEM_WIDTH,
-          height: ITEM_HEIGHT,
-          borderRadius: ITEM_HEIGHT / 2,
-          backgroundColor: colors.primary,
+          width: "100%",
+          height: "100%",
+          borderRadius: ct.radius.full,
+          backgroundColor:
+            colors.secondaryContainer ?? colors.surfaceContainerHighest,
           opacity: progress,
           transform: [
             {
@@ -89,7 +144,15 @@ function TabIcon({
           ],
         }}
       />
-      {render(color)}
+      {isIOS ? (
+        <SymbolView name={tab.sf[i]} tintColor={color} size={ICON_SIZE} />
+      ) : (
+        <MaterialCommunityIcons
+          name={tab.md[i]}
+          size={ICON_SIZE}
+          color={color}
+        />
+      )}
       <Text
         numberOfLines={1}
         style={{
@@ -98,21 +161,18 @@ function TabIcon({
           color,
         }}
       >
-        {label}
+        {tab.label}
       </Text>
-    </View>
+    </Pressable>
   );
 }
 
-// Floating centered pill that replaces default tab bar
-// The outer view is full-width and centers the pill, so it is always centered.
-function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) {
+function FloatingTabBar({ state, navigation }: any) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const pathname = usePathname();
+  const { width: screenWidth } = useWindowDimensions();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
-  // Hide the bar while the keyboard is open (custom bars don't get this for free lmao).
   useEffect(() => {
     const show = Keyboard.addListener("keyboardDidShow", () =>
       setKeyboardVisible(true),
@@ -126,199 +186,120 @@ function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) {
     };
   }, []);
 
-  if (keyboardVisible || pathname.startsWith("/settings")) return null;
+  if (keyboardVisible) return null;
+
+  // Items shrink on narrow screens so the pill keeps a screen-edge margin:
+  // screen - side margins - pill padding - 1px border on each side.
+  const itemWidth = Math.min(
+    MAX_ITEM_WIDTH,
+    (screenWidth - 2 * ct.space.lg - 2 * ct.space.xs - 2) / TABS.length,
+  );
+
+  const active: string = state.routes[state.index]?.name;
+  const bottomOffset = Math.max(insets.bottom, 16);
+  const scrimHeight = BAR_HEIGHT + bottomOffset + 32;
 
   return (
-    // box-none: the empty space around the pill stays touchable for the screen below.
     <View
       pointerEvents="box-none"
       style={{
         position: "absolute",
         left: 0,
         right: 0,
-        bottom: Math.max(insets.bottom, 16),
+        bottom: 0,
+        height: scrimHeight,
+        justifyContent: "flex-end",
         alignItems: "center",
+        paddingBottom: bottomOffset,
       }}
     >
+      <View
+        pointerEvents="none"
+        style={[
+          StyleSheet.absoluteFill,
+          {
+            experimental_backgroundImage: `linear-gradient(to bottom, ${withAlpha(
+              colors.background,
+              0,
+            )} 0%, ${withAlpha(colors.background, 0.7)} 50%, ${withAlpha(
+              colors.background,
+              0.95,
+            )} 100%)`,
+          } as any,
+        ]}
+      />
       <View
         style={{
           flexDirection: "row",
           alignItems: "center",
-          height: TAB_BAR_HEIGHT,
-          paddingHorizontal: BAR_PADDING,
-          borderRadius: TAB_BAR_HEIGHT / 2,
-          backgroundColor: colors.primaryContainer,
-          elevation: 3,
-          shadowColor: colors.shadow,
-          shadowOpacity: 0.2,
-          shadowRadius: 6,
-          shadowOffset: { width: 0, height: 2 },
+          height: BAR_HEIGHT,
+          paddingHorizontal: ct.space.xs,
+          borderRadius: BAR_HEIGHT / 2,
+          backgroundColor: colors.surfaceContainerHigh,
+          // faint edge border
+          borderWidth: 1,
+          borderColor: withAlpha(colors.outlineVariant, 0.4),
+          // stronger iOS shadow
+          shadowColor: "#000000",
+          shadowOpacity: isIOS ? 0.25 : 0.4,
+          shadowRadius: 16,
+          shadowOffset: { width: 0, height: 6 },
+          // Elevated rounded shadow on Android
+          elevation: 12,
         }}
       >
-        {state.routes.map((route, index) => {
-          if (!BAR_TABS.includes(route.name)) return null;
-
-          const { options } = descriptors[route.key];
-          const focused = state.index === index;
-
-          // Standard tab press: let listeners cancel it, then navigate.
-          const onPress = () => {
-            const event = navigation.emit({
-              type: "tabPress",
-              target: route.key,
-              canPreventDefault: true,
-            });
-            if (!focused && !event.defaultPrevented) {
-              navigation.navigate(route.name, route.params);
-            }
-          };
-
-          return (
-            <Pressable
-              key={route.key}
-              accessibilityRole="button"
-              accessibilityState={focused ? { selected: true } : {}}
-              accessibilityLabel={
-                options.tabBarAccessibilityLabel ?? options.title
-              }
-              onPress={onPress}
-              onLongPress={() =>
-                navigation.emit({ type: "tabLongPress", target: route.key })
-              }
-              style={{
-                width: ITEM_WIDTH,
-                height: TAB_BAR_HEIGHT,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {/* Icon comes from each screen's tabBarIcon option below. */}
-              {options.tabBarIcon?.({ focused, color: "", size: 22 })}
-            </Pressable>
-          );
-        })}
+        {TABS.map((tab) => (
+          <TabItem
+            key={tab.name}
+            tab={tab}
+            width={itemWidth}
+            focused={active === tab.name || !!tab.also?.includes(active)}
+            onPress={() => active !== tab.name && navigation.navigate(tab.name)}
+          />
+        ))}
       </View>
     </View>
   );
 }
 
-// iOS 26+: system tab bar (liquid glass)
 function NativeTabLayout() {
   const { NativeTabs, Icon } = require("expo-router/unstable-native-tabs");
   const colors = useColors();
 
   return (
-    <NativeTabs tintColor={colors.primary}>
-      <NativeTabs.Trigger name="index">
-        <Icon
-          sf={{ default: "chart.bar", selected: "chart.bar.fill" }}
-          md="dashboard"
-        />
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="today">
-        <Icon sf={{ default: "calendar", selected: "calendar" }} md="today" />
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="breakdown">
-        <Icon
-          sf={{ default: "chart.pie", selected: "chart.pie.fill" }}
-          md="pie_chart"
-        />
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="settings" hidden />
+    <NativeTabs tintColor={colors.onSurface}>
+      {TABS.map((tab) => (
+        <NativeTabs.Trigger key={tab.name} name={tab.name}>
+          <Icon
+            sf={{ default: tab.sf[0], selected: tab.sf[1] }}
+            md={tab.nativeMd}
+          />
+        </NativeTabs.Trigger>
+      ))}
+      {MORE_ROUTES.map((name) => (
+        <NativeTabs.Trigger key={name} name={name} hidden />
+      ))}
     </NativeTabs>
   );
 }
 
 function ClassicTabLayout() {
-  const isIOS = Platform.OS === "ios";
-
   return (
     <Tabs
       tabBar={(props) => <FloatingTabBar {...props} />}
       screenOptions={{ headerShown: false }}
       backBehavior="history"
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "Overview",
-          tabBarIcon: ({ focused }) => (
-            <TabIcon
-              focused={focused}
-              label="Overview"
-              render={(color) =>
-                isIOS ? (
-                  <SymbolView
-                    name={focused ? "chart.bar.fill" : "chart.bar"}
-                    tintColor={color}
-                    size={22}
-                  />
-                ) : (
-                  <MaterialCommunityIcons
-                    name={focused ? "view-dashboard" : "view-dashboard-outline"}
-                    size={22}
-                    color={color}
-                  />
-                )
-              }
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="today"
-        options={{
-          title: "Today",
-          tabBarIcon: ({ focused }) => (
-            <TabIcon
-              focused={focused}
-              label="Today"
-              render={(color) =>
-                isIOS ? (
-                  <SymbolView name="calendar" tintColor={color} size={22} />
-                ) : (
-                  <MaterialCommunityIcons
-                    name={focused ? "calendar-today" : "calendar-today-outline"}
-                    size={22}
-                    color={color}
-                  />
-                )
-              }
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="breakdown"
-        options={{
-          title: "Breakdown",
-          tabBarIcon: ({ focused }) => (
-            <TabIcon
-              focused={focused}
-              label="Breakdown"
-              render={(color) =>
-                isIOS ? (
-                  <SymbolView
-                    name={focused ? "chart.pie.fill" : "chart.pie"}
-                    tintColor={color}
-                    size={22}
-                  />
-                ) : (
-                  <MaterialCommunityIcons
-                    name={focused ? "chart-pie" : "chart-pie-outline"}
-                    size={22}
-                    color={color}
-                  />
-                )
-              }
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{ title: "Settings", href: null }} // no need for an icon
-      />
+      {TABS.map((tab) => (
+        <Tabs.Screen
+          key={tab.name}
+          name={tab.name}
+          options={{ title: tab.label }}
+        />
+      ))}
+      {MORE_ROUTES.map((name) => (
+        <Tabs.Screen key={name} name={name} options={{ href: null }} />
+      ))}
     </Tabs>
   );
 }

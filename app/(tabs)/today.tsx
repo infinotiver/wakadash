@@ -1,8 +1,6 @@
 ﻿import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
-  Modal,
-  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -35,20 +33,16 @@ import {
 import {
   useDaySummary,
   useProgramLanguages,
-  useWeekSummaries,
   useWindowSummaries,
 } from "@/src/hooks/useWakaTimeQueries";
 import { useDatePicker } from "@/src/hooks/useDatePicker";
-import { Button } from "@/src/components/Button";
 
 const styles = ct.styles.overview;
+
 export default function TodayScreen() {
   const colors = useColors();
   const router = useRouter();
   const { open, modal } = useDatePicker();
-  const openPicker = () =>
-    open({ value: date, title: "Select date to view", onPick: selectDate });
-
   const { isConfigured } = useWakaTime();
 
   const [picked, setPicked] = useState<string | null>(null); // null = today
@@ -61,6 +55,10 @@ export default function TodayScreen() {
   const windowStartKey = shiftDateKey(windowEndKey, -6);
 
   const dayQ = useDaySummary(date);
+  const prevKey = shiftDateKey(date, -1);
+  const nextKey = shiftDateKey(date, 1);
+  useDaySummary(prevKey);
+  useDaySummary(nextKey <= todayKey ? nextKey : date); // date is already cached
   const weekQ = useWindowSummaries(windowEndKey);
   const langMetaQ = useProgramLanguages();
 
@@ -76,6 +74,9 @@ export default function TodayScreen() {
 
     setPicked(next === todayKey ? null : next);
   };
+
+  const openPicker = () =>
+    open({ value: date, title: "Select date to view", onPick: selectDate });
 
   // Never go past today.
   const step = (delta: number) => selectDate(shiftDateKey(date, delta));
@@ -115,6 +116,7 @@ export default function TodayScreen() {
     colors.accent.coral.color,
     colors.accent.green.color,
   ];
+
   const groupStyle = {
     gap: ct.space.sm,
     backgroundColor: colors.surfaceContainerHighest,
@@ -122,9 +124,6 @@ export default function TodayScreen() {
     borderRadius: ct.radius["2xl"],
   } as const;
 
-  const viewAllIcon = ({ color, size }: { color: string; size: number }) => (
-    <Feather name="arrow-right" size={size} color={color} />
-  );
   const langColorMap = buildLanguageColorMap(langMetaQ.data);
   const languageColors = (selected?.languages ?? [])
     .slice(0, 4)
@@ -133,15 +132,49 @@ export default function TodayScreen() {
         langColorMap.get(item.name.toLowerCase()) ??
         chartColors[i % chartColors.length],
     );
+
   const shortDay = (key: string) =>
     new Date(`${key}T12:00:00`).toLocaleDateString(undefined, {
       day: "numeric",
       month: "short",
     });
+
   const windowTitle =
     windowEnd === null
       ? "Last 7 Days"
       : `${shortDay(windowStartKey)} – ${shortDay(windowEndKey)}`;
+
+  const breakdownSections = [
+    {
+      key: "languages",
+      title: "Languages",
+      route: "/languages" as const,
+      colors: languageColors,
+      rawItems: selected?.languages ?? [],
+    },
+    {
+      key: "editors",
+      title: "Editors",
+      route: "/editors" as const,
+      colors: chartColors,
+      rawItems: selected?.editors ?? [],
+    },
+    {
+      key: "projects",
+      title: "Projects",
+      route: "/projects" as const,
+      colors: chartColors,
+      rawItems: selected?.projects ?? [],
+    },
+    {
+      key: "operating_systems",
+      title: "Operating Systems",
+      route: "/operating-systems" as const,
+      colors: chartColors,
+      rawItems: selected?.operating_systems ?? [],
+    },
+  ];
+
   return (
     <View
       style={[
@@ -175,7 +208,6 @@ export default function TodayScreen() {
         style={ct.styles.scroll}
         contentContainerStyle={{
           flexGrow: 1,
-          justifyContent: "flex-end",
         }}
         refreshControl={
           <RefreshControl
@@ -231,6 +263,7 @@ export default function TodayScreen() {
               </Text>
             ) : null}
 
+            {/* Top Row: Category Pie Chart + 3 Summary StatCards */}
             <View
               style={[
                 styles.row,
@@ -302,14 +335,76 @@ export default function TodayScreen() {
               </View>
             </View>
 
-            {/* Breakdown group */}
+            {/* Unified 7-Day Window Header + Interactive Weekly Chart */}
+            <View
+              style={[
+                styles.cardSpacing,
+                {
+                  backgroundColor:
+                    colors.surfaceContainer ?? colors.surfaceContainerHigh,
+                  padding: ct.padding.lg,
+                  borderRadius: ct.radius["2xl"],
+                  gap: ct.padding.sm,
+                },
+              ]}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                  gap: ct.space.md,
+                }}
+              >
+                <Text
+                  style={[
+                    styles.sectionTitle,
+                    {
+                      color: colors.onSurface,
+                    },
+                  ]}
+                >
+                  {windowTitle}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: ct.fontSize.sm,
+                    fontFamily: ct.fontFamily.medium,
+                    color: colors.onSurfaceVariant,
+                  }}
+                >
+                  {formatDuration(weekTotal)}
+                </Text>
+              </View>
+
+              {week.length ? (
+                <WeeklyChart
+                  days={week}
+                  selectedDate={date}
+                  onSelectDate={selectDate}
+                />
+              ) : (
+                <Text
+                  style={[
+                    styles.empty,
+                    {
+                      color: colors.onSurfaceVariant,
+                    },
+                  ]}
+                >
+                  No data available
+                </Text>
+              )}
+            </View>
+
+            {/* Breakdown Bottom Sheet Group */}
             <View
               style={[
                 ct.styles.flex,
                 {
                   paddingTop: ct.padding["2xl"],
                   paddingBottom: 64 + ct.space["2xl"],
-                  paddingHorizontal: ct.padding["xl"],
+                  paddingHorizontal: ct.padding.xl,
                   backgroundColor: colors.surfaceContainerLow,
                   borderTopLeftRadius: ct.radius["3xl"],
                   borderTopRightRadius: ct.radius["3xl"],
@@ -317,176 +412,61 @@ export default function TodayScreen() {
                 },
               ]}
             >
-              <View style={groupStyle}>
-                <DashboardBreakdownSection
-                  title="Languages"
-                  chartColors={languageColors}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/breakdown",
-                      params: { category: "languages" },
-                    })
-                  }
-                  items={(selected?.languages ?? [])
-                    .slice(0, 4)
-                    .map((item) => ({
-                      name: item.name,
-                      percent: item.percent,
-                      trailingText: item.text ?? "",
-                    }))}
-                />
-                <Button
-                  label="View Languages"
-                  variant="tonal"
-                  tone="secondary"
-                  icon={viewAllIcon}
-                  iconPosition="right"
-                  onPress={() => router.push("/languages")}
-                />
-              </View>
-              <View style={groupStyle}>
-                <DashboardBreakdownSection
-                  title="Editors"
-                  chartColors={chartColors}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/breakdown",
-                      params: { category: "editors" },
-                    })
-                  }
-                  items={(selected?.editors ?? []).slice(0, 4).map((item) => ({
-                    name: item.name,
-                    percent: item.percent,
-                    trailingText: item.text ?? "",
-                  }))}
-                />
-                <Button
-                  label="View Editors"
-                  variant="tonal"
-                  tone="secondary"
-                  icon={viewAllIcon}
-                  iconPosition="right"
-                  onPress={() => router.push("/editors")}
-                />
-              </View>
-              <View
-                style={
-                  (ct.styles.card,
-                  {
-                    gap: ct.space.sm,
-                    backgroundColor: colors.surfaceContainerHighest,
-                    padding: ct.space.xs,
-                    borderRadius: ct.radius["2xl"],
-                  })
-                }
-              >
-                <DashboardBreakdownSection
-                  title="Projects"
-                  chartColors={chartColors}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/breakdown",
-                      params: { category: "projects" },
-                    })
-                  }
-                  items={(selected?.projects ?? []).slice(0, 4).map((item) => ({
-                    name: item.name,
-                    percent: item.percent,
-                    trailingText: item.text ?? "",
-                  }))}
-                />
-                <Button
-                  label="View Projects"
-                  variant="tonal"
-                  tone="secondary"
-                  icon={({ color, size }) => (
-                    <Feather name="arrow-right" size={size} color={color} />
-                  )}
-                  iconPosition="right"
-                  onPress={() => router.push("/projects")}
-                />
-              </View>
+              {breakdownSections.map((sec) => {
+                const top4 = sec.rawItems.slice(0, 4).map((item) => ({
+                  name: item.name,
+                  percent: item.percent,
+                  trailingText: item.text ?? "",
+                }));
 
-              <View style={groupStyle}>
-                <DashboardBreakdownSection
-                  title="Operating Systems"
-                  chartColors={chartColors}
-                  items={(selected?.operating_systems ?? [])
-                    .slice(0, 4)
-                    .map((item) => ({
-                      name: item.name,
-                      percent: item.percent,
-                      trailingText: item.text ?? "",
-                    }))}
-                />
-                <Button
-                  label="View Operating Systems"
-                  variant="tonal"
-                  tone="secondary"
-                  icon={viewAllIcon}
-                  iconPosition="right"
-                  onPress={() => router.push("/operating-systems")}
-                />
-              </View>
-              {/* Last 7 Days */}
-              <View
-                style={{
-                  backgroundColor: colors.surfaceContainerLow,
-                  padding: ct.padding["md"],
-                  gap: ct.padding.md,
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "flex-end",
-                    gap: ct.space.md,
-                  }}
-                >
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={[
-                        styles.sectionTitle,
-                        {
-                          color: colors.onSurface,
-                        },
-                      ]}
+                return (
+                  <View key={sec.key} style={groupStyle}>
+                    <DashboardBreakdownSection
+                      title={sec.title}
+                      chartColors={sec.colors}
+                      items={top4}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/breakdown",
+                          params: { category: sec.key },
+                        })
+                      }
+                    />
+
+                    {/* Uniform, full-width footer row to open multi-range CategoryScreen */}
+                    <Pressable
+                      onPress={() => router.push(sec.route)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`View all ${sec.title}`}
+                      style={({ pressed }) => ({
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        paddingHorizontal: ct.padding.md,
+                        paddingVertical: ct.space.sm,
+                        borderTopWidth: 1,
+                        borderTopColor: colors.outlineVariant + "40",
+                        opacity: pressed ? 0.7 : 1,
+                      })}
                     >
-                      {windowTitle}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: ct.fontSize.md,
-                        fontFamily: ct.fontFamily.medium,
-                        color: colors.onSurfaceVariant,
-                        marginTop: ct.space.xs,
-                      }}
-                    >
-                      {formatDuration(weekTotal)}
-                    </Text>
+                      <Text
+                        style={{
+                          fontSize: ct.fontSize.xs,
+                          fontFamily: ct.fontFamily.medium,
+                          color: colors.onSurfaceVariant,
+                        }}
+                      >
+                        View all {sec.title.toLowerCase()}
+                      </Text>
+                      <Feather
+                        name="chevron-right"
+                        size={16}
+                        color={colors.onSurfaceVariant}
+                      />
+                    </Pressable>
                   </View>
-                </View>
-
-                {week.length ? (
-                  <WeeklyChart
-                    days={week}
-                    selectedDate={date}
-                    onSelectDate={selectDate}
-                  />
-                ) : (
-                  <Text
-                    style={[
-                      styles.empty,
-                      {
-                        color: colors.onSurfaceVariant,
-                      },
-                    ]}
-                  >
-                    No data available
-                  </Text>
-                )}
-              </View>
+                );
+              })}
             </View>
           </>
         )}

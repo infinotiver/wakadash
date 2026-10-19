@@ -83,10 +83,6 @@ export default function OverviewScreen() {
   const humanAdditions = stats?.human_additions ?? 0;
   const humanDeletions = stats?.human_deletions ?? 0;
   const aiTotal = aiAdditions + humanAdditions;
-  const hasChangeData = aiTotal + aiDeletions + humanDeletions > 0;
-  const aiPercent = aiTotal ? (aiAdditions / aiTotal) * 100 : 0;
-  const compact = (n: number) =>
-    new Intl.NumberFormat("en-US", { notation: "compact" }).format(n);
   const loading = todayQ.isLoading || allTimeQ.isLoading;
   const failed = todayQ.isError || allTimeQ.isError;
   const topProject = stats?.projects?.[0];
@@ -147,7 +143,8 @@ export default function OverviewScreen() {
                 icon="trending-up"
                 title="All time"
                 hero
-                flex={1.8}
+                // half
+                flex={1.4}
               >
                 <Text
                   style={{
@@ -162,7 +159,7 @@ export default function OverviewScreen() {
                 </Text>
                 <Text
                   style={[
-                    // ct.text.caption,
+                    ct.text.caption,
                     { color: colors.onPrimaryContainer },
                   ]}
                   adjustsFontSizeToFit
@@ -186,7 +183,7 @@ export default function OverviewScreen() {
                     fontFamily: ct.fontFamily.semibold,
                     fontSize: ct.fontSize.hero,
                   }}
-                  // numberOfLines={1}
+                  numberOfLines={1}
                   adjustsFontSizeToFit
                 >
                   {formatDuration(todaySeconds)}
@@ -268,7 +265,7 @@ export default function OverviewScreen() {
               </DashboardWidget>
               <DashboardWidget
                 icon="bar-chart-2"
-                title="This week"
+                title="Past 7 Days"
                 half
                 variant="tertiary"
               >
@@ -369,7 +366,6 @@ export default function OverviewScreen() {
                 title="Goals"
                 onPress={() => router.push("/goals")}
               >
-                <View style={ct.styles.rowBetween}></View>
                 <View style={{ gap: ct.space.sm }}>
                   {topGoals.length === 0 ? (
                     <Text

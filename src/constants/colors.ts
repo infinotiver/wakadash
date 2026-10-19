@@ -1,5 +1,3 @@
-
-
 const colors = {
   light: {
     // Primary
@@ -75,31 +73,31 @@ const colors = {
     // generated to complement the teal primary)
     accent: {
       teal: {
-        color: "#00696a",
+        color: "#00899A",
         onColor: "#ffffff",
         colorContainer: "#6ff6f8",
         onColorContainer: "#002020",
       },
       green: {
-        color: "#006b56",
+        color: "#3F8F1F",
         onColor: "#ffffff",
         colorContainer: "#7ef8d4",
         onColorContainer: "#002018",
       },
       coral: {
-        color: "#8d4e29",
+        color: "#D2512F",
         onColor: "#ffffff",
         colorContainer: "#ffdbca",
         onColorContainer: "#703714",
       },
       amber: {
-        color: "#705d0d",
+        color: "#A86A00",
         onColor: "#ffffff",
         colorContainer: "#fce186",
         onColorContainer: "#554500",
       },
       violet: {
-        color: "#555a92",
+        color: "#6C5CE7",
         onColor: "#ffffff",
         colorContainer: "#e0e0ff",
         onColorContainer: "#3d4278",
@@ -169,31 +167,31 @@ const colors = {
 
     accent: {
       teal: {
-        color: "#4cdadb",
+        color: "#35D0E0",
         onColor: "#003737",
         colorContainer: "#004f50",
         onColorContainer: "#6ff6f8",
       },
       green: {
-        color: "#60dbb9",
-        onColor: "#00382b",
+        color: "#7ED957",
+        onColor: "#0f2e00",
         colorContainer: "#005140",
         onColorContainer: "#7ef8d4",
       },
       coral: {
-        color: "#ffb68f",
+        color: "#FF8A65",
         onColor: "#532201",
         colorContainer: "#703714",
         onColorContainer: "#ffdbca",
       },
       amber: {
-        color: "#dec56d",
+        color: "#F2C14E",
         onColor: "#3b2f00",
         colorContainer: "#554500",
         onColorContainer: "#fce186",
       },
       violet: {
-        color: "#bec2ff",
+        color: "#A69BFF",
         onColor: "#272b60",
         colorContainer: "#3d4278",
         onColorContainer: "#e0e0ff",

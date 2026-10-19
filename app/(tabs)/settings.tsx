@@ -210,6 +210,29 @@ export default function SettingsScreen() {
     }
     setSavingUrl(true);
     try {
+      if (apiKey && trimmed !== baseUrl) {
+        try {
+          await wakatimeApi.verifyKey(apiKey, trimmed);
+        } catch (e) {
+          if (e instanceof Error && e.message === "Invalid API key") {
+            // the saved key belongs to the old server
+            await setBaseUrl(trimmed);
+            await clearApiKey();
+            setEditingUrl(false);
+            setEditingKey(true);
+            Alert.alert(
+              "New key needed",
+              "Your saved key doesn't work on this server. Enter a key for it.",
+            );
+          } else {
+            Alert.alert(
+              "Couldn't reach server",
+              "Check the URL and your connection.",
+            );
+          }
+          return;
+        }
+      }
       await setBaseUrl(trimmed);
       setEditingUrl(false);
     } finally {
@@ -218,7 +241,12 @@ export default function SettingsScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: c.background }}>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: c.background,
+      }}
+    >
       <AppBar
         title="Settings"
         variant="small"
@@ -233,7 +261,7 @@ export default function SettingsScreen() {
         style={ct.styles.scroll}
         contentContainerStyle={[
           styles.content,
-          { paddingBottom: insets.bottom + ct.space.xl },
+          { paddingBottom: insets.bottom + 64 + ct.space.xl },
         ]}
       >
         {userQ.isLoading ? (
@@ -430,7 +458,7 @@ export default function SettingsScreen() {
             </View>
           )}
           <Text style={{ fontSize: ct.fontSize.xs, color: c.onSurfaceVariant }}>
-            Delete they key to use WakaTime OAuth on Setup Screen.
+            Delete the key to use WakaTime OAuth on Setup Screen.
           </Text>
         </View>
         <NotificationSettings />
@@ -440,6 +468,7 @@ export default function SettingsScreen() {
           <Text style={[styles.sectionTitle, { color: c.onSurface }]}>
             About
           </Text>
+
           <Text
             style={[
               ct.text.body,
@@ -448,7 +477,6 @@ export default function SettingsScreen() {
           >
             made by infinotiver {"<3"}
           </Text>
-
           <View
             style={{
               flexDirection: "row",
@@ -456,7 +484,7 @@ export default function SettingsScreen() {
             }}
           >
             <Button
-              label="Source Code"
+              label={`commit: ${gitCommit}`}
               variant="filled"
               tone="primary"
               icon={({ color, size }) => (
@@ -469,62 +497,26 @@ export default function SettingsScreen() {
               onPress={() =>
                 Linking.openURL("https://github.com/infinotiver/wakadash")
               }
-              flex={1}
             />
+
             <Button
-              label="Report Issue"
-              variant="tonal"
-              tone="primary"
+              label={`v${appVersion}`}
+              // variant="tonal"
+              tone="tertiary"
               icon={({ color, size }) => (
                 <MaterialCommunityIcons
-                  name="alert-circle-outline"
+                  name="tag-multiple-outline"
                   size={size}
                   color={color}
                 />
               )}
               onPress={() =>
                 Linking.openURL(
-                  "https://github.com/infinotiver/wakadash/issues",
+                  "https://github.com/infinotiver/wakadash/releases",
                 )
               }
-              flex={1}
             />
           </View>
-
-          <Button
-            label="View Releases"
-            // variant="tonal"
-            tone="tertiary"
-            icon={({ color, size }) => (
-              <MaterialCommunityIcons
-                name="tag-multiple-outline"
-                size={size}
-                color={color}
-              />
-            )}
-            onPress={() =>
-              Linking.openURL(
-                "https://github.com/infinotiver/wakadash/releases",
-              )
-            }
-            width="100%"
-          />
-        </View>
-
-        {/* Version Footer */}
-        <View
-          style={{
-            alignItems: "center",
-            gap: ct.space.xs,
-            paddingVertical: ct.space.md,
-          }}
-        >
-          <Text style={[ct.text.bodyMedium, { color: c.onSurfaceVariant }]}>
-            WakaDash v{appVersion}
-          </Text>
-          <Text style={[ct.text.caption, { color: c.onSurfaceVariant }]}>
-            Commit {gitCommit}
-          </Text>
         </View>
       </ScrollView>
     </View>
