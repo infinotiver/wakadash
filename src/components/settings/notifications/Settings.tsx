@@ -1,12 +1,5 @@
-import React, { useEffect, useState } from "react";
-import {
-  Alert,
-  Platform,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { useEffect, useState } from "react";
+import { Alert, Platform, Text, TouchableOpacity, View } from "react-native";
 
 import { ct } from "@/src/constants/styles.common";
 import { useColors } from "@/src/hooks/useColors";
@@ -17,8 +10,6 @@ import {
   type TodayNotificationConfig,
 } from "@/src/notifications/todayNotification";
 
-const styles = ct.styles.settings;
-
 const ITEMS: { label: string; value: BreakdownKey }[] = [
   { label: "Categories", value: "categories" },
   { label: "Languages", value: "languages" },
@@ -26,49 +17,6 @@ const ITEMS: { label: string; value: BreakdownKey }[] = [
   { label: "Projects", value: "projects" },
   { label: "OS", value: "operating_systems" },
 ];
-
-function Chip({
-  label,
-  selected,
-  onPress,
-}: {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
-}) {
-  const colors = useColors();
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.8}
-      style={{
-        paddingVertical: ct.padding.sm,
-        paddingHorizontal: ct.padding.md,
-        borderRadius: ct.radius.full,
-        borderWidth: 1,
-        borderColor: selected
-          ? colors.secondaryContainer
-          : colors.outlineVariant,
-        backgroundColor: selected
-          ? colors.secondaryContainer
-          : colors.surfaceContainerHigh,
-      }}
-    >
-      <Text
-        style={[
-          ct.text.buttonText,
-          {
-            color: selected
-              ? colors.onSecondaryContainer
-              : colors.onSurfaceVariant,
-          },
-        ]}
-      >
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
-}
 
 export function NotificationSettings() {
   const colors = useColors();
@@ -104,44 +52,105 @@ export function NotificationSettings() {
 
   return (
     <View
-      style={[styles.section, { backgroundColor: colors.surfaceContainerHigh }]}
+      style={[
+        ct.styles.settings.section,
+        { backgroundColor: colors.surfaceContainerHigh },
+      ]}
     >
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         <Text
-          style={[styles.sectionTitle, { color: colors.onSurface, flex: 1 }]}
+          style={[
+            ct.text.sectionTitle,
+            {
+              color: colors.onSurface,
+            },
+          ]}
         >
           Today notification
         </Text>
-        <Switch
-          value={config.enabled}
-          onValueChange={(enabled) => update({ enabled })}
-          trackColor={{
-            false: colors.surfaceContainerHighest,
-            true: colors.primary,
+
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => update({ enabled: !config.enabled })}
+          style={{
+            width: 52,
+            height: 32,
+            borderRadius: ct.radius.full,
+            borderWidth: config.enabled ? 0 : 2,
+            borderColor: colors.outline,
+            backgroundColor: config.enabled
+              ? colors.primary
+              : colors.surfaceContainerHighest,
+            justifyContent: "center",
+            paddingHorizontal: config.enabled ? 4 : 6,
           }}
-          thumbColor={config.enabled ? colors.onPrimary : colors.outline}
-        />
+        >
+          <View
+            style={{
+              width: config.enabled ? 24 : 16,
+              height: config.enabled ? 24 : 16,
+              borderRadius: 12,
+              backgroundColor: config.enabled
+                ? colors.onPrimary
+                : colors.outline,
+              alignSelf: config.enabled ? "flex-end" : "flex-start",
+            }}
+          />
+        </TouchableOpacity>
       </View>
 
-      {config.enabled ? (
+      {config.enabled && (
         <>
-          <Text style={[ct.text.label, { color: colors.onSurfaceVariant }]}>
+          <Text style={[ct.text.body, { color: colors.onSurfaceVariant }]}>
             Show top
           </Text>
           <View
             style={{ flexDirection: "row", flexWrap: "wrap", gap: ct.space.xs }}
           >
-            {ITEMS.map((i) => (
-              <Chip
-                key={i.value}
-                label={i.label}
-                selected={config.show.includes(i.value)}
-                onPress={() => toggleItem(i.value)}
-              />
-            ))}
+            {ITEMS.map((i) => {
+              const selected = config.show.includes(i.value);
+              return (
+                <TouchableOpacity
+                  key={i.value}
+                  activeOpacity={0.7}
+                  onPress={() => toggleItem(i.value)}
+                  style={{
+                    paddingVertical: ct.space.sm,
+                    paddingHorizontal: ct.space.md,
+                    borderRadius: ct.radius.full,
+                    borderWidth: 1,
+                    borderColor: selected
+                      ? colors.secondaryContainer
+                      : colors.outlineVariant,
+                    backgroundColor: selected
+                      ? colors.secondaryContainer
+                      : "transparent",
+                  }}
+                >
+                  <Text
+                    style={[
+                      ct.text.bodyMedium,
+                      {
+                        color: selected
+                          ? colors.onSecondaryContainer
+                          : colors.onSurfaceVariant,
+                      },
+                    ]}
+                  >
+                    {i.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </>
-      ) : null}
+      )}
     </View>
   );
 }

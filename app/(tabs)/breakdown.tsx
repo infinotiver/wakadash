@@ -198,18 +198,7 @@ export default function BreakdownScreen() {
 
   return (
     <>
-      <AppBar
-        title="Breakdown"
-        variant="center"
-        elevated={false}
-        actions={[
-          {
-            icon: "cog-outline",
-            label: "Settings",
-            onPress: () => router.push("/settings"),
-          },
-        ]}
-      />
+      <AppBar title="Breakdown" variant="center" elevated={false} />
       <ScrollView
         style={[ct.styles.scroll, { backgroundColor: c.background }]}
         contentContainerStyle={[

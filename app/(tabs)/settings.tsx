@@ -475,7 +475,13 @@ export default function SettingsScreen() {
               { color: c.onSurfaceVariant, marginBottom: ct.space.md },
             ]}
           >
-            made by infinotiver {"<3"}
+            {"\u00A9"} 2026{" "}
+            <Text
+              style={{ color: c.primary, textDecorationLine: "underline" }}
+              onPress={() => Linking.openURL("https://github.com/infinotiver")}
+            >
+              infinotiver
+            </Text>{" "}
           </Text>
           <View
             style={{
@@ -483,22 +489,6 @@ export default function SettingsScreen() {
               gap: ct.space.sm,
             }}
           >
-            <Button
-              label={`commit: ${gitCommit}`}
-              variant="filled"
-              tone="primary"
-              icon={({ color, size }) => (
-                <MaterialCommunityIcons
-                  name="github"
-                  size={size}
-                  color={color}
-                />
-              )}
-              onPress={() =>
-                Linking.openURL("https://github.com/infinotiver/wakadash")
-              }
-            />
-
             <Button
               label={`v${appVersion}`}
               // variant="tonal"
@@ -514,6 +504,21 @@ export default function SettingsScreen() {
                 Linking.openURL(
                   "https://github.com/infinotiver/wakadash/releases",
                 )
+              }
+            />
+            <Button
+              label={`commit: ${gitCommit}`}
+              variant="filled"
+              tone="primary"
+              icon={({ color, size }) => (
+                <MaterialCommunityIcons
+                  name="github"
+                  size={size}
+                  color={color}
+                />
+              )}
+              onPress={() =>
+                Linking.openURL("https://github.com/infinotiver/wakadash")
               }
             />
           </View>
