@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="assets/icon-512.png" alt="WakaDash Logo" width="96" />
+  <img src="assets/icons/icon.png" alt="WakaDash Logo" width="96" />
   <h1 align="center">WakaDash</h1>
 </p>
 
 <p align="center">
-  A React Native client for viewing WakaTime statistics on Android.
+  A React Native client for viewing WakaTime (compatible) statistics on Android.
 </p>
 
 <p align="center">
@@ -13,18 +13,19 @@
   <a href="https://github.com/infinotiver/wakadash/issues">Report Bug</a>
 </p>
 
-
 ## Features
 
-- View coding activity and time tracked by WakaTime (custom API support coming soon)
+- View coding activity and time tracked by WakaTime
+- OAuth login support for WakaTime
 - Clean mobile-first interface (M3 Design)
 - Light and dark theme support
 - User profile and account statistics
 - Daily, weekly, monthly insights
+- Sticky notification about today's activity
 
 ## Screenshots
 
-<img src="assets/demo-b.jpg" alt="WakaDash Breakdown page" height="300"/>
+<img src="assets/demo/image.png" alt="WakaDash home page" height="300"/>
 
 ## Getting Started
 
@@ -70,13 +71,6 @@ npm run web
 - TypeScript
 - React Query
 - WakaTime API
-
-## Roadmap
-
-- [x] Custom API support
-- [ ] Shareable stat cards
-- [ ] Widget support
-- [ ] More customization options
 
 ## Contributing
 
