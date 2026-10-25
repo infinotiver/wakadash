@@ -17,7 +17,6 @@ import { AppBar } from "@/src/components/AppBar";
 import { DashboardBreakdownSection } from "@/src/components/DashboardBreakdownSection";
 import { StatCard } from "@/src/components/StatCard";
 import { WeeklyChart } from "@/src/components/WeeklyChart";
-import { SetupScreen } from "@/src/components/SetupScreen";
 import { CategoryPieChart } from "@/src/components/CategoryPieChart";
 
 import { ct } from "@/src/constants/styles.common";
@@ -44,14 +43,13 @@ export default function TodayScreen() {
   const colors = useColors();
   const router = useRouter();
   const { open, modal } = useDatePicker();
-  const { isConfigured } = useWakaTime();
 
   const [picked, setPicked] = useState<string | null>(null); // null = today
   const [windowEnd, setWindowEnd] = useState<string | null>(null); // null = today
   const todayKey = toDateKey(new Date());
   const date = picked ?? todayKey;
   const isToday = date === todayKey;
-  const dayLabel = isToday ? "today" : "that day";
+  const dayLabel = isToday ? "Today" : "That day";
   const windowEndKey = windowEnd ?? todayKey;
   const windowStartKey = shiftDateKey(windowEndKey, -6);
 
@@ -95,9 +93,6 @@ export default function TodayScreen() {
     await Promise.allSettled([dayQ.refetch(), weekQ.refetch()]);
   }, [dayQ, weekQ]);
 
-  if (!isConfigured) {
-    return <SetupScreen />;
-  }
 
   const selected = dayQ.data; // the selected day's summary
   const week = weekQ.data ?? [];
@@ -322,16 +317,22 @@ export default function TodayScreen() {
                       icon={(tint) => (
                         <Feather name="clock" size={20} color={tint} />
                       )}
+                      iconTintColor={colors.accent.teal.onColor}
+                      iconBackgroundColor={colors.accent.teal.color}
+                      containerBackgroundColor={colors.accent.teal.colorContainer}
                     />
                   </View>
 
                   <View style={{ flex: 1 }}>
                     <StatCard
                       value={formatDuration(weekAvg)}
-                      subtitle="7-Day Avg"
+                      subtitle="7-day avg"
                       icon={(tint) => (
                         <Feather name="bar-chart" size={20} color={tint} />
                       )}
+                      iconTintColor={colors.accent.violet.onColor}
+                      iconBackgroundColor={colors.accent.violet.color}
+                      containerBackgroundColor={colors.accent.violet.colorContainer}
                     />
                   </View>
 
@@ -342,10 +343,13 @@ export default function TodayScreen() {
                           ? formatDuration(bestDay.grand_total.total_seconds)
                           : "-"
                       }
-                      subtitle="best day"
+                      subtitle="Best day"
                       icon={(tint) => (
                         <Feather name="award" size={20} color={tint} />
                       )}
+                      iconTintColor={colors.accent.amber.onColor}
+                      iconBackgroundColor={colors.accent.amber.color}
+                      containerBackgroundColor={colors.accent.amber.colorContainer}
                     />
                   </View>
                 </View>

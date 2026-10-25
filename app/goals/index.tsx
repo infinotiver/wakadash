@@ -10,10 +10,8 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppBar } from "@/src/components/AppBar";
 import { GoalCard } from "@/src/components/GoalCard";
-import { SetupScreen } from "@/src/components/SetupScreen";
 import { ct } from "@/src/constants/styles.common";
 import { useColors } from "@/src/hooks/useColors";
-import { useWakaTime } from "@/src/context/WakaTimeContext";
 import { useGoals } from "@/src/hooks/useWakaTimeQueries";
 import { isGoalActive } from "@/src/utils/goals";
 
@@ -21,10 +19,8 @@ export default function GoalsScreen() {
   const c = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { isConfigured, baseUrl } = useWakaTime();
   const goalsQ = useGoals();
 
-  if (!isConfigured) return <SetupScreen />;
 
   const goals = goalsQ.data ?? [];
   const active = goals.filter(isGoalActive);

@@ -10,7 +10,6 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ButtonGroup } from "@/src/components/ButtonGroup";
 import { AppBar } from "@/src/components/AppBar";
-import { SetupScreen } from "@/src/components/SetupScreen";
 import { HorizontalStackedBar } from "@/src/components/HorizontalStackedBar";
 import { ct } from "@/src/constants/styles.common";
 import { useColors } from "@/src/hooks/useColors";
@@ -50,13 +49,10 @@ export function CategoryScreen({
   const c = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { isConfigured } = useWakaTime();
   const [range, setRange] = useState<Range>("last_7_days");
 
   const statsQ = useWakaStats(range);
   const langMetaQ = useProgramLanguages();
-
-  if (!isConfigured) return <SetupScreen />;
 
   const items = (statsQ.data?.[category] ?? []).filter(
     (p) => p.total_seconds > 0,

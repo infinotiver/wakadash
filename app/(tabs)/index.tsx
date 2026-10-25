@@ -25,7 +25,6 @@ import { AppBar } from "@/src/components/AppBar";
 import { DashboardWidget } from "@/src/components/DashboardWidget";
 import { MiniBars } from "@/src/components/MiniBars";
 import { ShareBar } from "@/src/components/ShareBar";
-import { SetupScreen } from "@/src/components/SetupScreen";
 import { SummaryHeatmap } from "@/src/components/SummaryHeatmap";
 import { ct } from "@/src/constants/styles.common";
 import {
@@ -44,7 +43,6 @@ export default function OverviewScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { isConfigured } = useWakaTime();
   const todayQ = useTodaySummary();
   const weekQ = useWeekSummaries();
   const allTimeQ = useAllTimeSinceToday();
@@ -66,8 +64,7 @@ export default function OverviewScreen() {
     ]);
   }, [todayQ, weekQ, allTimeQ, statsQ, heatQ, goalsQ]);
 
-  if (!isConfigured) return <SetupScreen />;
-
+  
   const week = weekQ.data ?? [];
   const allTime = allTimeQ.data;
   const stats = statsQ.data;

@@ -214,8 +214,9 @@ export default function GoalDetailScreen() {
                 value={`${stats.streak} ${goal.delta}${stats.streak === 1 ? "" : "s"}`}
                 subtitle="Current streak"
                 icon={(color) => <Feather name="zap" size={20} color={color} />}
-                iconBackgroundColor={c.accent.amber.colorContainer}
-                iconTintColor={c.accent.amber.onColorContainer}
+                iconBackgroundColor={c.accent.amber.color}
+                iconTintColor={c.accent.amber.onColor}
+                containerBackgroundColor={c.accent.amber.colorContainer}
               />
               <StatCard
                 value={
@@ -227,8 +228,9 @@ export default function GoalDetailScreen() {
                 icon={(color) => (
                   <Feather name="check-circle" size={20} color={color} />
                 )}
-                iconBackgroundColor={c.accent.green.colorContainer}
-                iconTintColor={c.accent.green.onColorContainer}
+                iconBackgroundColor={c.accent.green.color}
+                iconTintColor={c.accent.green.onColor}
+                containerBackgroundColor={c.accent.green.colorContainer}
               />
             </View>
 
@@ -241,8 +243,9 @@ export default function GoalDetailScreen() {
                 icon={(color) => (
                   <Feather name="award" size={20} color={color} />
                 )}
-                iconBackgroundColor={c.accent.violet.colorContainer}
-                iconTintColor={c.accent.violet.onColorContainer}
+                iconBackgroundColor={c.accent.amber.color}
+                iconTintColor={c.accent.amber.onColor}
+                containerBackgroundColor={c.accent.amber.colorContainer}
               />
               <StatCard
                 value={formatDuration(stats.avgActual)}
@@ -250,8 +253,9 @@ export default function GoalDetailScreen() {
                 icon={(color) => (
                   <Feather name="bar-chart-2" size={20} color={color} />
                 )}
-                iconBackgroundColor={c.accent.teal.colorContainer}
-                iconTintColor={c.accent.teal.onColorContainer}
+                iconBackgroundColor={c.accent.violet.color}
+                iconTintColor={c.accent.violet.onColor}
+                containerBackgroundColor={c.accent.violet.colorContainer}
               />
             </View>
 
@@ -268,8 +272,9 @@ export default function GoalDetailScreen() {
                     color={color}
                   />
                 )}
-                iconBackgroundColor={c.accent.coral.colorContainer}
-                iconTintColor={c.accent.coral.onColorContainer}
+                iconBackgroundColor={c.accent.amber.colorContainer}
+                iconTintColor={c.accent.amber.onColorContainer}
+                containerBackgroundColor={c.accent.amber.colorContainer}
               />
             ) : null}
 

@@ -90,7 +90,7 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
     <WakaTimeContext.Provider
       value={{
         apiKey: loaded ? apiKey : null, // expose apiKey as null until loaded to avoid flicker
-        // this also leads to show a null state while apiKey is being loaded (TODO: rn this shows the SetupScreen)
+        // this also leads to show a null state while apiKey is being loaded
 
         baseUrl, // no loading-gate needed here, DEFAULT_BASE_URL is always a safe fallback value
         isConfigured: loaded && !!apiKey, // expose isConfigured as true only if loaded and apiKey is not null

@@ -9,6 +9,7 @@ interface StatCardProps {
   icon?: (tintColor: string) => React.ReactNode;
   iconTintColor?: string;
   iconBackgroundColor?: string;
+  containerBackgroundColor?: string;
 }
 
 export function StatCard({
@@ -17,11 +18,13 @@ export function StatCard({
   icon,
   iconTintColor,
   iconBackgroundColor,
+  containerBackgroundColor,
 }: StatCardProps) {
   const colors = useColors();
 
   const resolvedIconTintColor = iconTintColor ?? colors.onSecondary;
   const resolvedIconBackgroundColor = iconBackgroundColor ?? colors.secondary;
+  const resolvedContainerBackgroundColor = containerBackgroundColor ?? colors.surfaceContainerHigh;
 
   return (
     <View
@@ -29,7 +32,7 @@ export function StatCard({
         ct.styles.flex,
         ct.styles.row,
         {
-          backgroundColor: colors.surfaceContainerHigh,
+          backgroundColor: resolvedContainerBackgroundColor,
           padding: ct.padding.sm,
           borderRadius: ct.radius["2xl"],
           gap: ct.padding.sm,

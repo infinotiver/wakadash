@@ -12,7 +12,6 @@ import { useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
 import { CategoryPieChart } from "@/src/components/CategoryPieChart";
 import { CategoryBarChart } from "@/src/components/CategoryBarChart";
-import { SetupScreen } from "@/src/components/SetupScreen";
 import { AppBar } from "@/src/components/AppBar";
 import { ct } from "@/src/constants/styles.common";
 import { useColors } from "@/src/hooks/useColors";
@@ -116,7 +115,7 @@ export default function BreakdownScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const params = useLocalSearchParams<{ category?: string }>();
-  const { isConfigured, baseUrl } = useWakaTime();
+  const { baseUrl } = useWakaTime();
   const [range, setRange] = useState<RangeChip>("last_7_days");
   const [customValue, setCustomValue] = useState(() =>
     defaultCustomValue(baseUrl),
@@ -165,7 +164,6 @@ export default function BreakdownScreen() {
     }
   }, [stats, category]);
 
-  if (!isConfigured) return <SetupScreen />;
 
   const items = stats?.[category] ?? [];
   const visibleItems = items.filter((item) => (item?.percent ?? 0) >= 0.1);
@@ -265,22 +263,24 @@ export default function BreakdownScreen() {
             <View style={styles.summaryRow}>
               <StatCard
                 value={formatDuration(stats.total_seconds)}
-                subtitle="Coding Total"
+                subtitle="Coding time"
                 icon={(color) => (
                   <Feather name="code" size={20} color={color} />
                 )}
-                iconBackgroundColor={c.accent.green.colorContainer}
-                iconTintColor={c.accent.green.onColorContainer}
+                iconBackgroundColor={c.accent.teal.color}
+                iconTintColor={c.accent.teal.onColor}
+                containerBackgroundColor={c.accent.teal.colorContainer}
               />
 
               <StatCard
                 value={formatDuration(stats.daily_average)}
-                subtitle="Coding Avg"
+                subtitle="Coding avg"
                 icon={(color) => (
                   <Feather name="activity" size={20} color={color} />
                 )}
-                iconBackgroundColor={c.accent.violet.colorContainer}
-                iconTintColor={c.accent.violet.onColorContainer}
+                iconBackgroundColor={c.accent.violet.color}
+                iconTintColor={c.accent.violet.onColor}
+                containerBackgroundColor={c.accent.violet.colorContainer}
               />
             </View>
 
@@ -290,24 +290,26 @@ export default function BreakdownScreen() {
                   value={formatDuration(
                     stats.total_seconds_including_other_language,
                   )}
-                  subtitle="Total Time"
+                  subtitle="Total time"
                   icon={(color) => (
                     <Feather name="clock" size={20} color={color} />
                   )}
-                  iconBackgroundColor={c.accent.coral.colorContainer}
-                  iconTintColor={c.accent.coral.onColorContainer}
+                  iconBackgroundColor={c.accent.teal.color}
+                  iconTintColor={c.accent.teal.onColor}
+                  containerBackgroundColor={c.accent.teal.colorContainer}
                 />
 
                 <StatCard
                   value={formatDuration(
                     stats.daily_average_including_other_language ?? 0,
                   )}
-                  subtitle="Total Avg"
+                  subtitle="Total avg"
                   icon={(color) => (
                     <Feather name="activity" size={20} color={color} />
                   )}
-                  iconBackgroundColor={c.accent.coral.colorContainer}
-                  iconTintColor={c.accent.coral.onColorContainer}
+                  iconBackgroundColor={c.accent.violet.color}
+                  iconTintColor={c.accent.violet.onColor}
+                  containerBackgroundColor={c.accent.violet.colorContainer}
                 />
               </View>
             )}
@@ -319,22 +321,24 @@ export default function BreakdownScreen() {
                 <View style={styles.summaryRow}>
                   <StatCard
                     value={String(aiPromptEvents)}
-                    subtitle="Prompts sent"
+                    subtitle="Prompts"
                     icon={(color) => (
                       <Feather name="message-square" size={20} color={color} />
                     )}
-                    iconBackgroundColor={c.accent.teal.colorContainer}
-                    iconTintColor={c.accent.teal.onColorContainer}
+                    iconBackgroundColor={c.accent.green.color}
+                    iconTintColor={c.accent.green.onColor}
+                    containerBackgroundColor={c.accent.green.colorContainer}
                   />
 
                   <StatCard
                     value={`${aiPromptLengthAvg} chars`}
-                    subtitle="Avg prompt length"
+                    subtitle="Prompt length"
                     icon={(color) => (
                       <Feather name="type" size={20} color={color} />
                     )}
-                    iconBackgroundColor={c.accent.teal.colorContainer}
-                    iconTintColor={c.accent.teal.onColorContainer}
+                    iconBackgroundColor={c.accent.green.color}
+                    iconTintColor={c.accent.green.onColor}
+                    containerBackgroundColor={c.accent.green.colorContainer}
                   />
                 </View>
 
@@ -347,8 +351,9 @@ export default function BreakdownScreen() {
                     icon={(color) => (
                       <Feather name="log-in" size={20} color={color} />
                     )}
-                    iconBackgroundColor={c.accent.green.colorContainer}
-                    iconTintColor={c.accent.green.onColorContainer}
+                    iconBackgroundColor={c.accent.green.color}
+                    iconTintColor={c.accent.green.onColor}
+                    containerBackgroundColor={c.accent.green.colorContainer}
                   />
 
                   <StatCard
@@ -359,8 +364,9 @@ export default function BreakdownScreen() {
                     icon={(color) => (
                       <Feather name="log-out" size={20} color={color} />
                     )}
-                    iconBackgroundColor={c.accent.green.colorContainer}
-                    iconTintColor={c.accent.green.onColorContainer}
+                    iconBackgroundColor={c.accent.green.color}
+                    iconTintColor={c.accent.green.onColor}
+                    containerBackgroundColor={c.accent.green.colorContainer}
                   />
                 </View>
               </>
