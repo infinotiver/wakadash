@@ -14,9 +14,9 @@ const TASK = "today-notification-sync";
 const ACTION_TASK = "today-notification-action";
 const CHANNEL = "today-stats";
 const CATEGORY = "todayStats";
-const SYNC_ACTION = "sync";
 const NOTIFICATION_ID = "today-stats";
 
+export const SYNC_ACTION = "sync";
 // same SecureStore keys as WakaTimeContext (the headless task can't use the context)
 const API_KEY = "wakatime_api_key";
 const BASE_URL_KEY = "wakatime_base_url";
@@ -91,13 +91,6 @@ export async function saveConfig(
   let final = config;
 
   if (Platform.OS === "android") {
-    if (!config.enabled) {
-      await Notifications.dismissNotificationAsync(NOTIFICATION_ID);
-      if (await TaskManager.isTaskRegisteredAsync(TASK)) {
-        await BackgroundTask.unregisterTaskAsync(TASK);
-      }
-    }
-  } else {
     // Android 13+: the prompt only appears once a channel exists
     await Notifications.setNotificationChannelAsync(CHANNEL, {
       name: "Today's stats",
@@ -108,8 +101,20 @@ export async function saveConfig(
     const perm = await Notifications.requestPermissionsAsync();
     if (!perm.granted) {
       final = { ...config, enabled: false };
+    }
+    if (!config.enabled) {
+      await Notifications.dismissNotificationAsync(NOTIFICATION_ID);
+      if (await TaskManager.isTaskRegisteredAsync(TASK)) {
+        await BackgroundTask.unregisterTaskAsync(TASK);
+      }
     } else if (!(await TaskManager.isTaskRegisteredAsync(TASK))) {
       await BackgroundTask.registerTaskAsync(TASK, { minimumInterval: 15 });
+    }
+  } else {
+    // iOS: similar notification permissions flow
+    const perm = await Notifications.requestPermissionsAsync();
+    if (!perm.granted) {
+      final = { ...config, enabled: false };
     }
   }
 
@@ -126,7 +131,6 @@ function top(entries?: StatsEntry[]) {
 }
 
 export async function postTodayNotification(today: WakaSummaryDay | null) {
-  if (Platform.OS !== "android") return;
   const config = await getConfig();
   if (!config.enabled) return;
 

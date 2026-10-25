@@ -13,15 +13,38 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import { WakaTimeProvider } from "@/src/context/WakaTimeContext";
+import { useWakaTime, WakaTimeProvider } from "@/src/context/WakaTimeContext";
 import { useSyncTodayNotification } from "@/src/hooks/useWakaTimeQueries";
+import * as Notifications from "expo-notifications";
+import {
+  refreshTodayNotification,
+  SYNC_ACTION,
+} from "@/src/notifications/todayNotification";
 
+import { useQueryClient } from "@tanstack/react-query";
+import { wakaKeys } from "@/src/hooks/useWakaTimeQueries";
+import { SetupScreen } from "@/src/components/SetupScreen";
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
+  const { isConfigured } = useWakaTime();
   useSyncTodayNotification();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const sub = Notifications.addNotificationResponseReceivedListener(
+      async (response) => {
+        if (response.actionIdentifier !== SYNC_ACTION) return;
+        await refreshTodayNotification().catch(() => {});
+        // also refresh what's on screen
+        queryClient.invalidateQueries({ queryKey: wakaKeys.all });
+      },
+    );
+    return () => sub.remove();
+  }, [queryClient]);
+  if (!isConfigured) return <SetupScreen />;
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
