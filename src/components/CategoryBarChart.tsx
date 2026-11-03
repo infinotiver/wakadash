@@ -3,6 +3,7 @@ import { Text, View } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 import { useColors } from "@/src/hooks/useColors";
 import { ct } from "@/src/constants/styles.common";
+import { formatDuration } from "@/src/utils/dashboard";
 
 export interface CategoryBarChartItem {
   name: string;
@@ -31,10 +32,7 @@ function truncate(name: string): string {
 }
 
 function formatSeconds(seconds: number): string {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  if (h > 0) return `${h}h ${m}m`;
-  return `${m}m`;
+  return formatDuration(seconds);
 }
 
 export function CategoryBarChart({ items, colors: barColors }: Props) {

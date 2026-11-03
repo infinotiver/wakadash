@@ -3,7 +3,10 @@ import type { WakaSummaryDay, WakaProgramLanguage } from "@/src/types/wakatime";
 export function formatDuration(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+  if (hours > 0) {
+    return `${hours} hr${hours === 1 ? "" : "s"} ${minutes} min${minutes === 1 ? "" : "s"}`;
+  }
+  return `${minutes} min${minutes === 1 ? "" : "s"}`;
 }
 
 export function sumSummarySeconds(days: WakaSummaryDay[]): number {

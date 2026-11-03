@@ -3,6 +3,7 @@ import { Pressable, Text, View } from "react-native";
 import { useColors } from "@/src/hooks/useColors";
 import type { WakaSummaryDay } from "@/src/types/wakatime";
 import { ct } from "@/src/constants/styles.common";
+import { formatDuration } from "@/src/utils/dashboard";
 
 const styles = ct.styles.weeklyChart;
 
@@ -19,13 +20,10 @@ const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const GRIDLINE_BOTTOM_INSET = ct.lineHeight.xs + ct.space.xs;
 
 function formatTime(totalSeconds: number): string {
-  const h = Math.floor(totalSeconds / 3600);
-  const m = Math.floor((totalSeconds % 3600) / 60);
   const s = Math.floor(totalSeconds % 60);
 
-  if (h > 0) return `${h}h ${m}m`;
-  if (m > 0) return `${m}m${s > 0 ? ` ${s}s` : ""}`;
-  return `${s}s`;
+  if (s === 0) return formatDuration(totalSeconds);
+  return `${formatDuration(totalSeconds)} ${s} sec${s === 1 ? "" : "s"}`;
 }
 
 function formatDateLabel(date: string): string {
@@ -108,7 +106,7 @@ export function WeeklyChart({ days, selectedDate, onSelectDate }: Props) {
         >
           {formatTime(activeSeconds)}
         </Text>
-        
+
         {activeIndex !== null && activeDateLabel ? (
           <View
             style={{

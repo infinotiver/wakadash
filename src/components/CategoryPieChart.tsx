@@ -3,6 +3,7 @@ import { Animated, Text, View } from "react-native";
 import { PieChart } from "react-native-gifted-charts";
 import { useColors } from "@/src/hooks/useColors";
 import { ct } from "@/src/constants/styles.common";
+import { formatDuration } from "@/src/utils/dashboard";
 
 interface CategoryItem {
   name: string;
@@ -26,11 +27,7 @@ interface Props {
 }
 
 function formatTime(seconds: number): string {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  if (h > 0 && m > 0) return `${h}h ${m}m`;
-  if (h > 0) return `${h}h`;
-  return `${m}m`;
+  return formatDuration(seconds);
 }
 
 export function CategoryPieChart({
