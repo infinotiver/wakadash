@@ -8,6 +8,10 @@ import { Platform } from "react-native";
 import { DEFAULT_BASE_URL, wakatimeApi } from "@/src/api/wakatime";
 import type { StatsEntry, WakaSummaryDay } from "@/src/types/wakatime";
 import { formatDuration } from "@/src/utils/dashboard";
+import {
+  API_KEY_STORAGE_KEY,
+  BASE_URL_STORAGE_KEY,
+} from "@/src/constants/storage";
 
 const CONFIG_KEY = "notif:todayConfig";
 const TASK = "today-notification-sync";
@@ -18,8 +22,6 @@ const NOTIFICATION_ID = "today-stats";
 
 export const SYNC_ACTION = "sync";
 // same SecureStore keys as WakaTimeContext (the headless task can't use the context)
-const API_KEY = "wakatime_api_key";
-const BASE_URL_KEY = "wakatime_base_url";
 
 export type BreakdownKey =
   | "categories"
@@ -123,6 +125,20 @@ export async function saveConfig(
   return final;
 }
 
+export async function disableTodayNotification() {
+  await AsyncStorage.setItem(
+    CONFIG_KEY,
+    JSON.stringify({
+      ...DEFAULT_CONFIG,
+      enabled: false,
+    }),
+  );
+  await Notifications.dismissNotificationAsync(NOTIFICATION_ID);
+  if (await TaskManager.isTaskRegisteredAsync(TASK)) {
+    await BackgroundTask.unregisterTaskAsync(TASK);
+  }
+}
+
 function top(entries?: StatsEntry[]) {
   return entries?.reduce<StatsEntry | null>(
     (best, e) => (!best || e.total_seconds > best.total_seconds ? e : best),
@@ -178,8 +194,8 @@ export async function refreshTodayNotification() {
   if (!config.enabled) return;
 
   const [apiKey, baseUrl] = await Promise.all([
-    SecureStore.getItemAsync(API_KEY),
-    SecureStore.getItemAsync(BASE_URL_KEY),
+    SecureStore.getItemAsync(API_KEY_STORAGE_KEY),
+    SecureStore.getItemAsync(BASE_URL_STORAGE_KEY),
   ]);
   if (!apiKey) return;
 

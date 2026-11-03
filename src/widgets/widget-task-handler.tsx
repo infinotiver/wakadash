@@ -12,10 +12,12 @@ import {
   type StatKey,
   type WidgetData,
 } from "./index";
+import {
+  API_KEY_STORAGE_KEY,
+  BASE_URL_STORAGE_KEY,
+  WIDGET_CACHE_KEY,
+} from "@/src/constants/storage";
 
-const STORAGE_KEY = "wakatime_api_key";
-const BASE_URL_STORAGE_KEY = "wakatime_base_url";
-const CACHE_KEY = "wakadash.widget";
 const STAT_KEY_PREFIX = "wakadash.widget.stat.";
 const DEFAULT_STAT: StatKey = "languages";
 
@@ -41,7 +43,7 @@ const top = (xs: { name: string; percent: number }[] = [], n = 3): Slice[] =>
 // exported so the config screen can show a live preview
 export async function readCache(): Promise<WidgetData> {
   try {
-    const raw = await AsyncStorage.getItem(CACHE_KEY);
+    const raw = await AsyncStorage.getItem(WIDGET_CACHE_KEY);
     return raw ? { ...EMPTY, ...JSON.parse(raw) } : EMPTY;
   } catch {
     return EMPTY;
@@ -50,7 +52,7 @@ export async function readCache(): Promise<WidgetData> {
 
 export async function fetchFresh(): Promise<WidgetData | null> {
   try {
-    const apiKey = await SecureStore.getItemAsync(STORAGE_KEY);
+    const apiKey = await SecureStore.getItemAsync(API_KEY_STORAGE_KEY);
     if (!apiKey) return null;
     const baseUrl =
       (await SecureStore.getItemAsync(BASE_URL_STORAGE_KEY)) ??
@@ -92,7 +94,8 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
   // keep the old data on screen if the network call fails
   const refresh = async (cached: WidgetData) => {
     const fresh = await fetchFresh();
-    if (fresh) await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(fresh));
+    if (fresh)
+      await AsyncStorage.setItem(WIDGET_CACHE_KEY, JSON.stringify(fresh));
     const element = await renderFor(props, fresh ?? cached);
     if (element) props.renderWidget(element);
   };

@@ -2,9 +2,14 @@ import * as SecureStore from "expo-secure-store";
 import { useQueryClient } from "@tanstack/react-query";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { DEFAULT_BASE_URL } from "../api/wakatime";
+import { revokeWakaTimeToken } from "../api/wakatimeOAuth";
+import { clearWidgetData } from "../widgets/syncWidgets";
+import { disableTodayNotification } from "../notifications/todayNotification";
+import {
+  API_KEY_STORAGE_KEY,
+  BASE_URL_STORAGE_KEY,
+} from "../constants/storage";
 
-const STORAGE_KEY = "wakatime_api_key";
-const BASE_URL_STORAGE_KEY = "wakatime_base_url";
 const WAKATIME_QUERY_KEY = ["wakatime"] as const;
 
 interface WakaTimeContextValue {
@@ -34,7 +39,7 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
     async function loadConfiguration() {
       try {
         const [apiKey, storedBaseUrl] = await Promise.all([
-          SecureStore.getItemAsync(STORAGE_KEY),
+          SecureStore.getItemAsync(API_KEY_STORAGE_KEY),
           SecureStore.getItemAsync(BASE_URL_STORAGE_KEY),
         ]);
 
@@ -54,7 +59,7 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
 
   const setApiKey = async (key: string) => {
     const trimmed = key.trim();
-    await SecureStore.setItemAsync(STORAGE_KEY, trimmed);
+    await SecureStore.setItemAsync(API_KEY_STORAGE_KEY, trimmed);
     await queryClient.cancelQueries({ queryKey: WAKATIME_QUERY_KEY });
     queryClient.removeQueries({ queryKey: WAKATIME_QUERY_KEY });
     setApiKeyState(trimmed);
@@ -79,7 +84,13 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
   };
 
   const clearApiKey = async () => {
-    await SecureStore.deleteItemAsync(STORAGE_KEY);
+    const previousKey = apiKey;
+    await revokeWakaTimeToken(previousKey ?? "");
+    await Promise.allSettled([
+      SecureStore.deleteItemAsync(API_KEY_STORAGE_KEY),
+      clearWidgetData(),
+      disableTodayNotification(),
+    ]);
     await queryClient.cancelQueries({ queryKey: WAKATIME_QUERY_KEY });
     queryClient.removeQueries({ queryKey: WAKATIME_QUERY_KEY });
     setApiKeyState(null);

@@ -12,6 +12,23 @@ const discovery = {
 
 const CLIENT_ID = process.env.EXPO_PUBLIC_WAKATIME_CLIENT_ID ?? "";
 
+export async function revokeWakaTimeToken(token: string): Promise<void> {
+  if (!CLIENT_ID || !token.startsWith("waka_tok_")) return;
+
+  try {
+    await AuthSession.revokeAsync(
+      {
+        clientId: CLIENT_ID,
+        token,
+        tokenTypeHint: AuthSession.TokenTypeHint.AccessToken,
+      },
+      discovery,
+    );
+  } catch {
+    // Local credential cleanup must not depend on network availability.
+  }
+}
+
 // scopes map to the endpoints: summaries, stats/all_time, and goals
 const SCOPES = ["read_summaries", "read_stats", "read_goals"];
 
