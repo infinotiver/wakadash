@@ -27,6 +27,18 @@ export class WakaTimeApiError extends Error {
   }
 }
 
+export function formatWakaTimeError(error: unknown): string {
+  if (error instanceof WakaTimeApiError) {
+    return `${error.message} (HTTP ${error.status})`;
+  }
+
+  if (error instanceof Error) {
+    return `Network error: ${error.message}`;
+  }
+
+  return "Unknown error while contacting the API";
+}
+
 // Hackatime authenticates via `Authorization: Bearer <key>`. WakaTime (and
 // "custom", assumed WakaTime-shaped) uses Basic auth like WakaTime's own API.
 export function isHackatime(baseUrl: string): boolean {

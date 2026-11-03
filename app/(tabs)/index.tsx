@@ -27,6 +27,7 @@ import { MiniBars } from "@/src/components/MiniBars";
 import { ShareBar } from "@/src/components/ShareBar";
 import { SummaryHeatmap } from "@/src/components/SummaryHeatmap";
 import { ct } from "@/src/constants/styles.common";
+import { formatWakaTimeError } from "@/src/api/wakatime";
 import {
   averageSummarySeconds,
   formatDuration,
@@ -64,7 +65,6 @@ export default function OverviewScreen() {
     ]);
   }, [todayQ, weekQ, allTimeQ, statsQ, heatQ, goalsQ]);
 
-  
   const week = weekQ.data ?? [];
   const allTime = allTimeQ.data;
   const stats = statsQ.data;
@@ -82,6 +82,7 @@ export default function OverviewScreen() {
   const aiTotal = aiAdditions + humanAdditions;
   const loading = todayQ.isLoading || allTimeQ.isLoading;
   const failed = todayQ.isError || allTimeQ.isError;
+  const failure = todayQ.error ?? allTimeQ.error;
   const topProject = stats?.projects?.[0];
   const topLanguage = stats?.languages?.[0];
 
@@ -130,7 +131,7 @@ export default function OverviewScreen() {
             ]}
           >
             <Text style={[ct.text.body, { color: colors.onErrorContainer }]}>
-              Failed to load - tap to retry
+              {formatWakaTimeError(failure)} - tap to retry
             </Text>
           </Pressable>
         ) : (

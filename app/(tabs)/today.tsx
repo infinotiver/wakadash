@@ -20,6 +20,7 @@ import { WeeklyChart } from "@/src/components/WeeklyChart";
 import { CategoryPieChart } from "@/src/components/CategoryPieChart";
 
 import { ct } from "@/src/constants/styles.common";
+import { formatWakaTimeError } from "@/src/api/wakatime";
 import {
   averageSummarySeconds,
   buildLanguageColorMap,
@@ -93,7 +94,6 @@ export default function TodayScreen() {
     await Promise.allSettled([dayQ.refetch(), weekQ.refetch()]);
   }, [dayQ, weekQ]);
 
-
   const selected = dayQ.data; // the selected day's summary
   const week = weekQ.data ?? [];
 
@@ -113,6 +113,7 @@ export default function TodayScreen() {
 
   const loading = dayQ.isLoading || weekQ.isLoading;
   const failed = dayQ.isError || weekQ.isError;
+  const failure = dayQ.error ?? weekQ.error;
 
   const chartColors = [
     colors.accent.violet.color,
@@ -254,7 +255,7 @@ export default function TodayScreen() {
                   },
                 ]}
               >
-                Failed to load
+                {formatWakaTimeError(failure)}
               </Text>
             </View>
           ) : (
@@ -319,7 +320,9 @@ export default function TodayScreen() {
                       )}
                       iconTintColor={colors.accent.teal.onColor}
                       iconBackgroundColor={colors.accent.teal.color}
-                      containerBackgroundColor={colors.accent.teal.colorContainer}
+                      containerBackgroundColor={
+                        colors.accent.teal.colorContainer
+                      }
                     />
                   </View>
 
@@ -332,7 +335,9 @@ export default function TodayScreen() {
                       )}
                       iconTintColor={colors.accent.violet.onColor}
                       iconBackgroundColor={colors.accent.violet.color}
-                      containerBackgroundColor={colors.accent.violet.colorContainer}
+                      containerBackgroundColor={
+                        colors.accent.violet.colorContainer
+                      }
                     />
                   </View>
 
@@ -349,7 +354,9 @@ export default function TodayScreen() {
                       )}
                       iconTintColor={colors.accent.amber.onColor}
                       iconBackgroundColor={colors.accent.amber.color}
-                      containerBackgroundColor={colors.accent.amber.colorContainer}
+                      containerBackgroundColor={
+                        colors.accent.amber.colorContainer
+                      }
                     />
                   </View>
                 </View>
