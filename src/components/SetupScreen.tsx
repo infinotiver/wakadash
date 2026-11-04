@@ -11,7 +11,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useWakaTime } from "@/src/context/WakaTimeContext";
 import { useColors } from "@/src/hooks/useColors";
 import {
@@ -52,10 +52,12 @@ function getInitialMode(url: string): ProviderMode {
   return clean === HACKATIME_URL ? "hackatime" : "custom";
 }
 
-type FeatherName = React.ComponentProps<typeof Feather>["name"];
+type MaterialCommunityIconName = React.ComponentProps<
+  typeof MaterialCommunityIcons
+>["name"];
 
 interface FieldProps extends TextInputProps {
-  icon?: FeatherName;
+  icon?: MaterialCommunityIconName;
   invalid?: boolean;
   right?: React.ReactNode;
   inputRef?: React.Ref<TextInput>;
@@ -79,7 +81,11 @@ function Field({ icon, invalid, right, inputRef, ...input }: FieldProps) {
       }}
     >
       {icon ? (
-        <Feather name={icon} size={16} color={colors.onSurfaceVariant} />
+        <MaterialCommunityIcons
+          name={icon}
+          size={16}
+          color={colors.onSurfaceVariant}
+        />
       ) : null}
       <TextInput
         ref={inputRef}
@@ -107,7 +113,7 @@ function IconAction({
   label,
   onPress,
 }: {
-  name: FeatherName;
+  name: MaterialCommunityIconName;
   label: string;
   onPress: () => void;
 }) {
@@ -119,7 +125,11 @@ function IconAction({
       accessibilityRole="button"
       accessibilityLabel={label}
     >
-      <Feather name={name} size={16} color={colors.onSurfaceVariant} />
+      <MaterialCommunityIcons
+        name={name}
+        size={16}
+        color={colors.onSurfaceVariant}
+      />
     </TouchableOpacity>
   );
 }
@@ -281,7 +291,7 @@ export function SetupScreen() {
 
             {providerMode === "custom" && (
               <Field
-                icon="globe"
+                icon="web"
                 value={customUrl}
                 onChangeText={(v) => {
                   setCustomUrl(v);
@@ -295,7 +305,7 @@ export function SetupScreen() {
                 right={
                   customUrl.length > 0 ? (
                     <IconAction
-                      name="x"
+                      name="close"
                       label="Clear custom URL"
                       onPress={() => setCustomUrl("")}
                     />
@@ -342,7 +352,7 @@ export function SetupScreen() {
                 <>
                   {providerMode !== "custom" && (
                     <IconAction
-                      name="external-link"
+                      name="open-in-new"
                       label="Get a key"
                       onPress={() => Linking.openURL(keyPortalUrl)}
                     />
@@ -375,8 +385,8 @@ export function SetupScreen() {
                 borderRadius: ct.radius.lg,
               }}
             >
-              <Feather
-                name="alert-circle"
+              <MaterialCommunityIcons
+                name="alert-circle-outline"
                 size={16}
                 color={colors.onErrorContainer}
               />

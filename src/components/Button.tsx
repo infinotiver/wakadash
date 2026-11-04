@@ -119,7 +119,7 @@ export function Button({
         ? ct.padding.md
         : ct.padding.lg;
 
-  // Supports both a ReactNode (<Feather ... />) or a render function (({ color, size }) => <Feather color={color} size={size} />)
+  // Supports an icon node or a render function that receives its resolved color and size.
   const iconElement =
     typeof icon === "function" ? icon({ color: resolvedFg, size: 18 }) : icon;
 
