@@ -400,7 +400,7 @@ export default function SettingsScreen() {
           {!editingKey ? (
             <FieldRow
               value={
-                apiKey ? `${apiKey.slice(0, 4)}...${apiKey.slice(-4)}` : ""
+                apiKey ? `${apiKey.slice(0, 8)}...${apiKey.slice(-4)}` : ""
               }
               onEdit={() => setEditingKey(true)}
               onDelete={handleClearKey}
