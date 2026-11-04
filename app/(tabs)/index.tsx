@@ -5,14 +5,12 @@ import {
   RefreshControl,
   ScrollView,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/src/hooks/useColors";
-import { useWakaTime } from "@/src/context/WakaTimeContext";
 import {
   useAllTimeSinceToday,
   useGoals,
@@ -23,20 +21,18 @@ import {
 } from "@/src/hooks/useWakaTimeQueries";
 import { AppBar } from "@/src/components/AppBar";
 import { DashboardWidget } from "@/src/components/DashboardWidget";
-import { MiniBars } from "@/src/components/MiniBars";
-import { ShareBar } from "@/src/components/ShareBar";
-import { SummaryHeatmap } from "@/src/components/SummaryHeatmap";
+import { SummaryHeatmap } from "@/src/components/charts/SummaryHeatmap";
+import { WeeklyChart } from "@/src/components/charts/WeeklyChart";
 import { ct } from "@/src/constants/styles.common";
 import { formatWakaTimeError } from "@/src/api/wakatime";
 import {
   averageSummarySeconds,
   formatDuration,
   sumSummarySeconds,
-  weeklyTotals,
 } from "@/src/utils/dashboard";
-import { GoalCard } from "@/src/components/GoalCard";
+import { GoalCard } from "@/src/components/goals/GoalCard";
 import { isGoalActive } from "@/src/utils/goals";
-import { AiChangesChart } from "@/src/components/AiChangesChart";
+import { AiChangesChart } from "@/src/components/charts/AiChangesChart";
 
 const HEATMAP_DAYS = 3 * 30;
 
@@ -44,6 +40,9 @@ export default function OverviewScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const [selectedWeekDate, setSelectedWeekDate] = React.useState<
+    string | undefined
+  >();
   const todayQ = useTodaySummary();
   const weekQ = useWeekSummaries();
   const allTimeQ = useAllTimeSinceToday();
@@ -70,11 +69,24 @@ export default function OverviewScreen() {
   const stats = statsQ.data;
   const todaySeconds = todayQ.data?.grand_total.total_seconds ?? 0;
   const dailyAverage = allTime?.daily_average ?? averageSummarySeconds(week);
-  const activeDays = week.filter(
-    (day) => (day.grand_total?.total_seconds ?? 0) > 0,
-  ).length;
-  const dailyValues = week.map((day) => day.grand_total?.total_seconds ?? 0);
-  const weeklyValues = weeklyTotals(heatQ.data ?? []);
+  const weeklyAverage = averageSummarySeconds(week);
+  const dailyAverageProgress =
+    weeklyAverage > 0 ? (todaySeconds / weeklyAverage) * 100 : 0;
+  const isOverDailyAverage = dailyAverageProgress > 100;
+  const todayTextColor = isOverDailyAverage
+    ? colors.onErrorContainer
+    : colors.onSurface;
+  const latestWeekDay = week[week.length - 1];
+  const selectedWeekDay =
+    week.find((day) => day.range?.date === selectedWeekDate) ?? latestWeekDay;
+  const chartSelectedDate = selectedWeekDay?.range?.date;
+  const selectedWeekSeconds = selectedWeekDay?.grand_total?.total_seconds ?? 0;
+  const selectedWeekTime = (() => {
+    const hours = Math.floor(selectedWeekSeconds / 3600);
+    const minutes = Math.floor((selectedWeekSeconds % 3600) / 60);
+    if (hours > 0) return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+    return `${minutes}m`;
+  })();
   const aiAdditions = stats?.ai_additions ?? 0;
   const aiDeletions = stats?.ai_deletions ?? 0;
   const humanAdditions = stats?.human_additions ?? 0;
@@ -85,6 +97,24 @@ export default function OverviewScreen() {
   const failure = todayQ.error ?? allTimeQ.error;
   const topProject = stats?.projects?.[0];
   const topLanguage = stats?.languages?.[0];
+  const renderShareBar = (percent: number, color: string) => (
+    <View
+      style={{
+        height: 8,
+        borderRadius: ct.radius.full,
+        overflow: "hidden",
+        backgroundColor: colors.surfaceContainerHighest,
+      }}
+    >
+      <View
+        style={{
+          width: `${Math.min(Math.max(percent, 0), 100)}%`,
+          height: "100%",
+          backgroundColor: color,
+        }}
+      />
+    </View>
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -137,13 +167,7 @@ export default function OverviewScreen() {
         ) : (
           <>
             <View style={{ flexDirection: "row", gap: ct.space.sm }}>
-              <DashboardWidget
-                icon="trending-up"
-                title="All time"
-                hero
-                // half
-                flex={1.4}
-              >
+              <DashboardWidget title="All time" hero half flex={1.4}>
                 <Text
                   style={{
                     color: colors.onPrimaryContainer,
@@ -155,29 +179,26 @@ export default function OverviewScreen() {
                 >
                   {formatDuration(allTime?.total_seconds ?? 0)}
                 </Text>
-                <Text
-                  style={[
-                    ct.text.caption,
-                    { color: colors.onPrimaryContainer },
-                  ]}
-                  adjustsFontSizeToFit
-                >
-                  {allTime?.range?.start_text
-                    ? `Since ${allTime.range.start_text} · `
-                    : ""}
-                  {formatDuration(dailyAverage)} all-time avg
-                </Text>
               </DashboardWidget>
 
               <DashboardWidget
-                icon="clock"
                 title="Today"
                 half
                 onPress={() => router.push("/today")}
+                backgroundFill={{
+                  percent: isOverDailyAverage ? 100 : dailyAverageProgress,
+                  color: isOverDailyAverage
+                    ? colors.errorContainer
+                    : colors.accent.teal.colorContainer,
+                  backgroundColor: isOverDailyAverage
+                    ? colors.errorContainer
+                    : colors.surfaceContainerHigh,
+                  foregroundColor: todayTextColor,
+                }}
               >
                 <Text
                   style={{
-                    color: colors.onSurface,
+                    color: todayTextColor,
                     fontFamily: ct.fontFamily.semibold,
                     fontSize: ct.fontSize.hero,
                   }}
@@ -188,45 +209,54 @@ export default function OverviewScreen() {
                 </Text>
               </DashboardWidget>
             </View>
-
-            <View
-              style={{
-                flexDirection: "row",
-                gap: ct.space.sm,
-              }}
+            <Text
+              style={[ct.text.caption, { color: todayTextColor }]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
             >
-              {stats?.streak !== undefined ? (
-                <DashboardWidget icon="zap" title="Streak" half>
-                  <Text
-                    style={{
-                      color: colors.onSurface,
-                      fontFamily: ct.fontFamily.semibold,
-                      fontSize: ct.fontSize.display,
-                    }}
-                  >
-                    {`${stats.streak} ${stats.streak === 1 ? "day" : "days"}`}
-                  </Text>
-                </DashboardWidget>
-              ) : null}
-              <DashboardWidget icon="calendar" title="Active days" half>
-                <Text
-                  style={{
-                    color: colors.onSurface,
-                    fontFamily: ct.fontFamily.semibold,
-                    fontSize: ct.fontSize.display,
-                  }}
-                >
-                  {activeDays}/7
-                </Text>
-                <Text
-                  style={[ct.text.caption, { color: colors.onSurfaceVariant }]}
-                >
-                  Last 7 days
-                </Text>
-              </DashboardWidget>
-            </View>
+              {`Weekly avg · ${formatDuration(weeklyAverage)}`}
+            </Text>
+            <Text
+              style={[ct.text.caption, { color: colors.onPrimaryContainer }]}
+              adjustsFontSizeToFit
+            >
+              {allTime?.range?.start_text
+                ? `Since ${allTime.range.start_text} · `
+                : ""}
+              {formatDuration(dailyAverage)} all-time avg
+            </Text>
 
-            <DashboardWidget icon="calendar" title="Activity">
+            {allGoals.length > 0 && (
+              <DashboardWidget
+                title="Goals"
+                onPress={() => router.push("/goals")}
+              >
+                <View style={{ gap: ct.space.sm }}>
+                  {topGoals.length === 0 ? (
+                    <Text
+                      style={[ct.text.body, { color: colors.onSurfaceVariant }]}
+                    >
+                      No active goals
+                    </Text>
+                  ) : (
+                    topGoals.map((g) => (
+                      <GoalCard
+                        key={g.id}
+                        goal={g}
+                        onPress={() =>
+                          router.push({
+                            pathname: "/goals/[id]",
+                            params: { id: g.id },
+                          })
+                        }
+                      />
+                    ))
+                  )}
+                </View>
+              </DashboardWidget>
+            )}
+
+            <DashboardWidget title="Activity">
               {heatQ.isError ? (
                 <Text
                   style={[ct.text.body, { color: colors.onSurfaceVariant }]}
@@ -236,55 +266,59 @@ export default function OverviewScreen() {
               ) : (
                 <SummaryHeatmap days={heatQ.data ?? []} />
               )}
-              <Text
-                style={[ct.text.caption, { color: colors.onSurfaceVariant }]}
-              >
-                Last 3 Months
-              </Text>
             </DashboardWidget>
 
-            <View style={{ flexDirection: "row", gap: ct.space.sm }}>
-              <DashboardWidget
-                icon="activity"
-                title="Daily average"
-                variant="secondary"
-                half
+            <DashboardWidget title="Past 7 Days">
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: ct.space.sm,
+                }}
               >
-                <Text
-                  style={{
-                    color: colors.onSurface,
-                    fontFamily: ct.fontFamily.semibold,
-                    fontSize: ct.fontSize.display,
-                  }}
-                >
-                  {formatDuration(averageSummarySeconds(week))}
-                </Text>
-                <MiniBars values={dailyValues} />
-              </DashboardWidget>
-              <DashboardWidget
-                icon="bar-chart-2"
-                title="Past 7 Days"
-                half
-                variant="tertiary"
-              >
-                <Text
-                  style={{
-                    color: colors.onSurface,
-                    fontFamily: ct.fontFamily.semibold,
-                    fontSize: ct.fontSize.display,
-                  }}
-                >
-                  {formatDuration(sumSummarySeconds(week))}
-                </Text>
-                <MiniBars values={weeklyValues} />
-              </DashboardWidget>
-            </View>
+                <View style={{ flex: 0, gap: ct.space.xs }}>
+                  <Text
+                    style={{
+                      color: colors.onSurface,
+                      fontFamily: ct.fontFamily.semibold,
+                      fontSize: ct.fontSize["3xl"],
+                    }}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                  >
+                    {formatDuration(sumSummarySeconds(week))}
+                  </Text>
+                  <Text
+                    style={[
+                      ct.text.caption,
+                      { color: colors.onSurfaceVariant },
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {selectedWeekDay?.range?.date
+                      ? new Date(
+                          `${selectedWeekDay.range.date}T12:00:00`,
+                        ).toLocaleDateString(undefined, { weekday: "short" })
+                      : "Selected day"}
+                    {" · "}
+                    {selectedWeekTime}
+                  </Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <WeeklyChart
+                    days={week}
+                    compact
+                    selectedDate={chartSelectedDate}
+                    onSelectDate={setSelectedWeekDate}
+                  />
+                </View>
+              </View>
+            </DashboardWidget>
 
             {topProject || topLanguage ? (
               <View style={{ flexDirection: "row", gap: ct.space.sm }}>
                 {topProject ? (
                   <DashboardWidget
-                    icon="folder"
                     title="Top project"
                     half
                     onPress={() =>
@@ -313,15 +347,14 @@ export default function OverviewScreen() {
                         formatDuration(topProject.total_seconds)}{" "}
                       · {topProject.percent.toFixed(0)}%
                     </Text>
-                    <ShareBar
-                      percent={topProject.percent}
-                      color={colors.accent.violet.color}
-                    />
+                    {renderShareBar(
+                      topProject.percent,
+                      colors.accent.violet.color,
+                    )}
                   </DashboardWidget>
                 ) : null}
                 {topLanguage ? (
                   <DashboardWidget
-                    icon="code"
                     title="Top language"
                     half
                     onPress={() =>
@@ -350,48 +383,17 @@ export default function OverviewScreen() {
                         formatDuration(topLanguage.total_seconds)}{" "}
                       · {topLanguage.percent.toFixed(0)}%
                     </Text>
-                    <ShareBar
-                      percent={topLanguage.percent}
-                      color={colors.accent.teal.color}
-                    />
+                    {renderShareBar(
+                      topLanguage.percent,
+                      colors.accent.teal.color,
+                    )}
                   </DashboardWidget>
                 ) : null}
               </View>
             ) : null}
-            {allGoals.length > 0 && (
-              <DashboardWidget
-                icon="award"
-                title="Goals"
-                onPress={() => router.push("/goals")}
-              >
-                <View style={{ gap: ct.space.sm }}>
-                  {topGoals.length === 0 ? (
-                    <Text
-                      style={[ct.text.body, { color: colors.onSurfaceVariant }]}
-                    >
-                      No active goals
-                    </Text>
-                  ) : (
-                    topGoals.map((g) => (
-                      <GoalCard
-                        key={g.id}
-                        goal={g}
-                        onPress={() =>
-                          router.push({
-                            pathname: "/goals/[id]",
-                            params: { id: g.id },
-                          })
-                        }
-                      />
-                    ))
-                  )}
-                </View>
-              </DashboardWidget>
-            )}
             {aiTotal > 0 ? (
               <DashboardWidget
-                icon="cpu"
-                title="AI vs Human"
+                title="All-time AI vs human"
                 onPress={() =>
                   router.push({
                     pathname: "/breakdown",
@@ -405,11 +407,6 @@ export default function OverviewScreen() {
                   humanAdditions={humanAdditions}
                   humanDeletions={humanDeletions}
                 />
-                <Text
-                  style={[ct.text.caption, { color: colors.onSurfaceVariant }]}
-                >
-                  all time
-                </Text>
               </DashboardWidget>
             ) : null}
           </>

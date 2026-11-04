@@ -7,7 +7,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
 import { useColors } from "@/src/hooks/useColors";
@@ -16,8 +16,8 @@ import { useWakaTime } from "@/src/context/WakaTimeContext";
 import { AppBar } from "@/src/components/AppBar";
 import { DashboardBreakdownSection } from "@/src/components/DashboardBreakdownSection";
 import { StatCard } from "@/src/components/StatCard";
-import { WeeklyChart } from "@/src/components/WeeklyChart";
-import { CategoryPieChart } from "@/src/components/CategoryPieChart";
+import { WeeklyChart } from "@/src/components/charts/WeeklyChart";
+import { CategoryPieChart } from "@/src/components/charts/CategoryPieChart";
 
 import { ct } from "@/src/constants/styles.common";
 import { formatWakaTimeError } from "@/src/api/wakatime";
@@ -316,7 +316,11 @@ export default function TodayScreen() {
                       }
                       subtitle={dayLabel}
                       icon={(tint) => (
-                        <Feather name="clock" size={20} color={tint} />
+                        <MaterialCommunityIcons
+                          name="clock-outline"
+                          size={20}
+                          color={tint}
+                        />
                       )}
                       iconTintColor={colors.accent.teal.onColor}
                       iconBackgroundColor={colors.accent.teal.color}
@@ -331,7 +335,11 @@ export default function TodayScreen() {
                       value={formatDuration(weekAvg)}
                       subtitle="7-day avg"
                       icon={(tint) => (
-                        <Feather name="bar-chart" size={20} color={tint} />
+                        <MaterialCommunityIcons
+                          name="chart-bar"
+                          size={20}
+                          color={tint}
+                        />
                       )}
                       iconTintColor={colors.accent.violet.onColor}
                       iconBackgroundColor={colors.accent.violet.color}
@@ -350,7 +358,11 @@ export default function TodayScreen() {
                       }
                       subtitle="Best day"
                       icon={(tint) => (
-                        <Feather name="award" size={20} color={tint} />
+                        <MaterialCommunityIcons
+                          name="trophy-award"
+                          size={20}
+                          color={tint}
+                        />
                       )}
                       iconTintColor={colors.accent.amber.onColor}
                       iconBackgroundColor={colors.accent.amber.color}
@@ -485,7 +497,7 @@ export default function TodayScreen() {
                         >
                           View all {sec.title.toLowerCase()}
                         </Text>
-                        <Feather
+                        <MaterialCommunityIcons
                           name="chevron-right"
                           size={16}
                           color={colors.onSurfaceVariant}

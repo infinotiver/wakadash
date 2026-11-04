@@ -1,8 +1,8 @@
 import { Pressable, Text, View } from "react-native";
 import { useColors } from "@/src/hooks/useColors";
-import { HorizontalBreakdownChart } from "@/src/components/HorizontalBreakdownChart";
+import { HorizontalBreakdownChart } from "@/src/components/charts/HorizontalBreakdownChart";
 import { ct } from "@/src/constants/styles.common";
-import { Feather } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 interface DashboardBreakdownSectionProps {
   title: string;
@@ -53,7 +53,11 @@ export function DashboardBreakdownSection({
             {title}
           </Text>
           {onPress ? (
-            <Feather name="chevron-right" size={16} color={colors.onSurface} />
+            <MaterialCommunityIcons
+              name="chevron-right"
+              size={16}
+              color={colors.onSurface}
+            />
           ) : null}
         </View>
       </Pressable>

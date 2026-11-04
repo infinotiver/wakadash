@@ -10,10 +10,10 @@ interface Props {
   days: WakaSummaryDay[];
 }
 
-const CELL = 20;
+const CELL = 18;
 const GAP = 4;
 const CELL_RADIUS = 5;
-const LEGEND_CELL = 14;
+const LEGEND_CELL = 12;
 const WEEKDAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
 // Intensity thresholds as a fraction of the busiest day in the range.
@@ -124,13 +124,13 @@ export function SummaryHeatmap({ days }: Props) {
   }, [weeks]);
 
   return (
-    <View style={{ gap: ct.space.md }}>
+    <View style={{ gap: ct.space.sm }}>
       <View style={{ alignItems: "center", gap: ct.space.xs }}>
         <Text
           style={{
             color: colors.onSurface,
             fontFamily: ct.fontFamily.bold,
-            fontSize: ct.fontSize["2xl"],
+            fontSize: ct.fontSize["xl"],
           }}
         >
           {formatDuration(selectedSeconds)}

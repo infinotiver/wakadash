@@ -3,7 +3,7 @@ import { Pressable, Text, View } from "react-native";
 import { useColors } from "@/src/hooks/useColors";
 import { ct } from "@/src/constants/styles.common";
 import type { WakaGoal } from "@/src/types/wakatime";
-import { GoalStatusChip } from "@/src/components/GoalStatusChip";
+import { GoalStatusChip } from "@/src/components/goals/GoalStatusChip";
 import { computeGoalStats, currentPoint, goalTitle } from "@/src/utils/goals";
 
 interface Props {

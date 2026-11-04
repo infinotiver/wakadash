@@ -21,10 +21,11 @@ export function StatCard({
   containerBackgroundColor,
 }: StatCardProps) {
   const colors = useColors();
-
   const resolvedIconTintColor = iconTintColor ?? colors.onSecondary;
   const resolvedIconBackgroundColor = iconBackgroundColor ?? colors.secondary;
-  const resolvedContainerBackgroundColor = containerBackgroundColor ?? colors.surfaceContainerHigh;
+
+  const resolvedContainerBackgroundColor =
+    containerBackgroundColor ?? colors.surfaceContainerHigh;
 
   return (
     <View

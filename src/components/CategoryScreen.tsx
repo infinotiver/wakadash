@@ -10,7 +10,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ButtonGroup } from "@/src/components/ButtonGroup";
 import { AppBar } from "@/src/components/AppBar";
-import { HorizontalStackedBar } from "@/src/components/HorizontalStackedBar";
+import { HorizontalStackedBar } from "@/src/components/charts/HorizontalStackedBar";
 import { ct } from "@/src/constants/styles.common";
 import { useColors } from "@/src/hooks/useColors";
 import { useWakaTime } from "@/src/context/WakaTimeContext";

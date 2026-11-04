@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, View } from "react-native";
-import { HorizontalStackedBar } from "@/src/components/HorizontalStackedBar";
+import { HorizontalStackedBar } from "@/src/components/charts/HorizontalStackedBar";
 import { ct } from "@/src/constants/styles.common";
 
 export type HorizontalBreakdownChartItem = {

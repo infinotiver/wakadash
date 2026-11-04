@@ -6,12 +6,12 @@ import {
   Text,
   View,
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppBar } from "@/src/components/AppBar";
-import { GoalCard } from "@/src/components/GoalCard";
-import { GoalChart } from "@/src/components/GoalChart";
+import { GoalCard } from "@/src/components/goals/GoalCard";
+import { GoalChart } from "@/src/components/goals/GoalChart";
 import { StatCard } from "@/src/components/StatCard";
 import { ct } from "@/src/constants/styles.common";
 import { useColors } from "@/src/hooks/useColors";
@@ -213,7 +213,13 @@ export default function GoalDetailScreen() {
               <StatCard
                 value={`${stats.streak} ${goal.delta}${stats.streak === 1 ? "" : "s"}`}
                 subtitle="Current streak"
-                icon={(color) => <Feather name="zap" size={20} color={color} />}
+                icon={(color) => (
+                  <MaterialCommunityIcons
+                    name="lightning-bolt"
+                    size={20}
+                    color={color}
+                  />
+                )}
                 iconBackgroundColor={c.accent.amber.color}
                 iconTintColor={c.accent.amber.onColor}
                 containerBackgroundColor={c.accent.amber.colorContainer}
@@ -226,7 +232,11 @@ export default function GoalDetailScreen() {
                 }
                 subtitle="Success rate"
                 icon={(color) => (
-                  <Feather name="check-circle" size={20} color={color} />
+                  <MaterialCommunityIcons
+                    name="check-circle-outline"
+                    size={20}
+                    color={color}
+                  />
                 )}
                 iconBackgroundColor={c.accent.green.color}
                 iconTintColor={c.accent.green.onColor}
@@ -241,7 +251,11 @@ export default function GoalDetailScreen() {
                 }
                 subtitle={goal.is_inverse ? "Lowest period" : "Best period"}
                 icon={(color) => (
-                  <Feather name="award" size={20} color={color} />
+                  <MaterialCommunityIcons
+                    name="trophy-award"
+                    size={20}
+                    color={color}
+                  />
                 )}
                 iconBackgroundColor={c.accent.amber.color}
                 iconTintColor={c.accent.amber.onColor}
@@ -251,7 +265,11 @@ export default function GoalDetailScreen() {
                 value={formatDuration(stats.avgActual)}
                 subtitle={`Avg per ${goal.delta}`}
                 icon={(color) => (
-                  <Feather name="bar-chart-2" size={20} color={color} />
+                  <MaterialCommunityIcons
+                    name="chart-bar"
+                    size={20}
+                    color={color}
+                  />
                 )}
                 iconBackgroundColor={c.accent.violet.color}
                 iconTintColor={c.accent.violet.onColor}
@@ -264,7 +282,7 @@ export default function GoalDetailScreen() {
                 value={`${stats.trendPct >= 0 ? "+" : ""}${Math.round(stats.trendPct)}%`}
                 subtitle="Recent trend vs previous periods"
                 icon={(color) => (
-                  <Feather
+                  <MaterialCommunityIcons
                     name={
                       stats.trendPct! >= 0 ? "trending-up" : "trending-down"
                     }

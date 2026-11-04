@@ -3,7 +3,7 @@ import { Pressable, Text, View } from "react-native";
 import { useColors } from "@/src/hooks/useColors";
 import { ct } from "@/src/constants/styles.common";
 import type { WakaGoalChartPoint } from "@/src/types/wakatime";
-import { GoalStatusChip } from "@/src/components/GoalStatusChip";
+import { GoalStatusChip } from "@/src/components/goals/GoalStatusChip";
 import { pointLabel, statusMeta } from "@/src/utils/goals";
 
 const MAX_BARS = 14;

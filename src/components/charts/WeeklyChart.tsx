@@ -9,6 +9,7 @@ const styles = ct.styles.weeklyChart;
 
 interface Props {
   days: WakaSummaryDay[];
+  compact?: boolean;
   // Optional controlled selection (YYYY-MM-DD). When omitted, the chart
   // manages its own selection like before.
   selectedDate?: string;
@@ -34,7 +35,7 @@ function formatDateLabel(date: string): string {
   });
 }
 
-export function WeeklyChart({ days, selectedDate, onSelectDate }: Props) {
+export function WeeklyChart({ days, selectedDate, onSelectDate, compact = false }: Props) {
   const colors = useColors();
 
   // Used only when the parent isn't controlling selection.
@@ -80,22 +81,17 @@ export function WeeklyChart({ days, selectedDate, onSelectDate }: Props) {
     avgSeconds > 0
       ? `${deltaSeconds >= 0 ? "+" : "-"}${Math.abs(deltaPercent)}% vs avg`
       : "New";
-  const averageLineTop =
-    maxSeconds > 0
-      ? `${((1 - avgSeconds / maxSeconds) * 100).toFixed(2)}%`
-      : "0%";
-
   return (
     <View>
-      {/* Selected-day details */}
-      <View
-        style={{
-          minHeight: ct.size.tooltip,
-          marginBottom: ct.space.sm,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
+      {!compact ? (
+        <View
+          style={{
+            minHeight: ct.size.tooltip,
+            marginBottom: ct.space.sm,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
         <Text
           style={{
             fontSize: ct.fontSize["2xl"],
@@ -158,10 +154,11 @@ export function WeeklyChart({ days, selectedDate, onSelectDate }: Props) {
             Avg: {formatTime(avgSeconds)}
           </Text>
         )}
-      </View>
+        </View>
+      ) : null}
 
       {/* Chart */}
-      <View style={{ flexDirection: "row" }}>
+      <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
         <View style={{ flex: 1 }}>
           <View
             pointerEvents="none"
@@ -189,7 +186,7 @@ export function WeeklyChart({ days, selectedDate, onSelectDate }: Props) {
             ))}
           </View>
 
-          <View style={styles.bars}>
+          <View style={[styles.bars, compact ? { height: 96 } : null]}>
             {days.map((day, index) => {
               const seconds = day.grand_total?.total_seconds ?? 0;
 

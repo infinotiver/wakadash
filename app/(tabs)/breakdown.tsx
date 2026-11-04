@@ -10,8 +10,8 @@ import { ButtonGroup } from "@/src/components/ButtonGroup";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
-import { CategoryPieChart } from "@/src/components/CategoryPieChart";
-import { CategoryBarChart } from "@/src/components/CategoryBarChart";
+import { CategoryPieChart } from "@/src/components/charts/CategoryPieChart";
+import { CategoryBarChart } from "@/src/components/charts/CategoryBarChart";
 import { AppBar } from "@/src/components/AppBar";
 import { ct } from "@/src/constants/styles.common";
 import { useColors } from "@/src/hooks/useColors";
@@ -21,10 +21,10 @@ import {
   useWakaStats,
 } from "@/src/hooks/useWakaTimeQueries";
 import { StatCard } from "@/src/components/StatCard";
-import { Feather } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { buildLanguageColorMap, formatDuration } from "@/src/utils/dashboard";
 import { SegmentedButtons } from "@/src/components/SegmentedButtons";
-import { AiChangesChart } from "@/src/components/AiChangesChart";
+import { AiChangesChart } from "@/src/components/charts/AiChangesChart";
 import { fmt, isHackatime, type StatsRange } from "@/src/api/wakatime";
 import { DateRangePicker } from "@/src/components/DateRangePicker";
 import { PeriodPicker } from "@/src/components/PeriodPicker";
@@ -265,7 +265,11 @@ export default function BreakdownScreen() {
                 value={formatDuration(stats.total_seconds)}
                 subtitle="Coding time"
                 icon={(color) => (
-                  <Feather name="code" size={20} color={color} />
+                  <MaterialCommunityIcons
+                    name="code-tags"
+                    size={20}
+                    color={color}
+                  />
                 )}
                 iconBackgroundColor={c.accent.teal.color}
                 iconTintColor={c.accent.teal.onColor}
@@ -276,7 +280,11 @@ export default function BreakdownScreen() {
                 value={formatDuration(stats.daily_average)}
                 subtitle="Coding avg"
                 icon={(color) => (
-                  <Feather name="activity" size={20} color={color} />
+                  <MaterialCommunityIcons
+                    name="pulse"
+                    size={20}
+                    color={color}
+                  />
                 )}
                 iconBackgroundColor={c.accent.violet.color}
                 iconTintColor={c.accent.violet.onColor}
@@ -292,7 +300,11 @@ export default function BreakdownScreen() {
                   )}
                   subtitle="Total time"
                   icon={(color) => (
-                    <Feather name="clock" size={20} color={color} />
+                    <MaterialCommunityIcons
+                      name="clock-outline"
+                      size={20}
+                      color={color}
+                    />
                   )}
                   iconBackgroundColor={c.accent.teal.color}
                   iconTintColor={c.accent.teal.onColor}
@@ -305,7 +317,11 @@ export default function BreakdownScreen() {
                   )}
                   subtitle="Total avg"
                   icon={(color) => (
-                    <Feather name="activity" size={20} color={color} />
+                    <MaterialCommunityIcons
+                      name="pulse"
+                      size={20}
+                      color={color}
+                    />
                   )}
                   iconBackgroundColor={c.accent.violet.color}
                   iconTintColor={c.accent.violet.onColor}
@@ -323,7 +339,11 @@ export default function BreakdownScreen() {
                     value={String(aiPromptEvents)}
                     subtitle="Prompts"
                     icon={(color) => (
-                      <Feather name="message-square" size={20} color={color} />
+                      <MaterialCommunityIcons
+                        name="message-text-outline"
+                        size={20}
+                        color={color}
+                      />
                     )}
                     iconBackgroundColor={c.accent.green.color}
                     iconTintColor={c.accent.green.onColor}
@@ -334,7 +354,11 @@ export default function BreakdownScreen() {
                     value={`${aiPromptLengthAvg} chars`}
                     subtitle="Prompt length"
                     icon={(color) => (
-                      <Feather name="type" size={20} color={color} />
+                      <MaterialCommunityIcons
+                        name="format-text"
+                        size={20}
+                        color={color}
+                      />
                     )}
                     iconBackgroundColor={c.accent.green.color}
                     iconTintColor={c.accent.green.onColor}
@@ -349,7 +373,11 @@ export default function BreakdownScreen() {
                     })}
                     subtitle="Input tokens"
                     icon={(color) => (
-                      <Feather name="log-in" size={20} color={color} />
+                      <MaterialCommunityIcons
+                        name="login"
+                        size={20}
+                        color={color}
+                      />
                     )}
                     iconBackgroundColor={c.accent.green.color}
                     iconTintColor={c.accent.green.onColor}
@@ -362,7 +390,11 @@ export default function BreakdownScreen() {
                     })}
                     subtitle="Output tokens"
                     icon={(color) => (
-                      <Feather name="log-out" size={20} color={color} />
+                      <MaterialCommunityIcons
+                        name="logout"
+                        size={20}
+                        color={color}
+                      />
                     )}
                     iconBackgroundColor={c.accent.green.color}
                     iconTintColor={c.accent.green.onColor}
