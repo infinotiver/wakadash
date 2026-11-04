@@ -2,12 +2,14 @@ import * as SecureStore from "expo-secure-store";
 import { useQueryClient } from "@tanstack/react-query";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { DEFAULT_BASE_URL } from "../api/wakatime";
-import { revokeWakaTimeToken } from "../api/wakatimeOAuth";
+import { persistWakaTimeTokens, revokeWakaTimeToken, type WakaTimeOAuthTokens } from "../api/wakatimeOAuth";
 import { clearWidgetData } from "../widgets/syncWidgets";
 import { disableTodayNotification } from "../notifications/todayNotification";
 import {
   API_KEY_STORAGE_KEY,
   BASE_URL_STORAGE_KEY,
+  OAUTH_EXPIRES_AT_STORAGE_KEY,
+  OAUTH_REFRESH_TOKEN_STORAGE_KEY,
 } from "../constants/storage";
 
 const WAKATIME_QUERY_KEY = ["wakatime"] as const;
@@ -19,6 +21,7 @@ interface WakaTimeContextValue {
   authGeneration: number;
   setBaseUrl: (url: string) => Promise<void>;
   setApiKey: (key: string) => Promise<void>;
+  setOAuthTokens: (tokens: WakaTimeOAuthTokens) => Promise<void>;
   clearApiKey: () => Promise<void>;
 }
 
@@ -59,13 +62,35 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
 
   const setApiKey = async (key: string) => {
     const trimmed = key.trim();
-    await SecureStore.setItemAsync(API_KEY_STORAGE_KEY, trimmed);
+    const [previousKey, previousRefreshToken] = await Promise.all([
+      SecureStore.getItemAsync(API_KEY_STORAGE_KEY),
+      SecureStore.getItemAsync(OAUTH_REFRESH_TOKEN_STORAGE_KEY),
+    ]);
+    if (previousKey?.startsWith("waka_tok_") && previousKey !== trimmed) {
+      await Promise.all([
+        revokeWakaTimeToken(previousKey),
+        previousRefreshToken ? revokeWakaTimeToken(previousRefreshToken) : Promise.resolve(),
+      ]);
+    }
+    await Promise.all([
+      SecureStore.setItemAsync(API_KEY_STORAGE_KEY, trimmed),
+      SecureStore.deleteItemAsync(OAUTH_REFRESH_TOKEN_STORAGE_KEY),
+      SecureStore.deleteItemAsync(OAUTH_EXPIRES_AT_STORAGE_KEY),
+    ]);
     await queryClient.cancelQueries({ queryKey: WAKATIME_QUERY_KEY });
     queryClient.removeQueries({ queryKey: WAKATIME_QUERY_KEY });
     setApiKeyState(trimmed);
 
     // increment authGeneration counter bust cached queries that depend on the apiKey
 
+    setAuthGeneration((generation) => generation + 1);
+  };
+
+  const setOAuthTokens = async (tokens: WakaTimeOAuthTokens) => {
+    await persistWakaTimeTokens(tokens);
+    await queryClient.cancelQueries({ queryKey: WAKATIME_QUERY_KEY });
+    queryClient.removeQueries({ queryKey: WAKATIME_QUERY_KEY });
+    setApiKeyState(tokens.accessToken);
     setAuthGeneration((generation) => generation + 1);
   };
 
@@ -84,10 +109,18 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
   };
 
   const clearApiKey = async () => {
-    const previousKey = apiKey;
-    await revokeWakaTimeToken(previousKey ?? "");
+    const [previousKey, previousRefreshToken] = await Promise.all([
+      SecureStore.getItemAsync(API_KEY_STORAGE_KEY),
+      SecureStore.getItemAsync(OAUTH_REFRESH_TOKEN_STORAGE_KEY),
+    ]);
+    await Promise.all([
+      revokeWakaTimeToken(previousKey ?? ""),
+      revokeWakaTimeToken(previousRefreshToken ?? ""),
+    ]);
     await Promise.allSettled([
       SecureStore.deleteItemAsync(API_KEY_STORAGE_KEY),
+      SecureStore.deleteItemAsync(OAUTH_REFRESH_TOKEN_STORAGE_KEY),
+      SecureStore.deleteItemAsync(OAUTH_EXPIRES_AT_STORAGE_KEY),
       clearWidgetData(),
       disableTodayNotification(),
     ]);
@@ -108,6 +141,7 @@ export function WakaTimeProvider({ children }: { children: React.ReactNode }) {
         authGeneration, // expose authGeneration to allow queries to be invalidated when apiKey/baseUrl changes
         setBaseUrl,
         setApiKey,
+        setOAuthTokens,
         clearApiKey,
       }}
     >

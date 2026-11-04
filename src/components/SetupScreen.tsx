@@ -24,6 +24,7 @@ import { ct } from "@/src/constants/styles.common";
 import { SegmentedButtons } from "@/src/components/SegmentedButtons";
 import { Button } from "./Button";
 import { useWakaTimeOAuth } from "../api/wakatimeOAuth";
+import type { WakaTimeOAuthTokens } from "../api/wakatimeOAuth";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 const HACKATIME_URL = "https://hackatime.hackclub.com/api/hackatime/v1";
@@ -126,7 +127,12 @@ function IconAction({
 export function SetupScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { setApiKey, baseUrl: savedBaseUrl, setBaseUrl } = useWakaTime();
+  const {
+    setApiKey,
+    setOAuthTokens,
+    baseUrl: savedBaseUrl,
+    setBaseUrl,
+  } = useWakaTime();
   const keyRef = useRef<TextInput>(null);
 
   const initialUrl = savedBaseUrl || DEFAULT_BASE_URL;
@@ -185,8 +191,24 @@ export function SetupScreen() {
     await connect(key.trim(), activeServerUrl);
   }
 
-  const { signIn, ready } = useWakaTimeOAuth((token) =>
-    connect(token, DEFAULT_BASE_URL),
+  async function connectOAuth(tokens: WakaTimeOAuthTokens) {
+    setLoading(true);
+    setError(null);
+    try {
+      await wakatimeApi.verifyKey(tokens.accessToken, DEFAULT_BASE_URL);
+      await setBaseUrl(DEFAULT_BASE_URL);
+      await setOAuthTokens(tokens);
+    } catch (e: unknown) {
+      if (e instanceof WakaTimeApiError) setError(e.message);
+      else setError("Couldn't complete WakaTime sign-in.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const { signIn, ready } = useWakaTimeOAuth(
+    (tokens) => connectOAuth(tokens),
+    (oauthError) => setError(oauthError.message),
   );
 
   return (

@@ -1,0 +1,9 @@
+name = "wakadash-wakatime-oauth"
+main = "src/index.ts"
+compatibility_date = "2026-11-04"
+
+[vars]
+# Replace with the exact callback URI registered for the WakaTime OAuth app.
+WAKATIME_REDIRECT_URIS = "wakadash://oauth"
+# Add your web origin only if you ship the web app, e.g. "https://app.example.com".
+ALLOWED_ORIGINS = ""

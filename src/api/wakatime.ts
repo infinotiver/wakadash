@@ -14,7 +14,8 @@ import {
   normalizeWakaAllTime,
 } from "../utils/normalize";
 import { shiftDateKey } from "../utils/dashboard";
-export const DEFAULT_BASE_URL = "https://wakatime.com/api/v1";
+import { getWakaTimeAccessToken, refreshWakaTimeAccessToken } from "./wakatimeOAuth";
+export const DEFAULT_BASE_URL = "https://api.wakatime.com/api/v1";
 
 // just a basic error class
 export class WakaTimeApiError extends Error {
@@ -61,10 +62,22 @@ function unsupported(what: string): never {
 }
 
 async function wakFetch(path: string, apiKey: string, baseUrl: string) {
-  const res = await fetch(`${baseUrl}${path}`, {
-    headers: { Authorization: authHeader(apiKey, baseUrl) },
+  const oauth = apiKey.startsWith("waka_tok_");
+  const currentKey = oauth ? await getWakaTimeAccessToken() ?? apiKey : apiKey;
+  let res = await fetch(`${baseUrl}${path}`, {
+    headers: { Authorization: authHeader(currentKey, baseUrl) },
   });
-  if (res.status === 401) throw new WakaTimeApiError("Invalid API key", 401);
+  if (res.status === 401 && oauth) {
+    try {
+      const refreshed = await refreshWakaTimeAccessToken();
+      res = await fetch(`${baseUrl}${path}`, {
+        headers: { Authorization: authHeader(refreshed, baseUrl) },
+      });
+    } catch {
+      throw new WakaTimeApiError("WakaTime sign-in expired; reconnect from Settings", 401);
+    }
+  }
+  if (res.status === 401) throw new WakaTimeApiError(oauth ? "WakaTime sign-in expired; reconnect from Settings" : "Invalid API key", 401);
   if (res.status === 202) {
     throw new WakaTimeApiError("Stats processing, retry shortly", 202);
   }
