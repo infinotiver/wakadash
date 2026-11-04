@@ -25,6 +25,7 @@ interface DashboardWidgetProps {
   /** Backward-compatible alias for variant="primary". */
   hero?: boolean;
   half?: boolean;
+  pill?: boolean;
   flex?: number;
   backgroundFill?: DashboardBackgroundFill;
   children?: React.ReactNode;
@@ -36,6 +37,7 @@ export function DashboardWidget({
   variant = "surface",
   hero = false,
   half = false,
+  pill = false,
   flex,
   backgroundFill,
   children,
@@ -78,7 +80,8 @@ export function DashboardWidget({
         flex: resolvedFlex,
         minWidth: resolvedFlex !== undefined ? 0 : undefined,
         padding: ct.space.md,
-        borderRadius: ct.radius["2xl"],
+        borderRadius: pill ? ct.radius.full : ct.radius["2xl"],
+        flexDirection: "column",
         gap: ct.space.sm,
         backgroundColor:
           backgroundFill?.backgroundColor ?? variantStyles.backgroundColor,

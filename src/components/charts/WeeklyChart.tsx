@@ -35,7 +35,12 @@ function formatDateLabel(date: string): string {
   });
 }
 
-export function WeeklyChart({ days, selectedDate, onSelectDate, compact = false }: Props) {
+export function WeeklyChart({
+  days,
+  selectedDate,
+  onSelectDate,
+  compact = false,
+}: Props) {
   const colors = useColors();
 
   // Used only when the parent isn't controlling selection.
@@ -92,68 +97,68 @@ export function WeeklyChart({ days, selectedDate, onSelectDate, compact = false 
             alignItems: "center",
           }}
         >
-        <Text
-          style={{
-            fontSize: ct.fontSize["2xl"],
-            lineHeight: ct.lineHeight.md,
-            fontFamily: ct.fontFamily.bold,
-            color: colors.onSurface,
-          }}
-        >
-          {formatTime(activeSeconds)}
-        </Text>
-
-        {activeIndex !== null && activeDateLabel ? (
-          <View
+          <Text
             style={{
-              flexDirection: "row",
-              alignItems: "center",
+              fontSize: ct.fontSize["2xl"],
+              lineHeight: ct.lineHeight.md,
+              fontFamily: ct.fontFamily.bold,
+              color: colors.onSurface,
             }}
           >
+            {formatTime(activeSeconds)}
+          </Text>
+
+          {activeIndex !== null && activeDateLabel ? (
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: ct.fontSize.sm,
+                  lineHeight: ct.lineHeight.sm,
+                  fontFamily: ct.fontFamily.medium,
+                  color: colors.onSurfaceVariant,
+                }}
+              >
+                {activeDateLabel}
+              </Text>
+
+              <View
+                style={{
+                  width: 4,
+                  height: 4,
+                  marginHorizontal: ct.space.sm,
+                  borderRadius: 2,
+                  backgroundColor: colors.outline,
+                }}
+              />
+
+              <Text
+                style={{
+                  fontSize: ct.fontSize.sm,
+                  lineHeight: ct.lineHeight.sm,
+                  fontFamily: ct.fontFamily.semibold,
+                  color: colors.onSurface,
+                }}
+              >
+                {deltaText}
+              </Text>
+            </View>
+          ) : (
             <Text
               style={{
-                fontSize: ct.fontSize.sm,
-                lineHeight: ct.lineHeight.sm,
-                fontFamily: ct.fontFamily.medium,
+                fontSize: ct.fontSize.xs,
+                lineHeight: ct.lineHeight.xs,
+                fontFamily: ct.fontFamily.regular,
                 color: colors.onSurfaceVariant,
               }}
             >
-              {activeDateLabel}
+              Avg: {formatTime(avgSeconds)}
             </Text>
-
-            <View
-              style={{
-                width: 4,
-                height: 4,
-                marginHorizontal: ct.space.sm,
-                borderRadius: 2,
-                backgroundColor: colors.outline,
-              }}
-            />
-
-            <Text
-              style={{
-                fontSize: ct.fontSize.sm,
-                lineHeight: ct.lineHeight.sm,
-                fontFamily: ct.fontFamily.semibold,
-                color: colors.onSurface,
-              }}
-            >
-              {deltaText}
-            </Text>
-          </View>
-        ) : (
-          <Text
-            style={{
-              fontSize: ct.fontSize.xs,
-              lineHeight: ct.lineHeight.xs,
-              fontFamily: ct.fontFamily.regular,
-              color: colors.onSurfaceVariant,
-            }}
-          >
-            Avg: {formatTime(avgSeconds)}
-          </Text>
-        )}
+          )}
         </View>
       ) : null}
 
@@ -199,7 +204,11 @@ export function WeeklyChart({ days, selectedDate, onSelectDate, compact = false 
                 ? new Date(`${day.range.date}T12:00:00`)
                 : null;
 
-              const label = date ? DAY_LABELS[date.getDay()] : "—";
+              const label = date
+                ? compact
+                  ? DAY_LABELS[date.getDay()][0]
+                  : DAY_LABELS[date.getDay()]
+                : "—";
 
               return (
                 <Pressable

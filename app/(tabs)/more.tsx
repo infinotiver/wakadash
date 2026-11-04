@@ -19,7 +19,7 @@ const ITEMS: { label: string; icon: IconName; href: Href }[] = [
     label: "All Operating systems",
     icon: "laptop",
     href: "/operating-systems",
-  }
+  },
 ];
 
 export default function MoreScreen() {

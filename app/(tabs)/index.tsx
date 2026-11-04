@@ -97,24 +97,6 @@ export default function OverviewScreen() {
   const failure = todayQ.error ?? allTimeQ.error;
   const topProject = stats?.projects?.[0];
   const topLanguage = stats?.languages?.[0];
-  const renderShareBar = (percent: number, color: string) => (
-    <View
-      style={{
-        height: 8,
-        borderRadius: ct.radius.full,
-        overflow: "hidden",
-        backgroundColor: colors.surfaceContainerHighest,
-      }}
-    >
-      <View
-        style={{
-          width: `${Math.min(Math.max(percent, 0), 100)}%`,
-          height: "100%",
-          backgroundColor: color,
-        }}
-      />
-    </View>
-  );
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -166,65 +148,99 @@ export default function OverviewScreen() {
           </Pressable>
         ) : (
           <>
-            <View style={{ flexDirection: "row", gap: ct.space.sm }}>
-              <DashboardWidget title="All time" hero half flex={1.4}>
-                <Text
-                  style={{
-                    color: colors.onPrimaryContainer,
-                    fontFamily: ct.fontFamily.semibold,
-                    fontSize: ct.fontSize.hero,
-                  }}
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                >
-                  {formatDuration(allTime?.total_seconds ?? 0)}
-                </Text>
-              </DashboardWidget>
-
-              <DashboardWidget
-                title="Today"
-                half
+            <View style={{ flexDirection: "column", gap: ct.space.sm }}>
+              <Pressable
                 onPress={() => router.push("/today")}
-                backgroundFill={{
-                  percent: isOverDailyAverage ? 100 : dailyAverageProgress,
-                  color: isOverDailyAverage
-                    ? colors.errorContainer
-                    : colors.accent.teal.colorContainer,
+                accessibilityRole="button"
+                accessibilityLabel="Today"
+                style={({ pressed }) => ({
+                  position: "relative",
+                  overflow: "hidden",
+                  paddingHorizontal: ct.space.xl,
+                  paddingVertical: ct.space.md,
+                  borderRadius: ct.radius.full,
                   backgroundColor: isOverDailyAverage
                     ? colors.errorContainer
                     : colors.surfaceContainerHigh,
-                  foregroundColor: todayTextColor,
-                }}
+                  opacity: pressed ? 0.85 : 1,
+                })}
               >
-                <Text
+                <View
+                  pointerEvents="none"
                   style={{
-                    color: todayTextColor,
-                    fontFamily: ct.fontFamily.semibold,
-                    fontSize: ct.fontSize.hero,
+                    position: "absolute",
+                    top: 0,
+                    bottom: 0,
+                    left: 0,
+                    width: `${Math.min(Math.max(isOverDailyAverage ? 100 : dailyAverageProgress, 0), 100)}%`,
+                    backgroundColor: isOverDailyAverage
+                      ? colors.errorContainer
+                      : colors.accent.teal.colorContainer,
                   }}
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
+                />
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: ct.space.sm,
+                  }}
                 >
-                  {formatDuration(todaySeconds)}
-                </Text>
+                  <View style={{ gap: 0 }}>
+                    <Text
+                      style={[ct.text.buttonText, { color: todayTextColor }]}
+                    >
+                      Today
+                    </Text>
+                    <Text
+                      style={{
+                        color: todayTextColor,
+                        fontFamily: ct.fontFamily.bold,
+                        fontSize: ct.fontSize.lg,
+                        lineHeight: ct.fontSize["2xl"],
+                      }}
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                    >
+                      {formatDuration(todaySeconds)}
+                    </Text>
+                  </View>
+                  <Text
+                    style={[ct.text.caption, { color: todayTextColor }]}
+                    numberOfLines={1}
+                  >
+                    Weekly avg · {formatDuration(weeklyAverage)}
+                  </Text>
+                </View>
+              </Pressable>
+              <DashboardWidget title="All time" hero>
+                <View style={{ gap: ct.space.xs }}>
+                  <Text
+                    style={{
+                      color: colors.onPrimaryContainer,
+                      fontFamily: ct.fontFamily.semibold,
+                      fontSize: ct.fontSize.xl,
+                    }}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                  >
+                    {formatDuration(allTime?.total_seconds ?? 0)}
+                  </Text>
+                  <Text
+                    style={[
+                      ct.text.caption,
+                      { color: colors.onPrimaryContainer },
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {allTime?.range?.start_text
+                      ? `Since ${allTime.range.start_text} · `
+                      : ""}
+                    {formatDuration(dailyAverage)} all-time avg
+                  </Text>
+                </View>
               </DashboardWidget>
             </View>
-            <Text
-              style={[ct.text.caption, { color: todayTextColor }]}
-              numberOfLines={1}
-              adjustsFontSizeToFit
-            >
-              {`Weekly avg · ${formatDuration(weeklyAverage)}`}
-            </Text>
-            <Text
-              style={[ct.text.caption, { color: colors.onPrimaryContainer }]}
-              adjustsFontSizeToFit
-            >
-              {allTime?.range?.start_text
-                ? `Since ${allTime.range.start_text} · `
-                : ""}
-              {formatDuration(dailyAverage)} all-time avg
-            </Text>
 
             {allGoals.length > 0 && (
               <DashboardWidget
@@ -327,6 +343,12 @@ export default function OverviewScreen() {
                         params: { category: "projects" },
                       })
                     }
+                    backgroundFill={{
+                      percent: topProject.percent,
+                      color: colors.accent.violet.colorContainer,
+                      backgroundColor: colors.surfaceContainerHigh,
+                      foregroundColor: colors.onSurface,
+                    }}
                   >
                     <Text
                       style={[
@@ -347,10 +369,6 @@ export default function OverviewScreen() {
                         formatDuration(topProject.total_seconds)}{" "}
                       · {topProject.percent.toFixed(0)}%
                     </Text>
-                    {renderShareBar(
-                      topProject.percent,
-                      colors.accent.violet.color,
-                    )}
                   </DashboardWidget>
                 ) : null}
                 {topLanguage ? (
@@ -363,6 +381,12 @@ export default function OverviewScreen() {
                         params: { category: "languages" },
                       })
                     }
+                    backgroundFill={{
+                      percent: topLanguage.percent,
+                      color: colors.accent.teal.colorContainer,
+                      backgroundColor: colors.surfaceContainerHigh,
+                      foregroundColor: colors.onSurface,
+                    }}
                   >
                     <Text
                       style={[
@@ -383,10 +407,6 @@ export default function OverviewScreen() {
                         formatDuration(topLanguage.total_seconds)}{" "}
                       · {topLanguage.percent.toFixed(0)}%
                     </Text>
-                    {renderShareBar(
-                      topLanguage.percent,
-                      colors.accent.teal.color,
-                    )}
                   </DashboardWidget>
                 ) : null}
               </View>

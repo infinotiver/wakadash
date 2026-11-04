@@ -303,7 +303,7 @@ export default function TodayScreen() {
 
                 <View
                   style={{
-                    flex: hasCategories ? 3 : 1,
+                    flex: hasCategories ? 4 : 1,
                     gap: ct.padding.sm,
                   }}
                 >

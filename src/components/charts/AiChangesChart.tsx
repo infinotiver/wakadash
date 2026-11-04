@@ -12,10 +12,10 @@ interface Props {
   humanDeletions: number;
 }
 
-const BAR = 32;
-const INNER_GAP = 6; // between + and - bars in a pair
-const GROUP_GAP = 36; // between AI pair and Human pair
-const CHART_HEIGHT = 120;
+const BAR = 26;
+const INNER_GAP = 4;
+const GROUP_GAP = 24;
+const CHART_HEIGHT = 100;
 const PAIR_WIDTH = BAR * 2 + INNER_GAP;
 
 const compact = (n: number) =>
@@ -36,63 +36,41 @@ export function AiChangesChart({
   const totalBars = PAIR_WIDTH * 2 + GROUP_GAP;
   const sidePad = Math.max(0, (width - totalBars) / 2);
 
-  const topLabel = (value: number) => () => (
-    <Text
-      style={{
-        color: colors.onSurfaceVariant,
-        fontFamily: ct.fontFamily.medium,
-        fontSize: ct.fontSize.xs,
-        textAlign: "center",
-        width: BAR + 16,
-        marginBottom: 2,
-      }}
-      numberOfLines={1}
-    >
-      {compact(value)}
-    </Text>
-  );
+  const values = [
+    { value: aiAdditions, color: addColor, spacing: INNER_GAP },
+    { value: aiDeletions, color: delColor, spacing: GROUP_GAP },
+    { value: humanAdditions, color: addColor, spacing: INNER_GAP },
+    { value: humanDeletions, color: delColor, spacing: 0 },
+  ];
 
-  const bar = (value: number, color: string, spacing: number) => ({
+  const max = Math.max(1, ...values.map((item) => item.value));
+
+  const data = values.map(({ value, color, spacing }) => ({
     value,
     frontColor: color,
     spacing,
-    topLabelComponent: topLabel(value),
-  });
+    topLabelComponent: () => (
+      <Text
+        style={{
+          color: colors.onSurfaceVariant,
+          fontFamily: ct.fontFamily.medium,
+          fontSize: 10,
+          textAlign: "center",
+          width: BAR + 12,
+          marginBottom: 1,
+        }}
+        numberOfLines={1}
+      >
+        {compact(value)}
+      </Text>
+    ),
+  }));
 
-  const data = [
-    bar(aiAdditions, addColor, INNER_GAP),
-    bar(aiDeletions, delColor, GROUP_GAP),
-    bar(humanAdditions, addColor, INNER_GAP),
-    bar(humanDeletions, delColor, 0),
-  ];
-
-  const max = Math.max(
-    1,
-    aiAdditions,
-    aiDeletions,
-    humanAdditions,
-    humanDeletions,
-  );
-
-  const groupLabel = {
-    width: PAIR_WIDTH,
-    textAlign: "center" as const,
-    color: colors.onSurface,
-    fontFamily: ct.fontFamily.semibold,
-    fontSize: ct.fontSize.md,
-  };
-  if (
-    aiAdditions === 0 &&
-    aiDeletions === 0 &&
-    humanAdditions === 0 &&
-    humanDeletions === 0
-  ) {
-    return null;
-  }
+  if (max === 1 && values.every((item) => item.value === 0)) return null;
 
   return (
     <View
-      style={{ gap: ct.space.sm }}
+      style={{ gap: ct.space.xs }}
       onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
     >
       {width > 0 && (
@@ -106,7 +84,7 @@ export function AiChangesChart({
             barWidth={BAR}
             initialSpacing={sidePad}
             endSpacing={0}
-            barBorderRadius={6}
+            barBorderRadius={5}
             disableScroll
             hideYAxisText
             yAxisThickness={0}
@@ -118,7 +96,6 @@ export function AiChangesChart({
             isAnimated
           />
 
-          {/* group names, aligned under each pair */}
           <View
             style={{
               flexDirection: "row",
@@ -126,18 +103,29 @@ export function AiChangesChart({
               gap: GROUP_GAP,
             }}
           >
-            <Text style={groupLabel}>AI</Text>
-            <Text style={groupLabel}>Human</Text>
+            {["AI", "Human"].map((label) => (
+              <Text
+                key={label}
+                style={{
+                  width: PAIR_WIDTH,
+                  textAlign: "center",
+                  color: colors.onSurface,
+                  fontFamily: ct.fontFamily.semibold,
+                  fontSize: ct.fontSize.sm,
+                }}
+              >
+                {label}
+              </Text>
+            ))}
           </View>
         </>
       )}
 
-      {/* key */}
       <View
         style={{
           flexDirection: "row",
           justifyContent: "center",
-          gap: ct.space.lg,
+          gap: ct.space.md,
         }}
       >
         {[
@@ -149,14 +137,14 @@ export function AiChangesChart({
             style={{
               flexDirection: "row",
               alignItems: "center",
-              gap: ct.space.xs,
+              gap: 5,
             }}
           >
             <View
               style={{
-                width: 10,
-                height: 10,
-                borderRadius: 3,
+                width: 8,
+                height: 8,
+                borderRadius: 2,
                 backgroundColor: item.color,
               }}
             />
