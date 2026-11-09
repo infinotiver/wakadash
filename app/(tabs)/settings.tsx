@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Constants from "expo-constants";
+import * as Updates from "expo-updates";
 import {
   ActivityIndicator,
   Alert,
@@ -28,6 +29,7 @@ const styles = ct.styles.settings;
 const appVersion = Constants.expoConfig?.version ?? "unknown";
 const gitCommit =
   (Constants.expoConfig?.extra?.gitCommit as string | undefined) ?? "dev";
+const updateId = Updates.updateId ?? "embedded";
 
 const URL_SUGGESTIONS = [
   { label: "WakaTime", url: DEFAULT_BASE_URL },
@@ -522,6 +524,14 @@ export default function SettingsScreen() {
               }
             />
           </View>
+          <Text
+            style={[
+              ct.text.body,
+              { color: c.onSurfaceVariant, marginTop: ct.space.sm },
+            ]}
+          >
+            OTA update: {updateId}
+          </Text>
         </View>
       </ScrollView>
     </View>
