@@ -83,7 +83,18 @@
           "color": "#006874"
         }
       ],
-      "expo-font"
+      "expo-font",
+      "./plugins/withAbiSplits",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "useLegacyPackaging": true
+          }
+        }
+      ]
     ],
     "scheme": "wakadash",
     "extra": {
