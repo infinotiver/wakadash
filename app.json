@@ -84,7 +84,6 @@
         }
       ],
       "expo-font",
-      "./plugins/withAbiSplits",
       [
         "expo-build-properties",
         {
