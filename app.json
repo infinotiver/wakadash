@@ -93,7 +93,8 @@
             "useLegacyPackaging": true
           }
         }
-      ]
+      ],
+      "./plugins/withAbiSplits"
     ],
     "scheme": "wakadash",
     "extra": {
