@@ -1,7 +1,9 @@
 const { withAppBuildGradle, withGradleProperties } = require('@expo/config-plugins');
 
 module.exports = function withAbiSplits(config) {
-    // 1. Inject ABI splits into android/app/build.gradle
+    const abis = ['arm64-v8a', 'armeabi-v7a'];
+    if (process.env.INCLUDE_X86_64 === '1') abis.push('x86_64');
+
     config = withAppBuildGradle(config, (config) => {
         if (config.modResults.language === 'groovy') {
             const splitsBlock = `
@@ -10,7 +12,7 @@ module.exports = function withAbiSplits(config) {
             reset()
             enable true
             universalApk false
-            include "arm64-v8a", "armeabi-v7a"
+            include ${abis.map((a) => `"${a}"`).join(', ')}
         }
     }`;
 
@@ -24,22 +26,13 @@ module.exports = function withAbiSplits(config) {
         return config;
     });
 
-    // 2. Limit architectures in android/gradle.properties
     config = withGradleProperties(config, (config) => {
-        const existingProp = config.modResults.find(
+        const value = abis.join(',');
+        const existing = config.modResults.find(
             (item) => item.type === 'property' && item.key === 'reactNativeArchitectures'
         );
-
-        if (existingProp) {
-            existingProp.value = 'armeabi-v7a,arm64-v8a';
-        } else {
-            config.modResults.push({
-                type: 'property',
-                key: 'reactNativeArchitectures',
-                value: 'armeabi-v7a,arm64-v8a',
-            });
-        }
-
+        if (existing) existing.value = value;
+        else config.modResults.push({ type: 'property', key: 'reactNativeArchitectures', value });
         return config;
     });
 

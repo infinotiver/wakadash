@@ -15,8 +15,8 @@ const padding = space;
 const radius = space;
 
 const fontSize = {
-  xs: 10,
-  sm: 11,
+  xs: 12,
+  sm: 12,
   md: 13,
   lg: 14,
   xl: 15,
@@ -31,7 +31,8 @@ const fontFamily = {
   regular: "Inter_400Regular",
   medium: "Inter_500Medium",
   semibold: "Inter_600SemiBold",
-  bold: "Inter_700Bold",
+  // Keep the legacy token name so existing component styles remain compatible.
+  bold: "Inter_600SemiBold",
 } as const;
 
 const lineHeight = {
@@ -60,7 +61,7 @@ const size = {
 const text = StyleSheet.create({
   pageTitle: {
     fontSize: fontSize.display,
-    fontFamily: fontFamily.bold,
+    fontFamily: fontFamily.semibold,
     letterSpacing: -0.8,
   },
 
@@ -78,18 +79,18 @@ const text = StyleSheet.create({
     fontSize: fontSize.xs,
     fontFamily: fontFamily.semibold,
     letterSpacing: 0.6,
-    textTransform: "uppercase",
   },
 
   label: {
     fontSize: fontSize.xs,
     fontFamily: fontFamily.medium,
     letterSpacing: 0.5,
-    textTransform: "uppercase",
   },
 
   value: {
     fontSize: 22,
+    fontFamily: fontFamily.semibold,
+    fontVariant: ["tabular-nums"],
     letterSpacing: -0.5,
   },
 
@@ -120,7 +121,7 @@ const text = StyleSheet.create({
 
   heroTime: {
     fontSize: fontSize.hero,
-    fontFamily: fontFamily.bold,
+    fontFamily: fontFamily.semibold,
     letterSpacing: -1.5,
     lineHeight: lineHeight.lg,
   },
@@ -128,7 +129,6 @@ const text = StyleSheet.create({
   heroLabel: {
     fontSize: fontSize.sm,
     fontFamily: fontFamily.medium,
-    textTransform: "uppercase",
     letterSpacing: 0.6,
   },
 
@@ -157,12 +157,12 @@ const text = StyleSheet.create({
     fontSize: fontSize.xs,
     fontFamily: fontFamily.medium,
     letterSpacing: 0.5,
-    textTransform: "uppercase",
   },
 
   cardValue: {
     fontSize: fontSize.xl,
-    fontFamily: fontFamily.bold,
+    fontFamily: fontFamily.semibold,
+    fontVariant: ["tabular-nums"],
   },
 
   cardSub: {

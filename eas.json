@@ -19,6 +19,7 @@
     },
     "production": {
       "autoIncrement": true,
+      "env": { "INCLUDE_X86_64": "1" },
       "android": {
         "buildType": "apk",
         "applicationArchivePath": "android/app/build/outputs/apk/release/*.apk"
