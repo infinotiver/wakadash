@@ -27,7 +27,10 @@ import { ct } from "@/src/constants/styles.common";
 import { formatWakaTimeError } from "@/src/api/wakatime";
 import {
   averageSummarySeconds,
+  formatDateRange,
   formatDuration,
+  formatPercentage,
+  formatShortDate,
   sumSummarySeconds,
 } from "@/src/utils/dashboard";
 import { GoalCard } from "@/src/components/goals/GoalCard";
@@ -81,12 +84,7 @@ export default function OverviewScreen() {
     week.find((day) => day.range?.date === selectedWeekDate) ?? latestWeekDay;
   const chartSelectedDate = selectedWeekDay?.range?.date;
   const selectedWeekSeconds = selectedWeekDay?.grand_total?.total_seconds ?? 0;
-  const selectedWeekTime = (() => {
-    const hours = Math.floor(selectedWeekSeconds / 3600);
-    const minutes = Math.floor((selectedWeekSeconds % 3600) / 60);
-    if (hours > 0) return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
-    return `${minutes}m`;
-  })();
+  const selectedWeekTime = formatDuration(selectedWeekSeconds);
   const aiAdditions = stats?.ai_additions ?? 0;
   const aiDeletions = stats?.ai_deletions ?? 0;
   const humanAdditions = stats?.human_additions ?? 0;
@@ -195,7 +193,7 @@ export default function OverviewScreen() {
                     <Text
                       style={{
                         color: todayTextColor,
-                        fontFamily: ct.fontFamily.bold,
+                        fontFamily: ct.fontFamily.semibold,
                         fontSize: ct.fontSize.lg,
                         lineHeight: ct.fontSize["2xl"],
                       }}
@@ -312,9 +310,7 @@ export default function OverviewScreen() {
                     numberOfLines={1}
                   >
                     {selectedWeekDay?.range?.date
-                      ? new Date(
-                          `${selectedWeekDay.range.date}T12:00:00`,
-                        ).toLocaleDateString(undefined, { weekday: "short" })
+                      ? formatShortDate(selectedWeekDay.range.date)
                       : "Selected day"}
                     {" · "}
                     {selectedWeekTime}
@@ -365,9 +361,8 @@ export default function OverviewScreen() {
                         { color: colors.onSurfaceVariant },
                       ]}
                     >
-                      {topProject.text ??
-                        formatDuration(topProject.total_seconds)}{" "}
-                      · {topProject.percent.toFixed(0)}%
+                      {formatDuration(topProject.total_seconds)} ·{" "}
+                      {formatPercentage(topProject.percent)}
                     </Text>
                   </DashboardWidget>
                 ) : null}
@@ -403,9 +398,8 @@ export default function OverviewScreen() {
                         { color: colors.onSurfaceVariant },
                       ]}
                     >
-                      {topLanguage.text ??
-                        formatDuration(topLanguage.total_seconds)}{" "}
-                      · {topLanguage.percent.toFixed(0)}%
+                      {formatDuration(topLanguage.total_seconds)} ·{" "}
+                      {formatPercentage(topLanguage.percent)}
                     </Text>
                   </DashboardWidget>
                 ) : null}

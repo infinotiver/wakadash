@@ -123,6 +123,7 @@ export function CategoryPieChart({
                     color: foreground,
                     fontFamily: ct.fontFamily.semibold,
                     fontSize: valueSize,
+                    fontVariant: ["tabular-nums"],
                     lineHeight: Math.round(valueSize * 1.2),
                     textAlign: "center",
                     includeFontPadding: false,

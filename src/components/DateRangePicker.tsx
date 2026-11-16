@@ -3,6 +3,7 @@ import { Pressable, Text, View } from "react-native";
 import { useColors } from "@/src/hooks/useColors";
 import { useDatePicker } from "@/src/hooks/useDatePicker";
 import { ct } from "@/src/constants/styles.common";
+import { formatLongDate } from "@/src/utils/dashboard";
 
 interface Props {
   value: string; // "YYYY-MM-DD_YYYY-MM-DD"
@@ -50,7 +51,7 @@ export function DateRangePicker({ value, onChange }: Props) {
               })}
             >
               <Text style={[ct.text.buttonText, { color: c.onSurface }]}>
-                {v}
+                {formatLongDate(v)}
               </Text>
             </Pressable>
           </View>

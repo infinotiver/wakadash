@@ -3,7 +3,11 @@ import { Pressable, Text, View } from "react-native";
 import { useColors } from "@/src/hooks/useColors";
 import type { WakaSummaryDay } from "@/src/types/wakatime";
 import { ct } from "@/src/constants/styles.common";
-import { formatDuration } from "@/src/utils/dashboard";
+import {
+  formatDuration,
+  formatShortDate,
+  formatPercentage,
+} from "@/src/utils/dashboard";
 
 const styles = ct.styles.weeklyChart;
 
@@ -20,19 +24,8 @@ const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const GRIDLINE_BOTTOM_INSET = ct.lineHeight.xs + ct.space.xs;
 
-function formatTime(totalSeconds: number): string {
-  const s = Math.floor(totalSeconds % 60);
-
-  if (s === 0) return formatDuration(totalSeconds);
-  return `${formatDuration(totalSeconds)} ${s} sec${s === 1 ? "" : "s"}`;
-}
-
 function formatDateLabel(date: string): string {
-  return new Date(`${date}T12:00:00`).toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
+  return formatShortDate(date);
 }
 
 export function WeeklyChart({
@@ -84,7 +77,7 @@ export function WeeklyChart({
     avgSeconds > 0 ? Math.round((deltaSeconds / avgSeconds) * 100) : 0;
   const deltaText =
     avgSeconds > 0
-      ? `${deltaSeconds >= 0 ? "+" : "-"}${Math.abs(deltaPercent)}% vs avg`
+      ? `${deltaSeconds >= 0 ? "+" : "-"}${formatPercentage(Math.abs(deltaPercent))} vs avg`
       : "New";
   return (
     <View>
@@ -101,11 +94,12 @@ export function WeeklyChart({
             style={{
               fontSize: ct.fontSize["2xl"],
               lineHeight: ct.lineHeight.md,
-              fontFamily: ct.fontFamily.bold,
+              fontFamily: ct.fontFamily.semibold,
+              fontVariant: ["tabular-nums"],
               color: colors.onSurface,
             }}
           >
-            {formatTime(activeSeconds)}
+            {formatDuration(activeSeconds, { showSeconds: true })}
           </Text>
 
           {activeIndex !== null && activeDateLabel ? (
@@ -141,6 +135,7 @@ export function WeeklyChart({
                   fontSize: ct.fontSize.sm,
                   lineHeight: ct.lineHeight.sm,
                   fontFamily: ct.fontFamily.semibold,
+                  fontVariant: ["tabular-nums"],
                   color: colors.onSurface,
                 }}
               >
@@ -153,10 +148,11 @@ export function WeeklyChart({
                 fontSize: ct.fontSize.xs,
                 lineHeight: ct.lineHeight.xs,
                 fontFamily: ct.fontFamily.regular,
+                fontVariant: ["tabular-nums"],
                 color: colors.onSurfaceVariant,
               }}
             >
-              Avg: {formatTime(avgSeconds)}
+              Avg: {formatDuration(avgSeconds)}
             </Text>
           )}
         </View>
@@ -217,7 +213,7 @@ export function WeeklyChart({
                   onHoverIn={() => select(index)}
                   onPress={() => select(index)}
                   accessibilityRole="button"
-                  accessibilityLabel={`${label}, ${formatTime(seconds)}`}
+                  accessibilityLabel={`${label}, ${formatDuration(seconds)}`}
                   accessibilityState={{
                     selected: isActive,
                   }}

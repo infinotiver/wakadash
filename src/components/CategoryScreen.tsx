@@ -18,7 +18,11 @@ import {
   useProgramLanguages,
   useWakaStats,
 } from "@/src/hooks/useWakaTimeQueries";
-import { buildLanguageColorMap, formatDuration } from "@/src/utils/dashboard";
+import {
+  buildLanguageColorMap,
+  formatDuration,
+  formatPercentage,
+} from "@/src/utils/dashboard";
 
 const styles = ct.styles.breakdown;
 
@@ -183,7 +187,7 @@ export function CategoryScreen({
                     },
                   ]}
                 >
-                  {p.percent.toFixed(1)}%
+                  {formatPercentage(p.percent)}
                 </Text>
               </View>
 
@@ -194,7 +198,7 @@ export function CategoryScreen({
               />
 
               <Text style={[ct.text.body, { color: c.onSurfaceVariant }]}>
-                {p.text ?? formatDuration(p.total_seconds)}
+                {formatDuration(p.total_seconds)}
               </Text>
             </View>
           );

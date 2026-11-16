@@ -157,9 +157,7 @@ export async function postTodayNotification(today: WakaSummaryDay | null) {
   const lines = config.show.flatMap((key) => {
     const item = top(today?.[key]);
     return item
-      ? [
-          `${LABELS[key]}: ${item.name} · ${item.text ?? formatDuration(item.total_seconds)}`,
-        ]
+      ? [`${LABELS[key]}: ${item.name} · ${formatDuration(item.total_seconds)}`]
       : [];
   });
 

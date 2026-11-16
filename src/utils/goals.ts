@@ -4,6 +4,7 @@ import type {
   WakaGoal,
   WakaGoalChartPoint,
 } from "@/src/types/wakatime";
+import { formatShortDate } from "@/src/utils/dashboard";
 
 export const goalTitle = (g: Pick<WakaGoal, "custom_title" | "title">) =>
   g.custom_title || g.title;
@@ -116,17 +117,6 @@ export function statusMeta(
   }
 }
 
-export function formatShortDate(iso?: string | null): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
 export function timeAgo(iso?: string | null): string {
   if (!iso) return "—";
   const ms = Date.now() - new Date(iso).getTime();
@@ -141,8 +131,5 @@ export function timeAgo(iso?: string | null): string {
 
 export function pointLabel(p: WakaGoalChartPoint): string {
   const raw = p.range.date ? `${p.range.date}T12:00:00` : p.range.start;
-  const d = new Date(raw);
-  return isNaN(d.getTime())
-    ? "—"
-    : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return formatShortDate(raw);
 }

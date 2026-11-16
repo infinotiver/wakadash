@@ -5,6 +5,7 @@ import { ct } from "@/src/constants/styles.common";
 import type { WakaGoalChartPoint } from "@/src/types/wakatime";
 import { GoalStatusChip } from "@/src/components/goals/GoalStatusChip";
 import { pointLabel, statusMeta } from "@/src/utils/goals";
+import { formatDateRange, formatDuration } from "@/src/utils/dashboard";
 
 const MAX_BARS = 14;
 const CHART_HEIGHT = 120;
@@ -52,7 +53,7 @@ export function GoalChart({ points }: Props) {
               key={`${p.range.start}-${i}`}
               onPress={() => setSelected(i)}
               accessibilityRole="button"
-              accessibilityLabel={`${pointLabel(p)}, ${p.actual_seconds_text} of ${p.goal_seconds_text}, ${meta.label}`}
+              accessibilityLabel={`${pointLabel(p)}, ${formatDuration(p.actual_seconds)} of ${formatDuration(p.goal_seconds)}, ${meta.label}`}
               accessibilityState={{ selected: isActive }}
               style={{ flex: 1, height: "100%", justifyContent: "flex-end" }}
             >
@@ -105,12 +106,16 @@ export function GoalChart({ points }: Props) {
       >
         <View style={[ct.styles.rowBetween, { gap: ct.space.md }]}>
           <Text style={[ct.text.bodySemibold, { color: c.onSurface, flex: 1 }]}>
-            {active.range.text ?? pointLabel(active)}
+            {formatDateRange(
+              active.range.start_date ?? active.range.start,
+              active.range.end_date ?? active.range.end,
+            )}
           </Text>
           <GoalStatusChip status={active.range_status} />
         </View>
         <Text style={[ct.text.body, { color: c.onSurfaceVariant }]}>
-          {active.actual_seconds_text} of {active.goal_seconds_text}
+          {formatDuration(active.actual_seconds)} of{" "}
+          {formatDuration(active.goal_seconds)}
         </Text>
         {active.range_status_reason ? (
           <Text style={[ct.text.caption, { color: c.onSurfaceVariant }]}>

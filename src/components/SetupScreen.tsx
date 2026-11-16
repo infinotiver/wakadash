@@ -222,185 +222,185 @@ export function SetupScreen() {
   );
 
   return (
-     <KeyboardAwareScrollView
-    style={{ flex: 1, backgroundColor: colors.background }}
-    keyboardShouldPersistTaps="handled"
-    bounces={false}
-    bottomOffset={ct.space.xl} // gap kept between the focused field and the keyboard
-    contentContainerStyle={{
-      flexGrow: 1,
-      justifyContent: "flex-end",
-      paddingTop: insets.top + ct.space.xl,
-    }}
-  >
-        {/* Parent sheet: logo + both cards */}
+    <KeyboardAwareScrollView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      keyboardShouldPersistTaps="handled"
+      bounces={false}
+      bottomOffset={ct.space.xl} // gap kept between the focused field and the keyboard
+      contentContainerStyle={{
+        flexGrow: 1,
+        justifyContent: "flex-end",
+        paddingTop: insets.top + ct.space.xl,
+      }}
+    >
+      {/* Parent sheet: logo + both cards */}
+      <View
+        style={{
+          width: "100%",
+          maxWidth: 480,
+          alignSelf: "center",
+          backgroundColor: colors.surfaceContainerLow,
+          borderTopLeftRadius: ct.radius["3xl"],
+          borderTopRightRadius: ct.radius["3xl"],
+          paddingTop: ct.space["2xl"],
+          paddingHorizontal: ct.space.lg,
+          paddingBottom: insets.bottom + ct.space.lg,
+          gap: ct.space.lg,
+        }}
+      >
+        {/* Logo + title */}
         <View
           style={{
-            width: "100%",
-            maxWidth: 480,
-            alignSelf: "center",
-            backgroundColor: colors.surfaceContainerLow,
-            borderTopLeftRadius: ct.radius["3xl"],
-            borderTopRightRadius: ct.radius["3xl"],
-            paddingTop: ct.space["2xl"],
-            paddingHorizontal: ct.space.lg,
-            paddingBottom: insets.bottom + ct.space.lg,
-            gap: ct.space.lg,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: ct.space.md,
           }}
         >
-          {/* Logo + title */}
+          <Image
+            source={require("/assets/icons/icon.png")}
+            style={{
+              width: LOGO_SIZE,
+              height: LOGO_SIZE,
+              borderRadius: ct.radius.lg,
+            }}
+            accessible={false}
+            importantForAccessibility="no"
+          />
+          <Text
+            accessibilityRole="header"
+            style={{
+              fontSize: ct.fontSize.display,
+              fontFamily: ct.fontFamily.semibold,
+              color: colors.onSurface,
+            }}
+          >
+            WakaDash
+          </Text>
+        </View>
+
+        {/* Provider */}
+        <View style={cardStyle}>
+          <SegmentedButtons
+            items={PROVIDER_OPTIONS}
+            value={providerMode}
+            onChange={(mode) => {
+              setProviderMode(mode as ProviderMode);
+              setError(null);
+            }}
+          />
+
+          {providerMode === "custom" && (
+            <Field
+              icon="web"
+              value={customUrl}
+              onChangeText={(v) => {
+                setCustomUrl(v);
+                setError(null);
+              }}
+              placeholder="https://wakapi.dev/api/compat/wakatime/v1"
+              keyboardType="url"
+              returnKeyType="next"
+              onSubmitEditing={() => keyRef.current?.focus()}
+              invalid={customUrl.length > 0 && !urlValid}
+              right={
+                customUrl.length > 0 ? (
+                  <IconAction
+                    name="close"
+                    label="Clear custom URL"
+                    onPress={() => setCustomUrl("")}
+                  />
+                ) : null
+              }
+            />
+          )}
+        </View>
+
+        {/* Sign in + API key */}
+        <View style={cardStyle}>
+          {providerMode === "wakatime" && (
+            <>
+              <Button
+                onPress={signIn}
+                disabled={!ready || loading}
+                loading={loading}
+                label="Sign in with WakaTime"
+              />
+              <View
+                style={[
+                  ct.styles.divider,
+                  { backgroundColor: colors.outlineVariant },
+                ]}
+              />
+            </>
+          )}
+
+          <Field
+            inputRef={keyRef}
+            value={key}
+            onChangeText={(v) => {
+              setKey(v);
+              setError(null);
+            }}
+            placeholder={
+              providerMode === "wakatime" ? "waka_tok_..." : "waka_..."
+            }
+            secureTextEntry={!show}
+            returnKeyType="done"
+            onSubmitEditing={handleSave}
+            invalid={!!error}
+            right={
+              <>
+                {providerMode !== "custom" && (
+                  <IconAction
+                    name="open-in-new"
+                    label="Get a key"
+                    onPress={() => Linking.openURL(keyPortalUrl)}
+                  />
+                )}
+                <IconAction
+                  name={show ? "eye-off" : "eye"}
+                  label={show ? "Hide key" : "Show key"}
+                  onPress={() => setShow((s) => !s)}
+                />
+              </>
+            }
+          />
+
+          <Button
+            onPress={handleSave}
+            disabled={!canSubmit}
+            label="Connect"
+            loading={loading}
+          />
+        </View>
+
+        {error && (
           <View
             style={{
               flexDirection: "row",
               alignItems: "center",
-              gap: ct.space.md,
+              gap: ct.space.sm,
+              backgroundColor: colors.errorContainer,
+              padding: ct.space.md,
+              borderRadius: ct.radius.lg,
             }}
           >
-            <Image
-              source={require("/assets/icons/icon.png")}
-              style={{
-                width: LOGO_SIZE,
-                height: LOGO_SIZE,
-                borderRadius: ct.radius.lg,
-              }}
-              accessible={false}
-              importantForAccessibility="no"
+            <MaterialCommunityIcons
+              name="alert-circle-outline"
+              size={16}
+              color={colors.onErrorContainer}
             />
             <Text
-              accessibilityRole="header"
-              style={{
-                fontSize: ct.fontSize.display,
-                fontFamily: ct.fontFamily.bold,
-                color: colors.onSurface,
-              }}
+              style={[
+                ct.text.caption,
+                { color: colors.onErrorContainer, flex: 1 },
+              ]}
             >
-              WakaDash
+              {error}
             </Text>
           </View>
-
-          {/* Provider */}
-          <View style={cardStyle}>
-            <SegmentedButtons
-              items={PROVIDER_OPTIONS}
-              value={providerMode}
-              onChange={(mode) => {
-                setProviderMode(mode as ProviderMode);
-                setError(null);
-              }}
-            />
-
-            {providerMode === "custom" && (
-              <Field
-                icon="web"
-                value={customUrl}
-                onChangeText={(v) => {
-                  setCustomUrl(v);
-                  setError(null);
-                }}
-                placeholder="https://wakapi.dev/api/compat/wakatime/v1"
-                keyboardType="url"
-                returnKeyType="next"
-                onSubmitEditing={() => keyRef.current?.focus()}
-                invalid={customUrl.length > 0 && !urlValid}
-                right={
-                  customUrl.length > 0 ? (
-                    <IconAction
-                      name="close"
-                      label="Clear custom URL"
-                      onPress={() => setCustomUrl("")}
-                    />
-                  ) : null
-                }
-              />
-            )}
-          </View>
-
-          {/* Sign in + API key */}
-          <View style={cardStyle}>
-            {providerMode === "wakatime" && (
-              <>
-                <Button
-                  onPress={signIn}
-                  disabled={!ready || loading}
-                  loading={loading}
-                  label="Sign in with WakaTime"
-                />
-                <View
-                  style={[
-                    ct.styles.divider,
-                    { backgroundColor: colors.outlineVariant },
-                  ]}
-                />
-              </>
-            )}
-
-            <Field
-              inputRef={keyRef}
-              value={key}
-              onChangeText={(v) => {
-                setKey(v);
-                setError(null);
-              }}
-              placeholder={
-                providerMode === "wakatime" ? "waka_tok_..." : "waka_..."
-              }
-              secureTextEntry={!show}
-              returnKeyType="done"
-              onSubmitEditing={handleSave}
-              invalid={!!error}
-              right={
-                <>
-                  {providerMode !== "custom" && (
-                    <IconAction
-                      name="open-in-new"
-                      label="Get a key"
-                      onPress={() => Linking.openURL(keyPortalUrl)}
-                    />
-                  )}
-                  <IconAction
-                    name={show ? "eye-off" : "eye"}
-                    label={show ? "Hide key" : "Show key"}
-                    onPress={() => setShow((s) => !s)}
-                  />
-                </>
-              }
-            />
-
-            <Button
-              onPress={handleSave}
-              disabled={!canSubmit}
-              label="Connect"
-              loading={loading}
-            />
-          </View>
-
-          {error && (
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: ct.space.sm,
-                backgroundColor: colors.errorContainer,
-                padding: ct.space.md,
-                borderRadius: ct.radius.lg,
-              }}
-            >
-              <MaterialCommunityIcons
-                name="alert-circle-outline"
-                size={16}
-                color={colors.onErrorContainer}
-              />
-              <Text
-                style={[
-                  ct.text.caption,
-                  { color: colors.onErrorContainer, flex: 1 },
-                ]}
-              >
-                {error}
-              </Text>
-            </View>
-          )}
-        </View>
-      </KeyboardAwareScrollView>
+        )}
+      </View>
+    </KeyboardAwareScrollView>
   );
 }

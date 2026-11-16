@@ -7,6 +7,7 @@ import {
 
 import colors from "@/src/constants/colors";
 import { ct } from "@/src/constants/styles.common";
+import { formatPercentage } from "@/src/utils/dashboard";
 
 const hex = (value: string): ColorProp => value as ColorProp;
 
@@ -200,7 +201,7 @@ function Legend({ slices }: { slices: Slice[] }) {
             />
           </FlexWidget>
           <TextWidget
-            text={`${Math.round(slice.percent)}%`}
+            text={formatPercentage(slice.percent)}
             style={{
               fontSize: ct.fontSize.md,
               fontFamily: ct.fontFamily.regular,

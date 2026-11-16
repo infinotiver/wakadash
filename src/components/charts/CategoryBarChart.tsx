@@ -3,7 +3,7 @@ import { Text, View } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 import { useColors } from "@/src/hooks/useColors";
 import { ct } from "@/src/constants/styles.common";
-import { formatDuration } from "@/src/utils/dashboard";
+import { formatDuration, formatPercentage } from "@/src/utils/dashboard";
 
 export interface CategoryBarChartItem {
   name: string;
@@ -44,10 +44,9 @@ export function CategoryBarChart({ items, colors: barColors }: Props) {
 
   const activeItem = activeIndex !== null ? items[activeIndex] : null;
   const activeTimeText =
-    activeItem?.text ??
-    (activeItem?.total_seconds !== undefined
+    activeItem?.total_seconds !== undefined
       ? formatSeconds(activeItem.total_seconds)
-      : null);
+      : (activeItem?.text ?? null);
 
   const maxPercent = Math.max(...items.map((item) => item.percent), 1);
   const maxValue = Math.min(100, Math.ceil(maxPercent / 10) * 10 + 10);
@@ -71,7 +70,7 @@ export function CategoryBarChart({ items, colors: barColors }: Props) {
             { color: c.onSurface, marginBottom: ct.space.xs },
           ]}
         >
-          {item.percent.toFixed(0)}%
+          {formatPercentage(item.percent)}
         </Text>
       ),
     };
@@ -168,7 +167,7 @@ export function CategoryBarChart({ items, colors: barColors }: Props) {
                 fontVariant: ["tabular-nums"],
               }}
             >
-              {activeItem.percent.toFixed(1)}%
+              {formatPercentage(activeItem.percent)}
             </Text>
           </View>
         ) : (

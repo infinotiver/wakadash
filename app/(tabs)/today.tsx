@@ -25,6 +25,7 @@ import {
   averageSummarySeconds,
   buildLanguageColorMap,
   dayHeading,
+  formatDateRange,
   formatDuration,
   shiftDateKey,
   toDateKey,
@@ -139,16 +140,10 @@ export default function TodayScreen() {
         chartColors[i % chartColors.length],
     );
 
-  const shortDay = (key: string) =>
-    new Date(`${key}T12:00:00`).toLocaleDateString(undefined, {
-      day: "numeric",
-      month: "short",
-    });
-
   const windowTitle =
     windowEnd === null
       ? "Last 7 Days"
-      : `${shortDay(windowStartKey)} – ${shortDay(windowEndKey)}`;
+      : formatDateRange(windowStartKey, windowEndKey);
 
   const breakdownSections = [
     {
@@ -294,7 +289,7 @@ export default function TodayScreen() {
                           name: item.name,
                           percent: item.percent,
                           total_seconds: item.total_seconds,
-                          text: item.text ?? "",
+                          text: formatDuration(item.total_seconds),
                         }))}
                       totalLabel={dayLabel}
                     />
@@ -455,7 +450,7 @@ export default function TodayScreen() {
                   const top4 = sec.rawItems.slice(0, 4).map((item) => ({
                     name: item.name,
                     percent: item.percent,
-                    trailingText: item.text ?? "",
+                    trailingText: formatDuration(item.total_seconds),
                   }));
 
                   return (

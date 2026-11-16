@@ -54,7 +54,8 @@ export function AiChangesChart({
         style={{
           color: colors.onSurfaceVariant,
           fontFamily: ct.fontFamily.medium,
-          fontSize: 10,
+          fontSize: ct.fontSize.xs,
+          fontVariant: ["tabular-nums"],
           textAlign: "center",
           width: BAR + 12,
           marginBottom: 1,

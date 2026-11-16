@@ -4,7 +4,11 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { useColors } from "@/src/hooks/useColors";
 import type { WakaSummaryDay } from "@/src/types/wakatime";
 import { ct } from "@/src/constants/styles.common";
-import { formatDuration } from "@/src/utils/dashboard";
+import {
+  formatDuration,
+  formatLongDate,
+  formatMonth,
+} from "@/src/utils/dashboard";
 
 interface Props {
   days: WakaSummaryDay[];
@@ -22,12 +26,7 @@ const HIGH = 0.7;
 const MID = 0.35;
 
 function dateLabel(date?: string): string {
-  if (!date) return "Unknown date";
-  return new Date(`${date}T12:00:00`).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return formatLongDate(date);
 }
 
 // 0 = no activity, 1 = low, 2 = medium, 3 = high
@@ -98,10 +97,7 @@ export function SummaryHeatmap({ days }: Props) {
       const targetDay = firstOfMonthSlot?.day ?? week.find((slot) => slot)?.day;
       if (!targetDay?.range?.date) return "";
 
-      return new Date(`${targetDay.range.date}T12:00:00`).toLocaleDateString(
-        undefined,
-        { month: "short" },
-      );
+      return formatMonth(targetDay.range.date);
     });
 
     // 2. Only output the label when the month transitions, and prevent label collisions
@@ -129,11 +125,12 @@ export function SummaryHeatmap({ days }: Props) {
         <Text
           style={{
             color: colors.onSurface,
-            fontFamily: ct.fontFamily.bold,
+            fontFamily: ct.fontFamily.semibold,
             fontSize: ct.fontSize["xl"],
+            fontVariant: ["tabular-nums"],
           }}
         >
-          {formatDuration(selectedSeconds)}
+          {formatDuration(selectedSeconds, { showSeconds: true })}
         </Text>
         <Text
           style={{

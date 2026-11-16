@@ -164,7 +164,6 @@ export default function BreakdownScreen() {
     }
   }, [stats, category]);
 
-
   const items = stats?.[category] ?? [];
   const visibleItems = items.filter((item) => (item?.percent ?? 0) >= 0.1);
   const showProError =
@@ -463,7 +462,7 @@ export default function BreakdownScreen() {
                       name: item.name,
                       percent: item.percent,
                       total_seconds: item.total_seconds,
-                      text: item.text ?? "",
+                      text: formatDuration(item.total_seconds),
                       color,
                     };
                   });

@@ -5,6 +5,7 @@ import { ct } from "@/src/constants/styles.common";
 import type { WakaGoal } from "@/src/types/wakatime";
 import { GoalStatusChip } from "@/src/components/goals/GoalStatusChip";
 import { computeGoalStats, currentPoint, goalTitle } from "@/src/utils/goals";
+import { formatDateRange, formatDuration } from "@/src/utils/dashboard";
 
 interface Props {
   goal: WakaGoal;
@@ -68,8 +69,7 @@ export function GoalCard({ goal, onPress }: Props) {
             fontSize: ct.fontSize.lg,
           }}
         >
-          {latest?.actual_seconds_text ?? "0m"} /{" "}
-          {latest?.goal_seconds_text ?? "—"}
+          {formatDuration(actual)} / {formatDuration(target)}
         </Text>
       </View>
 
@@ -100,7 +100,12 @@ export function GoalCard({ goal, onPress }: Props) {
         }}
       >
         <Text style={[ct.text.caption, { color: c.onSurfaceVariant, flex: 1 }]}>
-          {goal.range_text}
+          {latest
+            ? formatDateRange(
+                latest.range.start_date ?? latest.range.start,
+                latest.range.end_date ?? latest.range.end,
+              )
+            : goal.range_text}
         </Text>
         <View style={{ alignItems: "flex-end", gap: ct.space.xs }}>
           {goal.is_inverse ? (

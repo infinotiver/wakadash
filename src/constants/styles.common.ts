@@ -31,8 +31,6 @@ const fontFamily = {
   regular: "Inter_400Regular",
   medium: "Inter_500Medium",
   semibold: "Inter_600SemiBold",
-  // Keep the legacy token name so existing component styles remain compatible.
-  bold: "Inter_600SemiBold",
 } as const;
 
 const lineHeight = {
@@ -122,6 +120,7 @@ const text = StyleSheet.create({
   heroTime: {
     fontSize: fontSize.hero,
     fontFamily: fontFamily.semibold,
+    fontVariant: ["tabular-nums"],
     letterSpacing: -1.5,
     lineHeight: lineHeight.lg,
   },

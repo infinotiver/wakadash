@@ -11,8 +11,8 @@ export function normalizeWakaAllTime(data: WakaAllTime): CodingAllTime {
   return {
     total_seconds: data.total_seconds,
     daily_average: data.daily_average,
-    text: data.text,
-    digital: data.digital,
+    text: formatDuration(data.total_seconds),
+    digital: formatDuration(data.total_seconds),
     decimal: data.decimal,
     range: data.range,
     is_up_to_date: data.is_up_to_date,
