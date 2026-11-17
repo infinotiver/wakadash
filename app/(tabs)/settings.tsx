@@ -25,11 +25,20 @@ import { ct } from "@/src/constants/styles.common";
 import { AppBar } from "@/src/components/AppBar";
 import { Button } from "@/src/components/Button";
 import { NotificationSettings } from "@/src/components/settings/notifications/Settings";
+import { ThemeSettings } from "@/src/components/settings/theme/Settings";
+
 const styles = ct.styles.settings;
 const appVersion = Constants.expoConfig?.version ?? "unknown";
 const gitCommit =
   (Constants.expoConfig?.extra?.gitCommit as string | undefined) ?? "dev";
-const updateId = Updates.updateId ?? "embedded";
+
+const otaDetails = [
+  Updates.updateId?.slice(0, 8) ?? "embedded",
+  Updates.channel,
+  Updates.runtimeVersion,
+]
+  .filter(Boolean)
+  .join(" · ");
 
 const URL_SUGGESTIONS = [
   { label: "WakaTime", url: DEFAULT_BASE_URL },
@@ -463,6 +472,7 @@ export default function SettingsScreen() {
             Delete the key to use WakaTime OAuth on Setup Screen.
           </Text>
         </View>
+        <ThemeSettings />
         <NotificationSettings />
         <View
           style={[styles.section, { backgroundColor: c.surfaceContainerHigh }]}
@@ -485,23 +495,11 @@ export default function SettingsScreen() {
               infinotiver
             </Text>{" "}
           </Text>
-          <View
-            style={{
-              flexDirection: "row",
-              gap: ct.space.sm,
-            }}
-          >
+          <View style={{ flexDirection: "row", gap: ct.space.sm }}>
             <Button
               label={`v${appVersion}`}
-              // variant="tonal"
-              tone="tertiary"
-              icon={({ color, size }) => (
-                <MaterialCommunityIcons
-                  name="tag-multiple-outline"
-                  size={size}
-                  color={color}
-                />
-              )}
+              backgroundColor={c.surfaceContainerHighest}
+              color={c.onSurfaceVariant}
               onPress={() =>
                 Linking.openURL(
                   "https://github.com/infinotiver/wakadash/releases",
@@ -509,16 +507,9 @@ export default function SettingsScreen() {
               }
             />
             <Button
-              label={`commit: ${gitCommit}`}
-              variant="filled"
-              tone="primary"
-              icon={({ color, size }) => (
-                <MaterialCommunityIcons
-                  name="github"
-                  size={size}
-                  color={color}
-                />
-              )}
+              label={gitCommit}
+              backgroundColor={c.surfaceContainerHighest}
+              color={c.onSurfaceVariant}
               onPress={() =>
                 Linking.openURL("https://github.com/infinotiver/wakadash")
               }
@@ -530,7 +521,7 @@ export default function SettingsScreen() {
               { color: c.onSurfaceVariant, marginTop: ct.space.sm },
             ]}
           >
-            OTA update: {updateId}
+            {otaDetails}
           </Text>
         </View>
       </ScrollView>

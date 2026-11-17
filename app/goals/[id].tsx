@@ -16,14 +16,12 @@ import { StatCard } from "@/src/components/StatCard";
 import { ct } from "@/src/constants/styles.common";
 import { useColors } from "@/src/hooks/useColors";
 import { useGoal } from "@/src/hooks/useWakaTimeQueries";
-import { formatDuration } from "@/src/utils/dashboard";
+import { formatDuration, formatShortDate } from "@/src/utils/dashboard";
 import {
   computeGoalStats,
-  formatShortDate,
   goalTitle,
   timeAgo,
 } from "@/src/utils/goals";
-
 type Colors = ReturnType<typeof useColors>;
 
 function Section({

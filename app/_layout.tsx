@@ -12,6 +12,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { DynamicColorProvider } from "@/src/context/DynamicColorContext";
 import { useWakaTime, WakaTimeProvider } from "@/src/context/WakaTimeContext";
 import { useSyncTodayNotification } from "@/src/hooks/useWakaTimeQueries";
 import * as Notifications from "expo-notifications";
@@ -69,15 +70,17 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <WakaTimeProvider>
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <KeyboardProvider>
-              <RootLayoutNav />
-            </KeyboardProvider>
-          </GestureHandlerRootView>
-        </WakaTimeProvider>
-      </QueryClientProvider>
+      <DynamicColorProvider>
+        <QueryClientProvider client={queryClient}>
+          <WakaTimeProvider>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <KeyboardProvider>
+                <RootLayoutNav />
+              </KeyboardProvider>
+            </GestureHandlerRootView>
+          </WakaTimeProvider>
+        </QueryClientProvider>
+      </DynamicColorProvider>
     </SafeAreaProvider>
   );
 }

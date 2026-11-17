@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { useColors } from "@/src/hooks/useColors";
@@ -28,11 +28,30 @@ export function ButtonGroup<T extends string>({
 }: ButtonGroupProps<T>) {
   const c = useColors();
   const isSmall = size === "sm";
+  const scrollRef = useRef<ScrollView>(null);
+  const [viewportWidth, setViewportWidth] = useState(0);
+  const itemLayouts = useRef<Record<string, { x: number; width: number }>>({});
+
+  const centerItem = (itemValue: T) => {
+    const layout = itemLayouts.current[itemValue];
+    if (!layout || viewportWidth === 0) return;
+
+    scrollRef.current?.scrollTo({
+      x: Math.max(0, layout.x - (viewportWidth - layout.width) / 2),
+      animated: true,
+    });
+  };
+
+  useEffect(() => {
+    centerItem(value);
+  }, [value, viewportWidth]);
 
   return (
     <ScrollView
+      ref={scrollRef}
       horizontal
       showsHorizontalScrollIndicator={false}
+      onLayout={(event) => setViewportWidth(event.nativeEvent.layout.width)}
       contentContainerStyle={[
         styles.container,
         align === "right" && styles.containerRight,
@@ -44,7 +63,16 @@ export function ButtonGroup<T extends string>({
         return (
           <Pressable
             key={item.value}
-            onPress={() => onChange(item.value)}
+            onPress={() => {
+              onChange(item.value);
+              centerItem(item.value);
+            }}
+            onLayout={(event) => {
+              itemLayouts.current[item.value] = {
+                x: event.nativeEvent.layout.x,
+                width: event.nativeEvent.layout.width,
+              };
+            }}
             style={({ pressed }) => [
               styles.button,
               isSmall && styles.buttonSmall,
