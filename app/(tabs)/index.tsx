@@ -77,7 +77,7 @@ export default function OverviewScreen() {
     weeklyAverage > 0 ? (todaySeconds / weeklyAverage) * 100 : 0;
   const isOverDailyAverage = dailyAverageProgress > 100;
   const todayTextColor = isOverDailyAverage
-    ? colors.onErrorContainer
+    ? colors.accent.green.color
     : colors.onSurface;
   const latestWeekDay = week[week.length - 1];
   const selectedWeekDay =
@@ -185,17 +185,16 @@ export default function OverviewScreen() {
                   }}
                 >
                   <View style={{ gap: 0 }}>
-                    <Text
+                    {/* <Text
                       style={[ct.text.buttonText, { color: todayTextColor }]}
                     >
                       Today
-                    </Text>
+                    </Text> */}
                     <Text
                       style={{
                         color: todayTextColor,
                         fontFamily: ct.fontFamily.semibold,
-                        fontSize: ct.fontSize.lg,
-                        lineHeight: ct.fontSize["2xl"],
+                        fontSize: ct.fontSize.display,
                       }}
                       numberOfLines={1}
                       adjustsFontSizeToFit

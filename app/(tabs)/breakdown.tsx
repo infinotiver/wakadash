@@ -172,13 +172,7 @@ export default function BreakdownScreen() {
     "status" in statsQ.error &&
     statsQ.error.status === 403;
 
-  const chartColors = [
-    c.accent.violet.color,
-    c.accent.amber.color,
-    c.accent.teal.color,
-    c.accent.coral.color,
-    c.accent.green.color,
-  ];
+  const chartColors = c.chart[category];
 
   const langColorMap = buildLanguageColorMap(langMetaQ.data);
 

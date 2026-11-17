@@ -18,7 +18,6 @@ interface Props {
   backgroundColor?: string;
   seriesColors?: string[];
   totalLabel?: string;
-  /** Fraction of container width the donut's outer diameter takes (default 0.8). */
   radiusRatio?: number;
 }
 
@@ -41,20 +40,12 @@ export function CategoryPieChart({
   const foreground = primaryColor ?? colors.onSurface;
   const cardBg = backgroundColor ?? colors.surfaceContainerHigh;
 
-  const chartColors = seriesColors ?? [
-    colors.accent.violet.color,
-    colors.accent.amber.color,
-    colors.accent.teal.color,
-    colors.accent.coral.color,
-    colors.accent.green.color,
-  ];
+  const chartColors = seriesColors ?? colors.chart.categories;
 
   const radius =
     containerWidth > 0 ? Math.floor((containerWidth * radiusRatio) / 2) : 120;
-  const innerRadius = Math.floor(radius * 0.72);
 
-  // Widest box that fits inside the hole (inscribed square), so text never
-  // touches the ring. adjustsFontSizeToFit shrinks overflow within this box.
+  const innerRadius = Math.floor(radius * 0.72);
   const labelWidth = Math.floor(innerRadius * 1.833);
   const valueSize = clamp(Math.round(innerRadius * 0.32), 14, 32);
   const subSize = clamp(
@@ -66,39 +57,46 @@ export function CategoryPieChart({
   const pieData = items.map((item, i) => ({
     value: item.percent,
     color: chartColors[i % chartColors.length] ?? colors.primary,
-    focused: activeIndex === i,
   }));
 
-  const activeItem = activeIndex !== null ? items[activeIndex] : null;
-  const totalSeconds = items.reduce((s, item) => s + item.total_seconds, 0);
+  const activeItem = activeIndex !== null ? (items[activeIndex] ?? null) : null;
+
+  const totalSeconds = items.reduce((sum, item) => sum + item.total_seconds, 0);
+
   const centerLabel = formatDuration(
     activeItem ? activeItem.total_seconds : totalSeconds,
   );
-  const centerSub = activeItem ? activeItem.name : totalLabel;
+
+  const centerSub = activeItem?.name ?? totalLabel;
 
   const toggleIndex = (_item: unknown, index: number) => {
-    Animated.sequence([
-      Animated.timing(labelOpacity, {
-        toValue: 0,
-        duration: 100,
-        useNativeDriver: true,
-      }),
+    Animated.timing(labelOpacity, {
+      toValue: 0,
+      duration: 100,
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (!finished) return;
+
+      setActiveIndex((prev) => (prev === index ? null : index));
+
       Animated.timing(labelOpacity, {
         toValue: 1,
         duration: 150,
         useNativeDriver: true,
-      }),
-    ]).start();
-    setTimeout(
-      () => setActiveIndex((prev) => (prev === index ? null : index)),
-      100,
-    );
+      }).start();
+    });
   };
 
   return (
     <View onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}>
       {containerWidth > 0 && (
-        <View style={{ alignItems: "center", marginVertical: ct.space.md }}>
+        <View
+          style={{
+            alignItems: "center",
+            marginVertical: ct.space.md,
+            gap: ct.space.md,
+          }}
+        >
           <PieChart
             data={pieData}
             donut
@@ -134,6 +132,7 @@ export function CategoryPieChart({
                 >
                   {centerLabel}
                 </Text>
+
                 <Text
                   style={{
                     color: colors.onSurfaceVariant,

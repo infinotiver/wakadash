@@ -58,37 +58,43 @@ export function GoalCard({ goal, onPress }: Props) {
           </Text>
           <GoalStatusChip status={goal.status} />
         </View>
-        <Text
-          style={{
-            color: ignored
-              ? c.onSurfaceVariant
-              : inverseExceeded
-                ? c.error
-                : c.onSurface,
-            fontFamily: ct.fontFamily.semibold,
-            fontSize: ct.fontSize.lg,
-          }}
-        >
-          {formatDuration(actual)} / {formatDuration(target)}
-        </Text>
       </View>
-
       <View
         style={{
-          height: 10,
+          height: 40,
           borderRadius: ct.radius.full,
           backgroundColor: c.secondaryContainer,
           overflow: "hidden",
+          justifyContent: "center",
         }}
       >
         <View
           style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            bottom: 0,
             width: `${pct}%`,
-            height: "100%",
             backgroundColor: fill,
             borderRadius: ct.radius.full,
           }}
         />
+        <Text
+          style={{
+            textAlign: "center",
+            fontFamily: ct.fontFamily.semibold,
+            fontSize: ct.fontSize.md,
+            color: ignored
+              ? c.onSurfaceVariant
+              : inverseExceeded
+                ? c.onError
+                : met
+                  ? c.onPrimary
+                  : c.onTertiary,
+          }}
+        >
+          {formatDuration(actual)} / {formatDuration(target)}
+        </Text>
       </View>
 
       <View
@@ -108,16 +114,6 @@ export function GoalCard({ goal, onPress }: Props) {
             : goal.range_text}
         </Text>
         <View style={{ alignItems: "flex-end", gap: ct.space.xs }}>
-          {goal.is_inverse ? (
-            <Text
-              style={[
-                ct.text.captionMedium,
-                { color: inverseExceeded ? c.error : c.tertiary },
-              ]}
-            >
-              Stay under
-            </Text>
-          ) : null}
           {streak > 0 ? (
             <Text
               style={[ct.text.captionMedium, { color: c.onSurfaceVariant }]}

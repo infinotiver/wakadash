@@ -1,7 +1,6 @@
 ﻿import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
-  Pressable,
   RefreshControl,
   ScrollView,
   Text,
@@ -111,25 +110,11 @@ export default function TodayScreen() {
         : best,
     null as (typeof week)[number] | null,
   );
+  const topProject = selected?.projects?.[0];
 
   const loading = dayQ.isLoading || weekQ.isLoading;
   const failed = dayQ.isError || weekQ.isError;
   const failure = dayQ.error ?? weekQ.error;
-
-  const chartColors = [
-    colors.accent.violet.color,
-    colors.accent.amber.color,
-    colors.accent.teal.color,
-    colors.accent.coral.color,
-    colors.accent.green.color,
-  ];
-
-  const groupStyle = {
-    gap: ct.space.sm,
-    backgroundColor: colors.surfaceContainerHighest,
-    padding: ct.space.xs,
-    borderRadius: ct.radius["2xl"],
-  } as const;
 
   const langColorMap = buildLanguageColorMap(langMetaQ.data);
   const languageColors = (selected?.languages ?? [])
@@ -137,44 +122,49 @@ export default function TodayScreen() {
     .map(
       (item, i) =>
         langColorMap.get(item.name.toLowerCase()) ??
-        chartColors[i % chartColors.length],
+        colors.chart.languages[i % colors.chart.languages.length],
     );
 
   const windowTitle =
     windowEnd === null
-      ? "Last 7 Days"
+      ? "Past 7 Days"
       : formatDateRange(windowStartKey, windowEndKey);
 
   const breakdownSections = [
     {
       key: "languages",
       title: "Languages",
-      route: "/languages" as const,
       colors: languageColors,
       rawItems: selected?.languages ?? [],
     },
     {
       key: "editors",
       title: "Editors",
-      route: "/editors" as const,
-      colors: chartColors,
+      colors: colors.chart.editors,
       rawItems: selected?.editors ?? [],
     },
     {
       key: "projects",
       title: "Projects",
-      route: "/projects" as const,
-      colors: chartColors,
+      colors: colors.chart.projects,
       rawItems: selected?.projects ?? [],
     },
     {
       key: "operating_systems",
       title: "Operating Systems",
-      route: "/operating-systems" as const,
-      colors: chartColors,
+      colors: colors.chart.operating_systems,
       rawItems: selected?.operating_systems ?? [],
     },
   ];
+
+  const categoryItems = (selected?.categories ?? [])
+    .slice(0, 5)
+    .map((item) => ({
+      name: item.name,
+      percent: item.percent,
+      total_seconds: item.total_seconds,
+      text: formatDuration(item.total_seconds),
+    }));
 
   return (
     <View
@@ -270,27 +260,20 @@ export default function TodayScreen() {
                 </Text>
               ) : null}
 
-              {/* Top Row: Category Pie Chart + 3 Summary StatCards */}
               <View
                 style={[
                   styles.row,
                   styles.cardSpacing,
                   {
                     alignItems: "stretch",
+                    marginHorizontal: ct.padding.xl,
                   },
                 ]}
               >
                 {hasCategories && (
-                  <View style={{ flex: 5 }}>
+                  <View style={{ flex: 3 }}>
                     <CategoryPieChart
-                      items={(selected?.categories ?? [])
-                        .slice(0, 5)
-                        .map((item) => ({
-                          name: item.name,
-                          percent: item.percent,
-                          total_seconds: item.total_seconds,
-                          text: formatDuration(item.total_seconds),
-                        }))}
+                      items={categoryItems}
                       totalLabel={dayLabel}
                     />
                   </View>
@@ -298,7 +281,7 @@ export default function TodayScreen() {
 
                 <View
                   style={{
-                    flex: hasCategories ? 4 : 1,
+                    flex: hasCategories ? 2 : 1,
                     gap: ct.padding.sm,
                   }}
                 >
@@ -369,13 +352,66 @@ export default function TodayScreen() {
                 </View>
               </View>
 
-              {/* Unified 7-Day Window Header + Interactive Weekly Chart */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={{
+                  marginVertical: ct.space.xs,
+                }}
+                contentContainerStyle={{
+                  gap: ct.space.sm,
+                  paddingHorizontal: ct.padding.xl,
+                  paddingVertical: ct.space.xs,
+                }}
+              >
+                {categoryItems.map((item, index) => (
+                  <View
+                    key={`${item.name}-${index}`}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: ct.space.xs,
+                      paddingHorizontal: ct.space.sm,
+                      paddingVertical: ct.space.sm,
+                      borderRadius: ct.radius.full,
+                      backgroundColor: colors.surfaceContainerHigh,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 7,
+                        height: 7,
+                        borderRadius: ct.radius.full,
+                        backgroundColor:
+                          colors.chart.categories[
+                            index % colors.chart.categories.length
+                          ],
+                      }}
+                    />
+                    <Text
+                      numberOfLines={1}
+                      style={[ct.text.caption, { color: colors.onSurface }]}
+                    >
+                      {item.name}
+                    </Text>
+                    <Text
+                      numberOfLines={1}
+                      style={[
+                        ct.text.captionMedium,
+                        { color: colors.onSurfaceVariant },
+                      ]}
+                    >
+                      {item.text}
+                    </Text>
+                  </View>
+                ))}
+              </ScrollView>
+
               <View
                 style={[
                   styles.cardSpacing,
                   {
-                    backgroundColor:
-                      colors.surfaceContainer ?? colors.surfaceContainerHigh,
+                    backgroundColor: colors.surfaceContainerHigh,
                     padding: ct.padding.lg,
                     borderRadius: ct.radius["2xl"],
                     gap: ct.padding.sm,
@@ -440,8 +476,8 @@ export default function TodayScreen() {
                     paddingBottom: 64 + ct.space["2xl"],
                     paddingHorizontal: ct.padding.xl,
                     backgroundColor: colors.surfaceContainerLow,
-                    borderTopLeftRadius: ct.radius["3xl"],
-                    borderTopRightRadius: ct.radius["3xl"],
+                    borderTopLeftRadius: ct.radius["2xl"],
+                    borderTopRightRadius: ct.radius["2xl"],
                     gap: ct.padding.md,
                   },
                 ]}
@@ -454,51 +490,18 @@ export default function TodayScreen() {
                   }));
 
                   return (
-                    <View key={sec.key} style={groupStyle}>
-                      <DashboardBreakdownSection
-                        title={sec.title}
-                        chartColors={sec.colors}
-                        items={top4}
-                        onPress={() =>
-                          router.push({
-                            pathname: "/breakdown",
-                            params: { category: sec.key },
-                          })
-                        }
-                      />
-
-                      {/* Uniform, full-width footer row to open multi-range CategoryScreen */}
-                      <Pressable
-                        onPress={() => router.push(sec.route)}
-                        accessibilityRole="button"
-                        accessibilityLabel={`View all ${sec.title}`}
-                        style={({ pressed }) => ({
-                          flexDirection: "row",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          paddingHorizontal: ct.padding.md,
-                          paddingVertical: ct.space.sm,
-                          borderTopWidth: 1,
-                          borderTopColor: colors.outlineVariant + "40",
-                          opacity: pressed ? 0.7 : 1,
-                        })}
-                      >
-                        <Text
-                          style={{
-                            fontSize: ct.fontSize.xs,
-                            fontFamily: ct.fontFamily.medium,
-                            color: colors.onSurfaceVariant,
-                          }}
-                        >
-                          View all {sec.title.toLowerCase()}
-                        </Text>
-                        <MaterialCommunityIcons
-                          name="chevron-right"
-                          size={16}
-                          color={colors.onSurfaceVariant}
-                        />
-                      </Pressable>
-                    </View>
+                    <DashboardBreakdownSection
+                      key={sec.key}
+                      title={sec.title}
+                      chartColors={sec.colors}
+                      items={top4}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/breakdown",
+                          params: { category: sec.key },
+                        })
+                      }
+                    />
                   );
                 })}
               </View>

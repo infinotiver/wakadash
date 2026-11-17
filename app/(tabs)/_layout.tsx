@@ -21,9 +21,9 @@ type IconName = React.ComponentProps<typeof MaterialCommunityIcons>["name"];
 const isIOS = Platform.OS === "ios";
 const isIOS26 = isIOS && parseInt(Platform.Version.toString(), 10) >= 26;
 
-const BAR_HEIGHT = 64;
-const MAX_ITEM_WIDTH = 84; // shrinks on narrow screens, see FloatingTabBar
-const ITEM_HEIGHT = 56;
+const BAR_HEIGHT = 60;
+const MAX_ITEM_WIDTH = 84;
+const ITEM_HEIGHT = 52;
 const ICON_SIZE = 20;
 
 // Pages hosted under the More tab; they keep More highlighted.
@@ -156,7 +156,7 @@ function TabItem({
       <Text
         numberOfLines={1}
         style={{
-          fontSize: ct.fontSize.xs,
+          fontSize: 10, // only exception of no fonts lower than 12px
           fontFamily: focused ? ct.fontFamily.semibold : ct.fontFamily.medium,
           color,
         }}
@@ -197,7 +197,7 @@ function FloatingTabBar({ state, navigation }: any) {
 
   const active: string = state.routes[state.index]?.name;
   const bottomOffset = Math.max(insets.bottom, 16);
-  const scrimHeight = BAR_HEIGHT + bottomOffset + 32;
+  const scrimHeight = BAR_HEIGHT + bottomOffset + 40;
 
   return (
     <View
@@ -235,7 +235,7 @@ function FloatingTabBar({ state, navigation }: any) {
           height: BAR_HEIGHT,
           paddingHorizontal: ct.space.xs,
           borderRadius: BAR_HEIGHT / 2,
-          backgroundColor: colors.surfaceContainerHigh,
+          backgroundColor: withAlpha(colors.surfaceContainerHigh, 0.8),
           // faint edge border
           borderWidth: 1,
           borderColor: withAlpha(colors.outlineVariant, 0.4),
