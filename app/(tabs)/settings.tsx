@@ -474,27 +474,38 @@ export default function SettingsScreen() {
         </View>
         <ThemeSettings />
         <NotificationSettings />
+               {/* About */}
         <View
           style={[styles.section, { backgroundColor: c.surfaceContainerHigh }]}
         >
-          <Text style={[styles.sectionTitle, { color: c.onSurface }]}>
-            About
-          </Text>
+          <View style={[ct.styles.rowCenter, { gap: ct.space.sm }]}>
+            <MaterialCommunityIcons
+              name="hand-heart-outline"
+              size={18}
+              color={c.primary}
+            />
+            <Text style={[styles.sectionTitle, { color: c.onSurface }]}>
+              About
+            </Text>
+          </View>
 
-          <Text
-            style={[
-              ct.text.body,
-              { color: c.onSurfaceVariant, marginBottom: ct.space.md },
-            ]}
-          >
-            {"\u00A9"} 2026{" "}
+          <Text style={[ct.text.body, { color: c.onSurface }]}>
+            Made by{" "}
             <Text
               style={{ color: c.primary, textDecorationLine: "underline" }}
               onPress={() => Linking.openURL("https://github.com/infinotiver")}
             >
               infinotiver
             </Text>{" "}
+            {"<3"} {"\u00A9"} 2026
           </Text>
+
+          <Text style={[ct.text.cardSub, { color: c.onSurfaceVariant }]}>
+            Coding stats come from WakaTime and Hackatime (Hack Club). Language
+            colors are provided by WakaTime. WakaDash is an unofficial client
+            and isn't affiliated with either service.
+          </Text>
+
           <View style={{ flexDirection: "row", gap: ct.space.sm }}>
             <Button
               label={`v${appVersion}`}
@@ -515,12 +526,8 @@ export default function SettingsScreen() {
               }
             />
           </View>
-          <Text
-            style={[
-              ct.text.body,
-              { color: c.onSurfaceVariant, marginTop: ct.space.sm },
-            ]}
-          >
+
+          <Text style={[ct.text.caption, { color: c.onSurfaceVariant }]}>
             {otaDetails}
           </Text>
         </View>

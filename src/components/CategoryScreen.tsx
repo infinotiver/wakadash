@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -10,10 +10,8 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ButtonGroup } from "@/src/components/ButtonGroup";
 import { AppBar } from "@/src/components/AppBar";
-import { HorizontalStackedBar } from "@/src/components/charts/HorizontalStackedBar";
 import { ct } from "@/src/constants/styles.common";
 import { useColors } from "@/src/hooks/useColors";
-import { useWakaTime } from "@/src/context/WakaTimeContext";
 import {
   useProgramLanguages,
   useWakaStats,
@@ -43,6 +41,40 @@ const RANGES: { label: string; value: Range }[] = [
   { label: "All Time", value: "all_time" },
 ];
 
+function ProgressBar({
+  ratio,
+  fill,
+  track,
+  height = 8,
+}: {
+  ratio: number; // 0..1
+  fill: string;
+  track: string;
+  height?: number;
+}) {
+  // keep tiny values visible, clamp anything out of range
+  const clamped = Math.min(1, Math.max(0.02, ratio));
+  return (
+    <View
+      style={{
+        height,
+        borderRadius: ct.radius.full,
+        overflow: "hidden",
+        backgroundColor: track,
+      }}
+    >
+      <View
+        style={{
+          width: `${clamped * 100}%`,
+          height: "100%",
+          borderRadius: ct.radius.full,
+          backgroundColor: fill,
+        }}
+      />
+    </View>
+  );
+}
+
 export function CategoryScreen({
   title,
   category,
@@ -58,9 +90,13 @@ export function CategoryScreen({
   const statsQ = useWakaStats(range);
   const langMetaQ = useProgramLanguages();
 
-  const items = (statsQ.data?.[category] ?? []).filter(
-    (p) => p.total_seconds > 0,
+  const items = useMemo(
+    () => (statsQ.data?.[category] ?? []).filter((p) => p.total_seconds > 0),
+    [statsQ.data, category],
   );
+
+  const maxSeconds = items.reduce((m, p) => Math.max(m, p.total_seconds), 0);
+  const totalSeconds = items.reduce((s, p) => s + p.total_seconds, 0);
 
   const showProError =
     statsQ.error instanceof Error &&
@@ -68,12 +104,14 @@ export function CategoryScreen({
     statsQ.error.status === 403 &&
     range === "last_30_days";
 
-  const chartColors = [
-    c.accent.violet.color,
-    c.accent.amber.color,
-    c.accent.teal.color,
-    c.accent.coral.color,
-    c.accent.green.color,
+  // fill = accent.color, track/badge = same hue's container, so each row
+  // reads as one tonal family
+  const accents = [
+    c.accent.violet,
+    c.accent.amber,
+    c.accent.teal,
+    c.accent.coral,
+    c.accent.green,
   ];
   const langColorMap = buildLanguageColorMap(langMetaQ.data);
 
@@ -130,12 +168,35 @@ export function CategoryScreen({
         </Text>
       )}
 
+      {statsQ.data && items.length > 0 && (
+        <View
+          style={[ct.styles.rowBetween, { paddingHorizontal: ct.space.xs }]}
+        >
+          <Text style={[ct.text.label, { color: c.onSurfaceVariant }]}>
+            {items.length} {items.length === 1 ? "entry" : "entries"}
+          </Text>
+          <Text style={[ct.text.label, { color: c.onSurfaceVariant }]}>
+            {formatDuration(totalSeconds)} total
+          </Text>
+        </View>
+      )}
+
       {statsQ.data &&
         items.map((p, i) => {
-          const color =
-            (category === "languages"
+          const accent = accents[i % accents.length];
+          const langColor =
+            category === "languages"
               ? langColorMap.get(p.name.toLowerCase())
-              : undefined) ?? chartColors[i % chartColors.length];
+              : undefined;
+          const hasLangColor =
+            typeof langColor === "string" && langColor.trim() !== "";
+
+          const fill = hasLangColor ? langColor : accent.color;
+          const track = hasLangColor ? `${langColor}33` : accent.colorContainer;
+          const badgeBg = hasLangColor
+            ? `${langColor}33`
+            : accent.colorContainer;
+          const badgeFg = hasLangColor ? c.onSurface : accent.onColorContainer;
 
           return (
             <View
@@ -155,15 +216,10 @@ export function CategoryScreen({
                     borderRadius: ct.radius.full,
                     alignItems: "center",
                     justifyContent: "center",
-                    backgroundColor: c.secondaryContainer,
+                    backgroundColor: badgeBg,
                   }}
                 >
-                  <Text
-                    style={[
-                      ct.text.captionMedium,
-                      { color: c.onSecondaryContainer },
-                    ]}
-                  >
+                  <Text style={[ct.text.captionMedium, { color: badgeFg }]}>
                     {i + 1}
                   </Text>
                 </View>
@@ -181,20 +237,17 @@ export function CategoryScreen({
                 <Text
                   style={[
                     ct.text.bodySemibold,
-                    {
-                      color: c.onSurface,
-                      fontVariant: ["tabular-nums"],
-                    },
+                    { color: c.onSurface, fontVariant: ["tabular-nums"] },
                   ]}
                 >
                   {formatPercentage(p.percent)}
                 </Text>
               </View>
 
-              <HorizontalStackedBar
-                segments={[{ value: p.percent, color }]}
-                height={8}
-                backgroundColor={c.surfaceContainerHighest}
+              <ProgressBar
+                ratio={maxSeconds > 0 ? p.total_seconds / maxSeconds : 0}
+                fill={fill}
+                track={track}
               />
 
               <Text style={[ct.text.body, { color: c.onSurfaceVariant }]}>
