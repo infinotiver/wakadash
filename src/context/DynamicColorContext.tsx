@@ -6,16 +6,15 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { Platform } from "react-native";
 import {
   createMaterial3Theme,
+  isDynamicThemeSupported,
   useMaterial3Theme,
 } from "@pchmn/expo-material3-theme";
 
 import staticColors from "@/src/constants/colors";
 
 const KEY = "pref:themeChoice";
-const supported = Platform.OS === "android" && Number(Platform.Version) >= 31;
 
 type Palette = {
   light: Record<string, unknown>;
@@ -49,9 +48,9 @@ export function DynamicColorProvider({
   };
 
   const palette = useMemo<Palette>(() => {
-    if (choice === "system") return supported ? theme : null;
+  if (choice === "system") return isDynamicThemeSupported ? theme : null;
     if (choice === "default") return null;
-    return createMaterial3Theme(choice);
+    return createMaterial3Theme(choice, { colorFidelity: true });
   }, [choice, theme]);
 
   return (
@@ -62,4 +61,7 @@ export function DynamicColorProvider({
 }
 
 export const useDynamicPalette = () => useContext(Ctx).palette;
-export const useThemeChoice = () => ({ ...useContext(Ctx), supported });
+export const useThemeChoice = () => ({
+  ...useContext(Ctx),
+  supported: isDynamicThemeSupported,
+});

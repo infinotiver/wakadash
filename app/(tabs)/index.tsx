@@ -203,7 +203,7 @@ export default function OverviewScreen() {
                     </Text>
                   </View>
                   <Text
-                    style={[ct.text.caption, { color: todayTextColor }]}
+                    style={[ct.text.bodySemibold, { color: todayTextColor }]}
                     numberOfLines={1}
                   >
                     Weekly avg · {formatDuration(weeklyAverage)}
@@ -213,11 +213,13 @@ export default function OverviewScreen() {
               <DashboardWidget title="All time" hero>
                 <View style={{ gap: ct.space.xs }}>
                   <Text
-                    style={{
-                      color: colors.onPrimaryContainer,
-                      fontFamily: ct.fontFamily.semibold,
-                      fontSize: ct.fontSize.xl,
-                    }}
+                    style={[
+                      {
+                        color: colors.onPrimaryContainer,
+                        fontFamily: ct.fontFamily.semibold,
+                        fontSize: ct.fontSize.display,
+                      },
+                    ]}
                     numberOfLines={1}
                     adjustsFontSizeToFit
                   >

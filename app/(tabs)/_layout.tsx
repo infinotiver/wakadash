@@ -21,10 +21,10 @@ type IconName = React.ComponentProps<typeof MaterialCommunityIcons>["name"];
 const isIOS = Platform.OS === "ios";
 const isIOS26 = isIOS && parseInt(Platform.Version.toString(), 10) >= 26;
 
-const BAR_HEIGHT = 60;
-const MAX_ITEM_WIDTH = 84;
-const ITEM_HEIGHT = 52;
-const ICON_SIZE = 20;
+const BAR_HEIGHT = 56;
+const MAX_ITEM_WIDTH = 76;
+const ITEM_HEIGHT = 48;
+const ICON_SIZE = 18;
 
 // Pages hosted under the More tab; they keep More highlighted.
 const MORE_ROUTES = [
@@ -188,8 +188,6 @@ function FloatingTabBar({ state, navigation }: any) {
 
   if (keyboardVisible) return null;
 
-  // Items shrink on narrow screens so the pill keeps a screen-edge margin:
-  // screen - side margins - pill padding - 1px border on each side.
   const itemWidth = Math.min(
     MAX_ITEM_WIDTH,
     (screenWidth - 2 * ct.space.lg - 2 * ct.space.xs - 2) / TABS.length,
